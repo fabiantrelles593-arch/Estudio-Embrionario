@@ -1,61 +1,63 @@
-# Geometría de la Vida — v2.5
+# Geometría de la Vida — v3.0 (capa avanzada de morfología)
 
-**Proyecto:** modelado geométrico y topológico de transformaciones morfológicas.
+**Propósito:** modelar transformaciones morfológicas mediante descriptores geométricos, topológicos y de forma, e inspeccionar la sensibilidad de las medidas a decisiones de segmentación.
 
-Esta versión añade un pipeline de análisis por manifiesto, auditoría de metadatos, registro explícito de errores y configuración reproducible para VS Code, Codespaces y GitHub Actions.
+**Verificación local y remota:** 43 pruebas aprobadas localmente y 43 aprobadas por GitHub Actions en Python 3.12 y 3.13. El pipeline avanzado procesó cuatro máscaras sintéticas sin errores. [Ver ejecución CI](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/actions/runs/40319218654).
 
-## Estado de verificación
-- **30 pruebas aprobadas en local** con Python 3.13.5.
-- **GitHub Actions pasó con Python 3.12 y 3.13**, con 30 pruebas aprobadas en cada matriz.
-- La demostración y el análisis por manifiesto procesaron cuatro máscaras sintéticas, con cero errores.
-- Los resultados son de figuras sintéticas; no constituyen datos embrionarios ni validación biológica.
+## Nuevo en v3.0
+- Momentos invariantes de Hu: siete descriptores en valores originales y transformación signed-log.
+- Perfil de sensibilidad: repite las medidas en varios umbrales, resume variación geométrica y detecta cambios topológicos.
+- Índice exploratorio de robustez: combina estabilidad topológica y continuidad de medidas; no es una probabilidad ni una medida validada de exactitud anatómica.
+- Pruebas adicionales para invariancia, umbrales vacíos/estables, errores de sensibilidad e integración por manifiesto.
 
-En GitHub:
-- Repositorio: [Estudio-Embrionario](https://github.com/fabiantrelles593-arch/Estudio-Embrionario)
-- Rama de desarrollo: `development/v2.5-manifest-pipeline`
-- [PR #1 — revisión de la v2.5](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/pull/1)
-- [Ejecución CI verificada](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/actions/runs/40314446255)
+## Estado científico
+Las demostraciones usan máscaras sintéticas, no imágenes embrionarias humanas. No se afirma que la hipótesis biológica esté validada. La contribución requiere revisión de literatura y comparación con métodos existentes. La fuente de imágenes, sus condiciones de uso, los metadatos y la segmentación anatómica deben confirmarse antes de la etapa biológica.
 
-La PR sigue abierta y no se ha fusionado a `main`.
+## Módulos
+- src/metrics_2d.py: medidas geométricas y topológicas 2D.
+- src/advanced_morphology.py: momentos de Hu y sensibilidad al umbral.
+- src/analyze_manifest.py: auditoría, métricas y sensibilidad opcional desde manifiesto.
+- src/image_io.py: carga de escala de grises y máscara binaria.
+- src/audit_dataset.py: auditoría de procedencia, etapa, identificadores, calidad y uso.
+- src/morphology_space.py: estandarización, PCA exploratorio y matriz de distancias.
+- tests/: pruebas automáticas.
+- docs/27_CAPA_AVANZADA_ROBUSTEZ_MORFOLOGICA.md: método, fórmulas, límites y referencias.
+- docs/28_REPORTE_DE_VERIFICACION_V3_0.md: informe local y remoto.
 
-## Componentes
-- `src/metrics_2d.py`: descriptores geométricos y topológicos 2D; tamaño de píxel finito y positivo.
-- `src/morphology_space.py`: estandarización, PCA exploratorio y matriz de distancias.
-- `src/audit_dataset.py`: auditoría de campos obligatorios, IDs, etapas CS12–CS18, dependencias por espécimen, calidad y estado de uso.
-- `src/image_io.py`: lectura inicial de imágenes y umbral simple para generar máscaras; no reemplaza un protocolo anatómico validado.
-- `src/analyze_manifest.py`: audita metadatos, resuelve rutas de imagen, calcula métricas y conserva errores por observación.
-- `src/create_synthetic_manifest.py`: crea un manifiesto reproducible de demostración sintética.
-- `src/demo_pipeline.py`: genera figuras sintéticas, tabla morfológica, PCA y matriz de distancias.
-- `tests/`: pruebas automatizadas.
-- `.devcontainer/devcontainer.json`: dependencias y extensiones recomendadas para Codespaces.
-- `.vscode/launch.json`: perfiles de depuración para la demo y el analizador de manifiesto.
-- `.github/workflows/tests.yml`: integración continua para Python 3.12 y 3.13.
+## Instalación y prueba en Windows / VS Code
 
-## Ejecutar en Windows / VS Code
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pytest tests -v
+```
+
+## Ejecutar la demo avanzada
+
+```powershell
 python src/demo_pipeline.py
 python src/audit_dataset.py demo/synthetic_morphology.csv --out demo/synthetic_audit.json --strict
 python src/create_synthetic_manifest.py
-python -m src.analyze_manifest demo/synthetic_manifest.csv --out demo/synthetic_mask_metrics.csv --strict
+python -m src.analyze_manifest demo/synthetic_manifest.csv --out demo/synthetic_mask_metrics.csv --sensitivity --sensitivity-thresholds 0.3,0.4,0.5,0.6,0.7 --strict
 ```
 
-Si PowerShell no permite activar el entorno, usa ` .\.venv\Scripts\python.exe` en lugar de `python` en los comandos posteriores.
+En las figuras sintéticas todos los umbrales producen la misma máscara, así que el índice sale 100. Eso valida un caso de control, no la precisión de segmentación biológica.
 
-## Escala, métricas y límites
-`area` y `perimeter` agregan las componentes; ejes, solidez, extensión y excentricidad describen la componente de mayor área. Esta política queda anotada en `component_policy`. Si falta una escala física verificada, las métricas se mantienen en píxeles. Si se declara `pixel_size`, se exige además unidad y un valor finito positivo.
+## Interpretación
+- Hu 1–7: momentos de Hu originales; hu_log 1–7: transformación signed-log.
+- topology_stability: proporción de umbrales válidos que comparten la topología más frecuente.
+- *_cv: coeficientes de variación entre umbrales.
+- topology_states: cantidad de parejas topológicas distintas (beta0, beta1).
+- robustness_index: índice exploratorio de 0 a 100.
+- sensitivity_flags y threshold_sensitivity_json: avisos y resultados detallados por observación.
 
-La conectividad topológica usa 8 vecinos en el módulo actual y debe mantenerse constante al comparar resultados. Los registros sintéticos usan `modality=SYNTHETIC` y `stage=not_applicable`; no se les atribuye una etapa Carnegie ficticia.
+analysis_status=OK solo indica que la máscara del umbral principal se pudo medir. Un índice de robustez alto no demuestra exactitud anatómica; la segmentación debe validarse aparte.
 
-Una salida `OK` indica que la máscara pudo medirse; no demuestra que la segmentación anatómica sea correcta. Las figuras sintéticas sirven para verificar el código, no la hipótesis biológica. El software no diagnostica.
+## Estado en GitHub
+- Rama v3.0: development/v3.0-advanced-morphology.
+- [PR #2 — v3.0](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/pull/2), abierta contra la rama de v2.5.
+- [Integración continua verificada](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/actions/runs/40319218654).
 
-## Próximos hitos
-1. Revisar y fusionar la PR #1.
-2. Repetir instalación y ejecución en el equipo Windows del grupo o en Codespaces.
-3. Acordar una fuente de imágenes embrionarias autorizadas y comparables, con procedencia y metadatos completos.
-4. Validar la segmentación anatómica y analizar sensibilidad a resolución, escala, conectividad y contornos.
-5. Solo entonces evaluar si los descriptores caracterizan transformaciones biológicas.
+La PR #2 no está fusionada. La integración final debe seguir el orden documentado en Notion: revisar v2.5 y después v3.0.

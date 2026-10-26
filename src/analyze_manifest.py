@@ -1,7 +1,7 @@
 """Analiza imágenes enumeradas en un manifiesto trazable.
 
-El módulo combina auditoría de metadatos, carga de máscaras y métricas 2D.
-No sustituye la segmentación anatómica ni verifica licencias fuera del CSV.
+Integra auditoría de metadatos, métricas 2D, momentos de Hu y sensibilidad opcional
+a umbrales. No sustituye la segmentación anatómica.
 """
 from __future__ import annotations
 
@@ -15,8 +15,9 @@ import numpy as np
 import pandas as pd
 
 from src.audit_dataset import audit_dataframe
-from src.image_io import load_mask
+from src.image_io import load_grayscale_image
 from src.metrics_2d import measure_mask, metrics_to_dict
+from src.advanced_morphology import hu_invariant_features, analyze_threshold_sensitivity
 
 REQUIRED_MANIFEST_COLUMNS = {"image_path"}
 OUTPUT_CONTEXT_FIELDS = [
@@ -40,8 +41,8 @@ def _optional_text(value) -> str:
 def _scale_from_row(row: dict) -> tuple[float, str, str]:
     """Devuelve (unidades_por_pixel, unidad, estado_de_escala).
 
-    Si no se declara escala, se trabaja explícitamente en unidades de píxel.
-    Si hay escala física, exige también su unidad.
+    Si no se declara escala, las medidas permanecen en píxeles. Si se declara
+    escala física, exige unidad y valor finito positivo.
     """
     raw_scale = row.get("pixel_size")
     raw_unit = _optional_text(row.get("pixel_size_unit", ""))
@@ -67,14 +68,14 @@ def analyze_manifest(
     output_csv: str | Path,
     audit_json: str | Path | None = None,
     threshold: float = 0.5,
+    sensitivity: bool = False,
+    sensitivity_thresholds: tuple[float, ...] | None = None,
 ) -> dict:
-    """Analiza un manifiesto CSV y escribe una fila de salida por observación.
+    """Analiza un manifiesto CSV y escribe una fila por observación.
 
-    Las rutas relativas de `image_path` se resuelven desde el directorio del
-    manifiesto. La auditoría de metadatos es un bloqueo: no se analiza ningún
-    archivo si el conjunto falla campos requeridos, identificadores, etapa,
-    estado de uso o calidad. Los errores individuales de imágenes se conservan
-    en la tabla resultante para no ocultar observaciones fallidas.
+    Rutas relativas se resuelven desde el directorio del manifiesto. Si la
+    auditoría del dataset falla, el análisis queda bloqueado. Los errores por
+    imagen se conservan en el CSV para no ocultar observaciones fallidas.
     """
     manifest = Path(manifest_path).expanduser().resolve()
     if not manifest.is_file():
@@ -93,11 +94,10 @@ def analyze_manifest(
         )
 
     audit = audit_dataframe(frame)
-    audit_payload = audit.__dict__
     audit_path = Path(audit_json) if audit_json else Path(output_csv).with_suffix(".audit.json")
     audit_path.parent.mkdir(parents=True, exist_ok=True)
     audit_path.write_text(
-        json.dumps(audit_payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(audit.__dict__, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     if not audit.ok:
         raise ManifestAuditError(
@@ -116,23 +116,65 @@ def analyze_manifest(
                 image_path = manifest.parent / image_path
 
             pixel_size, unit, scale_status = _scale_from_row(row)
-            mask = load_mask(image_path, threshold=float(threshold))
+            gray = load_grayscale_image(image_path)
+            mask = gray > float(threshold)
             if not mask.any():
-                raise ValueError(
-                    "La máscara quedó vacía con este umbral; revisar imagen y segmentación."
-                )
+                raise ValueError("La máscara quedó vacía con este umbral; revisar imagen y segmentación.")
+
             metrics = metrics_to_dict(measure_mask(mask, pixel_size=pixel_size))
-            output_rows.append({
+            hu_features = hu_invariant_features(mask)
+            record = {
                 **metadata,
                 "resolved_image_path": str(image_path.resolve()),
                 "pixel_size_used": pixel_size,
                 "measurement_length_unit": unit,
                 "scale_status": scale_status,
                 **metrics,
+                **hu_features,
                 "analysis_status": "OK",
                 "analysis_error": "",
-            })
-        except (OSError, ValueError, TypeError, RuntimeError) as exc:  # preserve row-level failures
+            }
+            if sensitivity:
+                levels = sensitivity_thresholds
+                if levels is None:
+                    levels = tuple(sorted({
+                        float(np.clip(float(threshold) + offset, 0.0, 1.0))
+                        for offset in (-0.2, -0.1, 0.0, 0.1, 0.2)
+                    }))
+                try:
+                    profile = analyze_threshold_sensitivity(
+                        gray, thresholds=levels, pixel_size=pixel_size
+                    )
+                    sensitivity_summary = profile["summary"]
+                    metric_summary = sensitivity_summary.get("metric_summary", {})
+                    record.update({
+                        "sensitivity_status": "OK",
+                        "sensitivity_error": "",
+                        "robustness_index": sensitivity_summary.get("robustness_index"),
+                        "topology_stability": sensitivity_summary.get("topology_stability"),
+                        "topology_states": sensitivity_summary.get("topology_states"),
+                        "thresholds_attempted": sensitivity_summary.get("thresholds_attempted"),
+                        "thresholds_valid": sensitivity_summary.get("thresholds_valid"),
+                        "thresholds_failed": sensitivity_summary.get("thresholds_failed"),
+                        "area_cv": metric_summary.get("area", {}).get("cv"),
+                        "perimeter_cv": metric_summary.get("perimeter", {}).get("cv"),
+                        "aspect_ratio_cv": metric_summary.get("aspect_ratio", {}).get("cv"),
+                        "circularity_cv": metric_summary.get("circularity", {}).get("cv"),
+                        "sensitivity_flags": ";".join(sensitivity_summary.get("flags", [])),
+                        "threshold_sensitivity_json": json.dumps(
+                            profile, ensure_ascii=False, allow_nan=False
+                        ),
+                    })
+                except (ValueError, TypeError, RuntimeError) as sensitivity_exc:
+                    record.update({
+                        "sensitivity_status": "ERROR",
+                        "sensitivity_error": f"{type(sensitivity_exc).__name__}: {sensitivity_exc}",
+                    })
+            else:
+                record["sensitivity_status"] = "NOT_REQUESTED"
+                record["sensitivity_error"] = ""
+            output_rows.append(record)
+        except (OSError, ValueError, TypeError, RuntimeError) as exc:
             output_rows.append({
                 **metadata,
                 "resolved_image_path": "",
@@ -141,6 +183,8 @@ def analyze_manifest(
                 "scale_status": "not_available",
                 "analysis_status": "ERROR",
                 "analysis_error": f"{type(exc).__name__}: {exc}",
+                "sensitivity_status": "NOT_RUN",
+                "sensitivity_error": "No se calculó sensibilidad porque falló el análisis base.",
             })
 
     output = Path(output_csv)
@@ -148,7 +192,10 @@ def analyze_manifest(
     results = pd.DataFrame(output_rows)
     results.to_csv(output, index=False)
     errors = int((results["analysis_status"] != "OK").sum()) if not results.empty else 0
-    summary = {
+    sensitivity_errors = int(
+        (results.get("sensitivity_status", pd.Series(dtype=str)) == "ERROR").sum()
+    )
+    return {
         "manifest": str(manifest),
         "output_csv": str(output.resolve()),
         "audit_json": str(audit_path.resolve()),
@@ -157,12 +204,13 @@ def analyze_manifest(
         "n_analyzed": int(len(results) - errors),
         "n_errors": errors,
         "threshold": float(threshold),
+        "sensitivity_enabled": bool(sensitivity),
+        "n_sensitivity_errors": sensitivity_errors,
         "scientific_note": (
-            "El estado OK solo indica que la máscara se pudo medir. No valida la "
-            "exactitud anatómica de la segmentación ni una hipótesis biológica."
+            "El estado OK solo indica que la máscara se pudo medir. No valida "
+            "la exactitud anatómica de la segmentación ni una hipótesis biológica."
         ),
     }
-    return summary
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -174,17 +222,39 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--audit-out", default=None)
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument(
+        "--sensitivity", action="store_true",
+        help="Calcula momentos de Hu y sensibilidad morfológica/topológica a varios umbrales.",
+    )
+    parser.add_argument(
+        "--sensitivity-thresholds", default=None,
+        help="Umbrales separados por comas entre 0 y 1; por defecto usa el umbral principal ±0.1 y ±0.2.",
+    )
+    parser.add_argument(
         "--strict", action="store_true",
-        help="Devuelve código 2 si una o más imágenes fallan; conserva el CSV de resultados.",
+        help="Devuelve código 2 si falla una medición base o la sensibilidad opcional.",
     )
     args = parser.parse_args(argv)
     try:
-        summary = analyze_manifest(args.manifest, args.out, args.audit_out, args.threshold)
+        sensitivity_levels = None
+        if args.sensitivity_thresholds:
+            try:
+                sensitivity_levels = tuple(
+                    float(item.strip()) for item in args.sensitivity_thresholds.split(",")
+                )
+            except ValueError as exc:
+                raise ValueError(
+                    "--sensitivity-thresholds debe ser una lista numérica separada por comas."
+                ) from exc
+        summary = analyze_manifest(
+            args.manifest, args.out, args.audit_out, args.threshold,
+            sensitivity=args.sensitivity,
+            sensitivity_thresholds=sensitivity_levels,
+        )
     except (OSError, ValueError, pd.errors.ParserError) as exc:
         print(json.dumps({"error": str(exc)}, ensure_ascii=False, indent=2), file=sys.stderr)
         return 2
     print(json.dumps(summary, ensure_ascii=False, indent=2))
-    if args.strict and summary["n_errors"]:
+    if args.strict and (summary["n_errors"] or summary["n_sensitivity_errors"]):
         return 2
     return 0
 
