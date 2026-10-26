@@ -1,0 +1,1 @@
+observation_id,specimen_id,image_id,stage,modality,view,section_id,source,asset_identifier,license_status,pixel_size,pixel_size_unit,segmentation_method,segmentation_operator,quality_flag,notes,image_path

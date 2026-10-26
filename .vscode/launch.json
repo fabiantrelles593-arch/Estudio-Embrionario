@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Geometría de la Vida: demo sintética",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/demo_pipeline.py",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Geometría de la Vida: analizar manifiesto sintético",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src.analyze_manifest",
+      "args": [
+        "demo/synthetic_manifest.csv",
+        "--out",
+        "demo/synthetic_mask_metrics.csv",
+        "--strict"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}
