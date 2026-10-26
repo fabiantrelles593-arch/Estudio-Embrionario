@@ -1,0 +1,16 @@
+# Entorno y archivos temporales de Python
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Salidas locales de análisis (se conservan las demostraciones sintéticas versionadas en demo/)
+results/*.csv
+results/*.json
+
+# Datos biológicos sin autorización para compartir o que no deben subirse accidentalmente
+# Mantén los datos originales fuera del repositorio; añade excepciones solo tras revisar los permisos.
+data/raw/
+data/private/
+data/biological/
+data/pending_permission/
