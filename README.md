@@ -1,23 +1,35 @@
 # Geometría de la Vida — v2.5
 
-**Proyecto:** modelado geométrico y topológico de transformaciones morfológicas. Esta versión fortalece la auditoría de metadatos y el entorno reproducible para el desarrollo colaborativo.
+**Proyecto:** modelado geométrico y topológico de transformaciones morfológicas.
 
-## Estado científico
-Las demostraciones se construyen con máscaras sintéticas. No se afirma que sean datos biológicos ni que se haya validado una hipótesis embrionaria. Antes del análisis biológico se necesitan imágenes con procedencia, etapas, condiciones de uso, escala cuando exista y segmentación documentadas.
+Esta versión añade un pipeline de análisis por manifiesto, auditoría de metadatos, registro explícito de errores y configuración reproducible para VS Code, Codespaces y GitHub Actions.
 
-## Incluye
-- `src/metrics_2d.py`: descriptores geométricos y topológicos de máscaras 2D; `pixel_size` debe ser finito y positivo.
+## Estado de verificación
+- **30 pruebas aprobadas en local** con Python 3.13.5.
+- **GitHub Actions pasó con Python 3.12 y 3.13**, con 30 pruebas aprobadas en cada matriz.
+- La demostración y el análisis por manifiesto procesaron cuatro máscaras sintéticas, con cero errores.
+- Los resultados son de figuras sintéticas; no constituyen datos embrionarios ni validación biológica.
+
+En GitHub:
+- Repositorio: [Estudio-Embrionario](https://github.com/fabiantrelles593-arch/Estudio-Embrionario)
+- Rama de desarrollo: `development/v2.5-manifest-pipeline`
+- [PR #1 — revisión de la v2.5](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/pull/1)
+- [Ejecución CI verificada](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/actions/runs/40314446255)
+
+La PR sigue abierta y no se ha fusionado a `main`.
+
+## Componentes
+- `src/metrics_2d.py`: descriptores geométricos y topológicos 2D; tamaño de píxel finito y positivo.
 - `src/morphology_space.py`: estandarización, PCA exploratorio y matriz de distancias.
-- `src/audit_dataset.py`: auditoría de campos, IDs, etapas CS12–CS18, dependencia por espécimen, calidad y estado de uso.
-- `src/image_io.py`: lectura inicial de imágenes y umbral simple a máscara binaria; no sustituye un protocolo anatómico de segmentación.
-- `src/analyze_manifest.py`: pipeline por manifiesto; audita metadatos, resuelve rutas, calcula métricas y conserva errores por observación.
-- `src/create_synthetic_manifest.py`: prepara un manifiesto de prueba solo con imágenes sintéticas.
-- `src/demo_pipeline.py`: figuras sintéticas, CSV morfológico, PCA y matriz de distancias.
-- `tests/`: pruebas automáticas.
-- `.devcontainer/devcontainer.json`: configuración reproducible para GitHub Codespaces y extensiones.
-- `.vscode/launch.json`: perfiles de depuración de la demo y del analizador de manifiesto.
-- `docs/26_GITHUB_CODESPACES_PUESTA_EN_MARCHA.md`: pasos para publicar el paquete, crear un Codespace y verificar GitHub Actions.
-- `.github/workflows/tests.yml`: pruebas y auditoría automatizadas al subir cambios.
+- `src/audit_dataset.py`: auditoría de campos obligatorios, IDs, etapas CS12–CS18, dependencias por espécimen, calidad y estado de uso.
+- `src/image_io.py`: lectura inicial de imágenes y umbral simple para generar máscaras; no reemplaza un protocolo anatómico validado.
+- `src/analyze_manifest.py`: audita metadatos, resuelve rutas de imagen, calcula métricas y conserva errores por observación.
+- `src/create_synthetic_manifest.py`: crea un manifiesto reproducible de demostración sintética.
+- `src/demo_pipeline.py`: genera figuras sintéticas, tabla morfológica, PCA y matriz de distancias.
+- `tests/`: pruebas automatizadas.
+- `.devcontainer/devcontainer.json`: dependencias y extensiones recomendadas para Codespaces.
+- `.vscode/launch.json`: perfiles de depuración para la demo y el analizador de manifiesto.
+- `.github/workflows/tests.yml`: integración continua para Python 3.12 y 3.13.
 
 ## Ejecutar en Windows / VS Code
 ```powershell
@@ -32,24 +44,18 @@ python src/create_synthetic_manifest.py
 python -m src.analyze_manifest demo/synthetic_manifest.csv --out demo/synthetic_mask_metrics.csv --strict
 ```
 
-Si PowerShell no permite activar el entorno, usa directamente ` .\.venv\Scripts\python.exe` en los comandos Python.
+Si PowerShell no permite activar el entorno, usa ` .\.venv\Scripts\python.exe` en lugar de `python` en los comandos posteriores.
 
-## Qué mide y qué no
-`area` y `perimeter` agregan todas las componentes. Ejes, solidez, extensión y excentricidad describen la componente conectada de mayor área; este criterio queda registrado en `component_policy`. `pixel_size=1.0` mantiene las medidas en unidades de píxel; solo se deben convertir a unidades físicas con una escala verificada.
+## Escala, métricas y límites
+`area` y `perimeter` agregan las componentes; ejes, solidez, extensión y excentricidad describen la componente de mayor área. Esta política queda anotada en `component_policy`. Si falta una escala física verificada, las métricas se mantienen en píxeles. Si se declara `pixel_size`, se exige además unidad y un valor finito positivo.
 
-La conectividad de topología está fijada a 8 vecinos en este módulo y debe registrarse si se comparan variantes. La auditoría excluye conjuntos vacíos, campos requeridos vacíos, IDs duplicados, etapas biológicas no enteras o fuera de 12–18, estados de uso no verificados y calidad no aceptada. Los registros sintéticos deben marcar `modality=SYNTHETIC` y `stage=not_applicable`; no se les asigna una etapa Carnegie ficticia.
+La conectividad topológica usa 8 vecinos en el módulo actual y debe mantenerse constante al comparar resultados. Los registros sintéticos usan `modality=SYNTHETIC` y `stage=not_applicable`; no se les atribuye una etapa Carnegie ficticia.
 
-## Análisis por manifiesto (v2.5)
-`src/analyze_manifest.py` requiere una columna `image_path` además de los campos auditados. Las rutas relativas se resuelven desde la ubicación del manifiesto. Si se desconoce la escala, las métricas se quedan en píxeles; una escala declarada requiere unidad y valor finito positivo. La salida conserva `analysis_status` y `analysis_error` para que una imagen defectuosa no desaparezca sin explicación.
+Una salida `OK` indica que la máscara pudo medirse; no demuestra que la segmentación anatómica sea correcta. Las figuras sintéticas sirven para verificar el código, no la hipótesis biológica. El software no diagnostica.
 
-El estado `OK` indica que la máscara se pudo medir, no que la segmentación anatómica sea correcta. `--strict` devuelve código de salida distinto de cero si hay errores de procesamiento por imagen.
-
-## Códigos de estado
-- `OK`: no se detectaron bloqueos según las reglas automatizadas de auditoría; todavía requiere revisión científica.
-- `NO OK`: existen datos faltantes, problemas de trazabilidad, licencia/permiso no resuelto o calidad que necesita revisión.
-
-Un dataset puede superar la auditoría de metadatos y aun ser científicamente inadecuado. La auditoría no reemplaza la revisión de fuentes, anatomía ni segmentación.
-
-
-## Reporte de verificación
-Consulta `docs/25_REPORTE_DE_VERIFICACION_V2_5.md` para los comandos ejecutados, resultados observados y límites de interpretación de la versión 2.5.
+## Próximos hitos
+1. Revisar y fusionar la PR #1.
+2. Repetir instalación y ejecución en el equipo Windows del grupo o en Codespaces.
+3. Acordar una fuente de imágenes embrionarias autorizadas y comparables, con procedencia y metadatos completos.
+4. Validar la segmentación anatómica y analizar sensibilidad a resolución, escala, conectividad y contornos.
+5. Solo entonces evaluar si los descriptores caracterizan transformaciones biológicas.
