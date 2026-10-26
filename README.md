@@ -1,61 +1,68 @@
-# Geometría de la Vida — v2.5
+# Geometría de la Vida — v3.0 (capa avanzada de morfología)
 
-**Proyecto:** modelado geométrico y topológico de transformaciones morfológicas.
+**Propósito:** modelar transformaciones morfológicas con descriptores geométricos, topológicos y de forma, e inspeccionar la sensibilidad de los resultados a decisiones de segmentación.
 
-Esta versión añade un pipeline de análisis por manifiesto, auditoría de metadatos, registro explícito de errores y configuración reproducible para VS Code, Codespaces y GitHub Actions.
+**Verificación local v3.0:** 43 pruebas automatizadas aprobadas en Python 3.13.5; el flujo avanzado procesa cuatro máscaras sintéticas sin errores. La verificación remota de CI para esta versión aún debe confirmarse.
 
-## Estado de verificación
-- **30 pruebas aprobadas en local** con Python 3.13.5.
-- **GitHub Actions pasó con Python 3.12 y 3.13**, con 30 pruebas aprobadas en cada matriz.
-- La demostración y el análisis por manifiesto procesaron cuatro máscaras sintéticas, con cero errores.
-- Los resultados son de figuras sintéticas; no constituyen datos embrionarios ni validación biológica.
+## Nuevo en v3.0
 
-En GitHub:
-- Repositorio: [Estudio-Embrionario](https://github.com/fabiantrelles593-arch/Estudio-Embrionario)
-- Rama de desarrollo: `development/v2.5-manifest-pipeline`
-- [PR #1 — revisión de la v2.5](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/pull/1)
-- [Ejecución CI verificada](https://github.com/fabiantrelles593-arch/Estudio-Embrionario/actions/runs/40314446255)
+- **Momentos invariantes de Hu:** siete descriptores calculados sobre la componente mayor, en valores originales y forma signed-log.
+- **Perfil de sensibilidad a umbrales:** repite la medición a varios niveles, resume variación de área/perímetro/forma, detecta cambios topológicos y conserva intentos fallidos.
+- **Índice exploratorio de robustez:** resume consistencia topológica y estabilidad de descriptores continuos mediante una fórmula explícita. No es una probabilidad ni mide exactitud anatómica.
+- **Pruebas adicionales:** invariancia de Hu en formas rasterizadas, sensibilidad con umbrales estables, máscaras vacías e integración del análisis avanzado desde el manifiesto.
 
-La PR sigue abierta y no se ha fusionado a `main`.
+## Estado científico
 
-## Componentes
-- `src/metrics_2d.py`: descriptores geométricos y topológicos 2D; tamaño de píxel finito y positivo.
-- `src/morphology_space.py`: estandarización, PCA exploratorio y matriz de distancias.
-- `src/audit_dataset.py`: auditoría de campos obligatorios, IDs, etapas CS12–CS18, dependencias por espécimen, calidad y estado de uso.
-- `src/image_io.py`: lectura inicial de imágenes y umbral simple para generar máscaras; no reemplaza un protocolo anatómico validado.
-- `src/analyze_manifest.py`: audita metadatos, resuelve rutas de imagen, calcula métricas y conserva errores por observación.
-- `src/create_synthetic_manifest.py`: crea un manifiesto reproducible de demostración sintética.
-- `src/demo_pipeline.py`: genera figuras sintéticas, tabla morfológica, PCA y matriz de distancias.
-- `tests/`: pruebas automatizadas.
-- `.devcontainer/devcontainer.json`: dependencias y extensiones recomendadas para Codespaces.
-- `.vscode/launch.json`: perfiles de depuración para la demo y el analizador de manifiesto.
-- `.github/workflows/tests.yml`: integración continua para Python 3.12 y 3.13.
+Las demostraciones usan formas sintéticas. No se han usado imágenes embrionarias humanas reales y no se afirma que la hipótesis biológica esté validada. La contribución requiere revisión bibliográfica y comparación con métodos existentes. La fuente de imágenes, sus condiciones de uso, los metadatos y la segmentación anatómica deben confirmarse antes de la etapa biológica.
 
-## Ejecutar en Windows / VS Code
+## Módulos
+
+- src/metrics_2d.py: descriptores geométricos y topológicos 2D.
+- src/advanced_morphology.py: momentos invariantes de Hu y perfil de sensibilidad al umbral.
+- src/analyze_manifest.py: auditoría, análisis por manifiesto, momentos Hu y sensibilidad opcional.
+- src/image_io.py: lectura de imagen en escala de grises y creación de máscara binaria.
+- src/audit_dataset.py: auditoría de trazabilidad, etapas, IDs, calidad y estado de uso.
+- src/morphology_space.py: estandarización, PCA exploratorio y matriz de distancias.
+- src/demo_pipeline.py: dataset, PCA y distancias con formas sintéticas.
+- tests/: pruebas automáticas de módulos e integración.
+- docs/27_CAPA_AVANZADA_ROBUSTEZ_MORFOLOGICA.md: método, fórmulas, límites y referencias.
+- docs/28_REPORTE_DE_VERIFICACION_V3_0.md: reporte de las 43 pruebas y la demostración avanzada.
+
+## Instalación y prueba en Windows / VS Code
+
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pytest tests -v
+```
+
+## Ejecutar la demo avanzada
+
+```powershell
 python src/demo_pipeline.py
 python src/audit_dataset.py demo/synthetic_morphology.csv --out demo/synthetic_audit.json --strict
 python src/create_synthetic_manifest.py
-python -m src.analyze_manifest demo/synthetic_manifest.csv --out demo/synthetic_mask_metrics.csv --strict
+python -m src.analyze_manifest demo/synthetic_manifest.csv --out demo/synthetic_mask_metrics.csv --sensitivity --sensitivity-thresholds 0.3,0.4,0.5,0.6,0.7 --strict
 ```
 
-Si PowerShell no permite activar el entorno, usa ` .\.venv\Scripts\python.exe` en lugar de `python` en los comandos posteriores.
+Las formas binarias sintéticas mantienen su máscara con estos cinco umbrales; en ese escenario controlado, el índice puede ser 100. Esto no demuestra que el método pueda delimitar correctamente tejido biológico.
 
-## Escala, métricas y límites
-`area` y `perimeter` agregan las componentes; ejes, solidez, extensión y excentricidad describen la componente de mayor área. Esta política queda anotada en `component_policy`. Si falta una escala física verificada, las métricas se mantienen en píxeles. Si se declara `pixel_size`, se exige además unidad y un valor finito positivo.
+## Interpretación
 
-La conectividad topológica usa 8 vecinos en el módulo actual y debe mantenerse constante al comparar resultados. Los registros sintéticos usan `modality=SYNTHETIC` y `stage=not_applicable`; no se les atribuye una etapa Carnegie ficticia.
+- hu_1…hu_7: momentos de Hu originales; hu_log_1…hu_log_7: transformación signed-log para comprimir el rango.
+- topology_stability: proporción de umbrales válidos que comparte la topología más frecuente.
+- *_cv: coeficientes de variación a través de los umbrales válidos.
+- topology_states: número de topologías (β₀, β₁) diferentes encontradas.
+- robustness_index: índice exploratorio entre 0 y 100; consulta el documento técnico antes de interpretarlo.
+- sensitivity_flags: avisos si una máscara no se pudo medir, hay pocos niveles válidos o cambia la topología.
+- threshold_sensitivity_json: resultados detallados de cada umbral por observación.
 
-Una salida `OK` indica que la máscara pudo medirse; no demuestra que la segmentación anatómica sea correcta. Las figuras sintéticas sirven para verificar el código, no la hipótesis biológica. El software no diagnostica.
+analysis_status=OK solo indica que la máscara del umbral principal se pudo medir. Un índice de robustez alto tampoco demuestra exactitud anatómica; la segmentación debe validarse por separado.
 
-## Próximos hitos
-1. Revisar y fusionar la PR #1.
-2. Repetir instalación y ejecución en el equipo Windows del grupo o en Codespaces.
-3. Acordar una fuente de imágenes embrionarias autorizadas y comparables, con procedencia y metadatos completos.
-4. Validar la segmentación anatómica y analizar sensibilidad a resolución, escala, conectividad y contornos.
-5. Solo entonces evaluar si los descriptores caracterizan transformaciones biológicas.
+## Limitaciones y siguientes pasos
+
+La topología actual usa conectividad 8 en 2D. La segmentación de intensidad asume objeto más brillante que el fondo. Los momentos de Hu usan la componente mayor, mientras que área y perímetro describen todas las componentes. Estas decisiones deben mantenerse explícitas al comparar casos.
+
+Próximas etapas: analizar sensibilidad a resolución y conectividad, definir anatomía y reglas de segmentación con revisión experta, seleccionar un conjunto biológico autorizado y comparable, y evitar tratar varias secciones del mismo espécimen como individuos independientes.
