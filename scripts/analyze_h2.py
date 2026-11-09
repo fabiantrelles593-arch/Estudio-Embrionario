@@ -113,7 +113,7 @@ def main():
         ax.plot(g.n, 100 * g.mean_coverage, "-o", ms=3, color=c, label=f"σ_s = {sg:g}")
     ax.axhline(95, color="0.5", ls=":"); ax.set_xscale("log"); ax.set_xlabel("especímenes por etapa (n)")
     ax.set_ylabel("Cobertura del IC bootstrap al 95 % (%)"); ax.legend(fontsize=7, frameon=False)
-    ax.set_title("Transición ('switch'): más n, más engañoso")
+    ax.set_title("Transición ('switch'): cobertura del IC vs n")
     fmt_log(fig); fig.tight_layout(); fig.savefig(figs / "h2_coverage_vs_n.png", dpi=150, bbox_inches="tight"); plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(5, 3.4))
