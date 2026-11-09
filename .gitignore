@@ -17,3 +17,5 @@ data/pending_permission/
 *.npz
 # Resultados voluminosos (los resúmenes pequeños en results/summary/ sí se versionan)
 results/raw/
+results/summary/*_stdout.json
+results/summary/*_stderr.txt
