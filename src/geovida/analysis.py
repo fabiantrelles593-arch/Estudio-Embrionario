@@ -205,3 +205,16 @@ def tristate_all(values, ok) -> bool | None:
 
 def status_label(state: bool | None) -> str:
     return "no evaluable" if state is None else ("apoyada" if state else "no apoyada")
+
+
+def auc_score(score, y) -> float:
+    """Area bajo la curva ROC por rangos (Mann-Whitney). NaN si falta una clase."""
+    from scipy.stats import rankdata
+
+    s = np.asarray(score, float)
+    y = np.asarray(y, float)
+    pos, neg = int((y == 1).sum()), int((y == 0).sum())
+    if pos == 0 or neg == 0:
+        return float("nan")
+    ranks = rankdata(s)  # empates -> rango medio
+    return float((ranks[y == 1].sum() - pos * (pos + 1) / 2) / (pos * neg))

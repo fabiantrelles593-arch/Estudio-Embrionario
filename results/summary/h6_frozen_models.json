@@ -1,0 +1,44 @@
+{
+  "endpoint": "|err_volume| <= 0.05",
+  "feature": "ln(Q_hat/h_geo), Q_hat = V/area_sdf",
+  "models": {
+    "global|ideal": {
+      "intercept": 0.4928738482522665,
+      "n_fit": 12436,
+      "n_unmeasurable": 164,
+      "slope": 0.636234314375653
+    },
+    "global|realistic": {
+      "intercept": -0.027122261854773382,
+      "n_fit": 12375,
+      "n_unmeasurable": 225,
+      "slope": 0.8405905218523338
+    },
+    "otsu|ideal": {
+      "intercept": -0.07983097006428531,
+      "n_fit": 12600,
+      "n_unmeasurable": 0,
+      "slope": 5.510124206762253
+    },
+    "otsu|realistic": {
+      "intercept": -0.9298034596665948,
+      "n_fit": 12600,
+      "n_unmeasurable": 0,
+      "slope": 7.5598763966521965
+    },
+    "smoothed_otsu|ideal": {
+      "intercept": -6.075606983072938,
+      "n_fit": 12600,
+      "n_unmeasurable": 0,
+      "slope": 8.26369826249074
+    },
+    "smoothed_otsu|realistic": {
+      "intercept": -6.9136326192945585,
+      "n_fit": 12600,
+      "n_unmeasurable": 0,
+      "slope": 9.236511523221553
+    }
+  },
+  "sha256": "5380790bdd757aec27cfeae257bb7deb516f31d1e0014d3a1c06a86edf4bc03a",
+  "source": "results/raw/h3_sweep.csv.gz"
+}

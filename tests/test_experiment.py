@@ -96,3 +96,21 @@ def test_extension_segmenter_does_not_perturb_the_preregistered_rows():
 def test_rows_report_the_sdf_area_error():
     r = run_condition(Condition("ball", 6.0, 1.0, "ideal", 0))[0]
     assert {"area_sdf", "err_area_sdf"} <= set(r)
+
+
+# --- v0.3: diseno H6 (calibracion y confirmacion del semaforo) ---------------
+from geovida.experiment import H6_CAL_SEED, H6_SEED, h6_design
+
+
+def test_h6_design_covers_all_ten_shapes_on_the_same_grid():
+    from geovida.phantoms import EXTRA_NAMES, PHANTOM_NAMES
+    d = h6_design(n_reps=2)
+    assert {c.shape for c in d} == set(PHANTOM_NAMES) | set(EXTRA_NAMES)
+    assert len(d) == 10 * len(T_OVER_H) * len(ANISOTROPY) * len(PROFILES) * 2
+
+
+def test_h6_seeds_are_distinct_from_every_earlier_sweep():
+    assert len({BASE_SEED, H3_SEED, H6_SEED, H6_CAL_SEED}) == 4
+    assert 20261111 not in (H6_SEED, H6_CAL_SEED)   # semilla del piloto de area
+    assert 20261112 not in (H6_SEED, H6_CAL_SEED)   # semilla de 2D
+    assert 20261115 not in (H6_SEED, H6_CAL_SEED)   # semilla del piloto de H6

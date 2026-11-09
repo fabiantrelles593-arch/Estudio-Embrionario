@@ -61,14 +61,24 @@ def _area_sdf(mask: np.ndarray, spacing, sigma: float = SDF_SIGMA_VOXELS) -> flo
     return float(mesh_surface_area(verts, faces))
 
 
+def _mean_depth(mask: np.ndarray, spacing) -> float:
+    """Profundidad media interior: media, sobre los vóxeles del objeto, de la
+    distancia a la frontera (física; la frontera cae a medio paso del centro del
+    vóxel de borde). No usa ningún estimador de área. Bola de radio r: ~ r/4."""
+    sp = np.asarray(spacing, dtype=float)
+    m = np.pad(mask, 1)
+    inside = ndi.distance_transform_edt(m, sampling=sp)
+    return float((inside[m] - 0.5 * sp.min()).mean())
+
+
 def measure_mask(mask: np.ndarray, spacing) -> dict:
     mask = np.asarray(mask, dtype=bool)
     out = {"volume": float(mask.sum() * np.prod(spacing))}
     if not mask.any():
-        out.update(area_mc=0.0, area_faces=0.0, area_sdf=0.0)
+        out.update(area_mc=0.0, area_faces=0.0, area_sdf=0.0, d_mean=0.0)
     else:
         out.update(area_mc=_area_mc(mask, spacing), area_faces=_area_faces(mask, spacing),
-                   area_sdf=_area_sdf(mask, spacing))
+                   area_sdf=_area_sdf(mask, spacing), d_mean=_mean_depth(mask, spacing))
     for conn in (26, 6):
         b = betti_numbers(mask, connectivity=conn)
         out.update({f"b0_{conn}": b.b0, f"b1_{conn}": b.b1,

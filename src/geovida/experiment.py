@@ -42,6 +42,17 @@ def full_design(n_reps: int) -> list[Condition]:
                 PHANTOM_NAMES, T_OVER_H, ANISOTROPY, PROFILES, range(n_reps))]
 
 
+H6_SEED = 20261114      # confirmación del semáforo (H6)
+H6_CAL_SEED = 20261116  # calibración del semáforo (elige la variable y congela el modelo)
+
+
+def h6_design(n_reps: int) -> list[Condition]:
+    """Diseño de H6: las 10 formas, misma rejilla que H1 y H3."""
+    return [Condition(s, t, a, p, r)
+            for s, t, a, p, r in itertools.product(
+                ALL_SHAPES, T_OVER_H, ANISOTROPY, PROFILES, range(n_reps))]
+
+
 def h3_design(n_reps: int) -> list[Condition]:
     """Diseño de la confirmación H3: formas nuevas, misma rejilla que H1."""
     return [Condition(s, t, a, p, r)

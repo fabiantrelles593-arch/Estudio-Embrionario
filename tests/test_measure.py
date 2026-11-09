@@ -134,3 +134,24 @@ def test_relative_errors_include_area_sdf():
     r = measure_mask(mask, (1.0, 1.0, 1.0))
     e = relative_errors(r, ph.truth)
     assert "err_area_sdf" in e
+
+
+# --- v0.3: profundidad media interior (d_mean) -------------------------------
+def _solid_ball(r, spacing=(1.0, 1.0, 1.0)):
+    sp = np.asarray(spacing, float)
+    ax = [np.arange(-(r // s) - 3, (r // s) + 4) * s for s in sp]
+    X, Y, Z = np.meshgrid(*ax, indexing="ij")
+    return (X**2 + Y**2 + Z**2) <= r * r
+
+
+def test_mean_depth_of_a_ball_is_close_to_r_over_4():
+    # Piloto: r = 20 voxeles -> 4.745 (r/4 = 5; sesgo -5 % por la discretizacion);
+    # con vóxel anisotropico (1,1,3) -> 4.935.
+    d = measure_mask(_solid_ball(20), (1.0, 1.0, 1.0))["d_mean"]
+    assert d == pytest.approx(4.745, abs=0.1)
+    da = measure_mask(_solid_ball(20, (1.0, 1.0, 3.0)), (1.0, 1.0, 3.0))["d_mean"]
+    assert da == pytest.approx(4.935, abs=0.15)
+
+
+def test_mean_depth_is_zero_for_an_empty_mask():
+    assert measure_mask(np.zeros((6, 6, 6), bool), (1, 1, 1))["d_mean"] == 0.0
