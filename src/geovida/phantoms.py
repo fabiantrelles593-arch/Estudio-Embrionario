@@ -26,6 +26,9 @@ from scipy.special import ellipeinc, ellipkinc
 PHANTOM_NAMES = (
     "ball", "ellipsoid", "shell", "torus", "tube", "shell_tight", "torus_tight",
 )
+# v0.2: formas nuevas para la confirmación H3 (el conjunto preregistrado de H1
+# no cambia). Todas son sólidos simples (Betti (1,0,0)) con proporciones fijas.
+EXTRA_NAMES = ("capsule", "cylinder", "oblate")
 
 
 @dataclass(frozen=True)
@@ -130,6 +133,44 @@ def _tube(t: float, void_ratio: float = 2.0) -> Phantom:
     return Phantom("tube", t, truth, (ro, ro, length / 2), inside)
 
 
+def _capsule(t: float) -> Phantom:
+    r = t / 2
+    lc = 3.0 * t  # tramo cilíndrico; longitud total 4 t
+    truth = Truth(math.pi * r * r * lc + 4 / 3 * math.pi * r**3,
+                  2 * math.pi * r * lc + 4 * math.pi * r * r, (1, 0, 0), 1, t, math.inf)
+
+    def inside(p):
+        z = p[..., 2]
+        rho2 = p[..., 0] ** 2 + p[..., 1] ** 2
+        body = (rho2 <= r * r) & (np.abs(z) <= lc / 2)
+        cap = rho2 + (np.abs(z) - lc / 2) ** 2 <= r * r
+        return body | cap
+
+    return Phantom("capsule", t, truth, (r, r, lc / 2 + r), inside)
+
+
+def _cylinder(t: float) -> Phantom:
+    r = t / 2
+    h = 3.0 * t
+    truth = Truth(math.pi * r * r * h, 2 * math.pi * r * h + 2 * math.pi * r * r,
+                  (1, 0, 0), 1, t, math.inf)
+
+    def inside(p):
+        return (p[..., 0] ** 2 + p[..., 1] ** 2 <= r * r) & (np.abs(p[..., 2]) <= h / 2)
+
+    return Phantom("cylinder", t, truth, (r, r, h / 2), inside)
+
+
+def _oblate(t: float) -> Phantom:
+    c = t / 2
+    a = 2.5 * t
+    truth = Truth(4 / 3 * math.pi * a * a * c, _ellipsoid_area(a, a, c),
+                  (1, 0, 0), 1, t, math.inf)
+    return Phantom("oblate", t, truth, (a, a, c),
+                   lambda p: (p[..., 0] ** 2 + p[..., 1] ** 2) / (a * a)
+                   + (p[..., 2] / c) ** 2 <= 1.0)
+
+
 def make_phantom(name: str, t: float) -> Phantom:
     """Construye el fantoma ``name`` con menor grosor sólido ``t`` (>0)."""
     if not t > 0:
@@ -148,4 +189,10 @@ def make_phantom(name: str, t: float) -> Phantom:
         return _torus(t, 0.5, "torus_tight")
     if name == "tube":
         return _tube(t)
-    raise ValueError(f"fantoma desconocido: {name!r}; opciones: {PHANTOM_NAMES}")
+    if name == "capsule":
+        return _capsule(t)
+    if name == "cylinder":
+        return _cylinder(t)
+    if name == "oblate":
+        return _oblate(t)
+    raise ValueError(f"fantoma desconocido: {name!r}; opciones: {PHANTOM_NAMES + EXTRA_NAMES}")

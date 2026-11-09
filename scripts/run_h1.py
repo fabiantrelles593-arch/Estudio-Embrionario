@@ -3,12 +3,12 @@ import argparse
 import datetime as dt
 import json
 import platform
-import subprocess
 import time
 from importlib.metadata import version
 from pathlib import Path
 
 from geovida.experiment import BASE_SEED, full_design, run_sweep
+from geovida.provenance import git_state
 
 
 def main():
@@ -26,14 +26,11 @@ def main():
 
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(a.out, index=False, compression="gzip")
-    commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
-                            text=True).stdout.strip()
-    dirty = bool(subprocess.run(["git", "status", "--porcelain", "--", "src", "docs"],
-                                capture_output=True, text=True).stdout.strip())
+    state = git_state()
     manifest = {
         "started_utc": dt.datetime.fromtimestamp(t0, dt.timezone.utc).isoformat(),
         "elapsed_s": round(elapsed, 1),
-        "git_commit": commit, "working_tree_dirty_src_docs": dirty,
+        "git_commit": state["commit"], "code_dirty": state["dirty_code"],
         "reps": a.reps, "conditions": len(design), "rows": len(df),
         "base_seed": BASE_SEED, "python": platform.python_version(),
         "packages": {p: version(p) for p in

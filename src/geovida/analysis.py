@@ -144,3 +144,47 @@ def add_vq_predictors(df: pd.DataFrame) -> pd.DataFrame:
     out["q_over_hgeo"] = q / (h_xy * out["anisotropy"] ** (1.0 / 3.0))
     out["q_over_hmax"] = q / (h_xy * out["anisotropy"])
     return out
+
+
+# --- v0.2: modelos congelados para la confirmación H3 -----------------------
+# Un modelo «congelado» se ajusta una sola vez con los datos de H1 y se evalúa
+# SIN reajustar sobre las formas y semillas nuevas de H3: es la prueba de que
+# una regla descubierta post hoc generaliza.
+
+def fit_frozen_logit(x, y) -> dict:
+    """Logit Pr(ok) = expit(a + b·ln x) con x en su escala original."""
+    b, _ = _fit_logit_ridge(np.log(np.asarray(x, float)), np.asarray(y, float))
+    return {"intercept": float(b[0]), "slope": float(b[1])}
+
+
+def predict_frozen(model: dict, x) -> np.ndarray:
+    return expit(model["intercept"] + model["slope"] * np.log(np.asarray(x, float)))
+
+
+def logloss(model: dict, x, y) -> float:
+    """Entropía cruzada media (menor es mejor)."""
+    p = np.clip(predict_frozen(model, x), 1e-12, 1 - 1e-12)
+    y = np.asarray(y, float)
+    return float(-np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)))
+
+
+def calibration_error(model: dict, x, y, bins: int = 10) -> float:
+    """Error de calibración esperado: media ponderada de |p_pred - p_obs| por
+    cajas de igual ancho en la probabilidad predicha."""
+    p = predict_frozen(model, x)
+    y = np.asarray(y, float)
+    edges = np.linspace(0.0, 1.0, bins + 1)
+    idx = np.clip(np.digitize(p, edges[1:-1]), 0, bins - 1)
+    err = 0.0
+    for k in range(bins):
+        sel = idx == k
+        if sel.any():
+            err += sel.sum() * abs(p[sel].mean() - y[sel].mean())
+    return float(err / len(y))
+
+
+def x_at_probability(model: dict, prob: float = 0.95) -> float:
+    """x tal que Pr(ok) = prob según el modelo (nan si la curva es plana)."""
+    if abs(model["slope"]) < 1e-9:
+        return math.nan
+    return float(math.exp((math.log(prob / (1 - prob)) - model["intercept"]) / model["slope"]))

@@ -48,3 +48,44 @@ def test_smoothing_rescues_topology_at_low_snr():
 def test_unknown_segmenter_is_rejected():
     with pytest.raises(ValueError):
         segment("magia", np.zeros((3, 3, 3), dtype=np.float32), (1, 1, 1))
+
+
+# --- v0.2: segmentador de extension con limpieza de motas -------------------
+from geovida.segment import EXTENSION_SEGMENTERS
+
+
+def test_extension_segmenters_do_not_touch_the_preregistered_set():
+    assert set(SEGMENTERS) == {"global", "otsu", "smoothed_otsu"}
+    assert set(EXTENSION_SEGMENTERS) == {"otsu_clean"}
+
+
+def _two_level(shape=(24, 24, 24)):
+    img = np.zeros(shape, dtype=np.float32)
+    img[4:20, 4:20, 4:20] = 1.0
+    return img
+
+
+def test_clean_removes_an_isolated_speck_that_plain_otsu_keeps():
+    img = _two_level()
+    img[1, 1, 1] = 1.0
+    assert segment("otsu", img, (1, 1, 1))[1, 1, 1]
+    assert not segment("otsu_clean", img, (1, 1, 1))[1, 1, 1]
+
+
+def test_clean_fills_a_tiny_hole_that_plain_otsu_keeps():
+    img = _two_level()
+    img[10:12, 10, 10] = 0.0  # hueco de 2 voxeles
+    assert not segment("otsu", img, (1, 1, 1))[10, 10, 10]
+    assert segment("otsu_clean", img, (1, 1, 1))[10, 10, 10]
+
+
+def test_clean_keeps_a_real_cavity():
+    img = _two_level()
+    img[9:15, 9:15, 9:15] = 0.0  # cavidad de 6^3 voxeles
+    assert not segment("otsu_clean", img, (1, 1, 1))[12, 12, 12]
+    assert betti_numbers(segment("otsu_clean", img, (1, 1, 1)), 26).as_tuple() == (1, 0, 1)
+
+
+def test_clean_keeps_the_main_object_unchanged():
+    img = _two_level()
+    assert (segment("otsu_clean", img, (1, 1, 1)) == segment("otsu", img, (1, 1, 1))).all()

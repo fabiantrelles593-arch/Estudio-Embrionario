@@ -64,3 +64,35 @@ def test_sweep_is_independent_of_the_number_of_workers():
         a.sort_values(["rep", "segmenter"]).reset_index(drop=True),
         b.sort_values(["rep", "segmenter"]).reset_index(drop=True),
     )
+
+
+# --- v0.2: diseno H3 (formas nuevas, semillas nuevas, extension) -------------
+from geovida.experiment import BASE_SEED, H3_SEED, h3_design, _rng
+from geovida.phantoms import EXTRA_NAMES
+
+
+def test_h3_design_uses_only_new_shapes_and_the_same_grid():
+    d = h3_design(n_reps=2)
+    assert {c.shape for c in d} == set(EXTRA_NAMES)
+    assert len(d) == len(EXTRA_NAMES) * len(T_OVER_H) * len(ANISOTROPY) * len(PROFILES) * 2
+
+
+def test_h3_seed_is_fresh_and_streams_do_not_overlap_h1():
+    assert H3_SEED != BASE_SEED
+    c = Condition("capsule", 4.0, 1.0, "ideal", 0)
+    h3 = _rng(c, H3_SEED).random(4)
+    h1 = _rng(Condition("ball", 4.0, 1.0, "ideal", 0), BASE_SEED).random(4)
+    assert not np.allclose(h3, h1)
+
+
+def test_extension_segmenter_does_not_perturb_the_preregistered_rows():
+    c = Condition("shell", 4.0, 1.0, "realistic", 1)
+    base = run_condition(c)
+    ext = run_condition(c, segmenters=("global", "otsu", "smoothed_otsu", "otsu_clean"))
+    assert [r["segmenter"] for r in ext][-1] == "otsu_clean"
+    assert ext[:3] == base
+
+
+def test_rows_report_the_sdf_area_error():
+    r = run_condition(Condition("ball", 6.0, 1.0, "ideal", 0))[0]
+    assert {"area_sdf", "err_area_sdf"} <= set(r)

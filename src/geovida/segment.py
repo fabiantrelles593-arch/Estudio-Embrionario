@@ -7,6 +7,12 @@
 
 No hay limpieza morfológica a propósito: los errores topológicos deben ser
 visibles, no corregidos en silencio.
+
+Extensión v0.2 (fuera del conjunto preregistrado, que no cambia):
+
+* ``otsu_clean``   Otsu crudo + eliminación de componentes de primer plano
+                   y relleno de cavidades de menos de ``CLEAN_MIN_VOXELS``
+                   vóxeles. Es la limpieza «mínima» que el informe v0.1 pedía.
 """
 from __future__ import annotations
 
@@ -29,10 +35,36 @@ def _smoothed_otsu(image: np.ndarray, spacing, sigma: float = 1.0) -> np.ndarray
     return sm >= threshold_otsu(sm)
 
 
+CLEAN_MIN_VOXELS = 8  # 2 x 2 x 2: por debajo no hay rasgo resoluble
+
+
+def _otsu_clean(image: np.ndarray, spacing, min_voxels: int = CLEAN_MIN_VOXELS) -> np.ndarray:
+    mask = _otsu(image, spacing)
+    # primer plano en 26-conectividad: fuera los componentes diminutos
+    lab, n = ndi.label(mask, structure=np.ones((3, 3, 3), dtype=bool))
+    if n:
+        sizes = np.bincount(lab.ravel())
+        small = sizes < min_voxels
+        small[0] = False
+        mask = mask & ~small[lab]
+    # fondo en 6-conectividad: se rellenan las cavidades diminutas (no el exterior)
+    padded = np.pad(~mask, 1, constant_values=True)
+    lab, n = ndi.label(padded)
+    if n:
+        sizes = np.bincount(lab.ravel())
+        small = sizes < min_voxels
+        small[0] = False
+        small[lab[0, 0, 0]] = False  # el exterior toca el marco
+        mask = mask | small[lab][1:-1, 1:-1, 1:-1]
+    return mask
+
+
 SEGMENTERS = {"global": _global, "otsu": _otsu, "smoothed_otsu": _smoothed_otsu}
+EXTENSION_SEGMENTERS = {"otsu_clean": _otsu_clean}
 
 
 def segment(name: str, image: np.ndarray, spacing) -> np.ndarray:
-    if name not in SEGMENTERS:
-        raise ValueError(f"segmentador desconocido: {name!r}; opciones: {tuple(SEGMENTERS)}")
-    return SEGMENTERS[name](image, spacing).astype(bool)
+    registry = {**SEGMENTERS, **EXTENSION_SEGMENTERS}
+    if name not in registry:
+        raise ValueError(f"segmentador desconocido: {name!r}; opciones: {tuple(registry)}")
+    return registry[name](image, spacing).astype(bool)

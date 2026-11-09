@@ -109,3 +109,48 @@ def test_volume_to_area_length_predictor_for_the_ball():
     assert out["q_over_hxy"].iloc[0] == pytest.approx(1.0)
     assert out["q_over_hgeo"].iloc[1] == pytest.approx(1.0 / 3 ** (1 / 3))
     assert out["q_over_hmax"].iloc[1] == pytest.approx(1.0 / 3.0)
+
+
+# --- v0.2: modelos congelados para la confirmacion H3 ------------------------
+from geovida.analysis import (
+    calibration_error, fit_frozen_logit, logloss, predict_frozen, x_at_probability,
+)
+
+
+def _logistic_sample(b0=-3.0, b1=4.0, n=4000, seed=1):
+    rng = np.random.default_rng(seed)
+    x = np.exp(rng.uniform(np.log(0.3), np.log(6.0), n))
+    p = 1 / (1 + np.exp(-(b0 + b1 * np.log(x))))
+    return x, (rng.random(n) < p).astype(float), p
+
+
+def test_frozen_fit_recovers_known_coefficients():
+    x, y, _ = _logistic_sample()
+    b = fit_frozen_logit(x, y)
+    assert b["intercept"] == pytest.approx(-3.0, abs=0.35)
+    assert b["slope"] == pytest.approx(4.0, abs=0.45)
+
+
+def test_x_at_probability_inverts_the_fitted_curve():
+    b = {"intercept": -3.0, "slope": 4.0}
+    x95 = x_at_probability(b, 0.95)
+    assert predict_frozen(b, np.array([x95]))[0] == pytest.approx(0.95)
+
+
+def test_logloss_prefers_the_true_model_out_of_sample():
+    x, y, _ = _logistic_sample(seed=2)
+    true = {"intercept": -3.0, "slope": 4.0}
+    wrong = {"intercept": -1.0, "slope": 1.0}
+    assert logloss(true, x, y) < logloss(wrong, x, y)
+
+
+def test_calibration_error_is_small_for_the_true_model_and_large_for_a_shifted_one():
+    x, y, _ = _logistic_sample(seed=3)
+    true = {"intercept": -3.0, "slope": 4.0}
+    shifted = {"intercept": 0.0, "slope": 4.0}
+    assert calibration_error(true, x, y) < 0.05
+    assert calibration_error(shifted, x, y) > 0.2
+
+
+def test_x_at_probability_is_nan_for_a_flat_curve():
+    assert np.isnan(x_at_probability({"intercept": 0.0, "slope": 0.0}, 0.95))

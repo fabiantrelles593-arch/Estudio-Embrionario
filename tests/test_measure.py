@@ -86,3 +86,51 @@ def test_surface_distance_with_empty_mask_is_nan():
     a = _block()
     s = surface_distance_stats(a, np.zeros_like(a), (1, 1, 1))
     assert math.isnan(s["hd95"])
+
+
+# --- v0.2: estimador de area por superficie de distancia con signo ----------
+# Las cifras de tolerancia salen del piloto scripts/pilot_area_sdf.py (semillas
+# 20261111, distintas de las del barrido confirmatorio): con sigma = 0.5 el
+# sesgo mediano fue +3.0 % en la cascara mas gruesa (asintota), +1 % (bola,
+# t/h = 12) y -16 % (bola, t/h = 4; el marching cubes de v0.1 daba -64 %).
+# La primera version de la primera prueba exigia 3 % por intuicion y fallo:
+# la asintota del estimador es +3 %, no 0 (ver docs/ERRATA.md).
+
+def _ball_mask(radius_vox, spacing=(1.0, 1.0, 1.0)):
+    ph = make_phantom("ball", t=2.0 * radius_vox * spacing[0])
+    n = int(2 * radius_vox * spacing[0] / min(spacing)) + 8
+    ax = [(np.arange(n) - (n - 1) / 2) * s for s in spacing]
+    pts = np.stack(np.meshgrid(*ax, indexing="ij"), axis=-1)
+    return ph.contains(pts), ph
+
+
+def test_sdf_area_of_fine_ball_is_close():
+    mask, ph = _ball_mask(20)
+    r = measure_mask(mask, (1.0, 1.0, 1.0))
+    assert r["area_sdf"] == pytest.approx(ph.truth.surface_area, rel=0.045)
+
+
+def test_sdf_area_beats_v01_marching_cubes_on_a_tiny_ball():
+    mask, ph = _ball_mask(2)  # t/h = 4
+    r = measure_mask(mask, (1.0, 1.0, 1.0))
+    err_sdf = abs(r["area_sdf"] / ph.truth.surface_area - 1)
+    err_mc = abs(r["area_mc"] / ph.truth.surface_area - 1)
+    assert err_sdf < 0.25 and err_mc > 0.5 and err_sdf < err_mc / 2
+
+
+def test_sdf_area_respects_anisotropic_spacing():
+    mask, ph = _ball_mask(10, spacing=(0.5, 0.5, 1.0))
+    r = measure_mask(mask, (0.5, 0.5, 1.0))
+    assert r["area_sdf"] == pytest.approx(ph.truth.surface_area, rel=0.06)
+
+
+def test_sdf_area_of_empty_mask_is_zero():
+    r = measure_mask(np.zeros((8, 8, 8), bool), (1.0, 1.0, 1.0))
+    assert r["area_sdf"] == 0.0
+
+
+def test_relative_errors_include_area_sdf():
+    mask, ph = _ball_mask(8)
+    r = measure_mask(mask, (1.0, 1.0, 1.0))
+    e = relative_errors(r, ph.truth)
+    assert "err_area_sdf" in e
