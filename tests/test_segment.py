@@ -89,3 +89,33 @@ def test_clean_keeps_a_real_cavity():
 def test_clean_keeps_the_main_object_unchanged():
     img = _two_level()
     assert (segment("otsu_clean", img, (1, 1, 1)) == segment("otsu", img, (1, 1, 1))).all()
+
+
+# --- v0.2: limites conocidos y visibilidad de la limpieza (ERRATA E11) -------
+from geovida.experiment import Condition, run_condition
+from geovida.segment import clean_report
+
+
+def test_clean_erases_a_real_cavity_below_the_size_floor():
+    # Piloto (12 reps, ideal, shell_tight, t/h = 4): otsu acierta la topologia
+    # 12/12 y otsu_clean 0/12, porque la cavidad real mide ~2 voxeles de
+    # diametro (< 8 voxeles de volumen) y la limpieza la rellena.
+    rows = run_condition(Condition("shell_tight", 4.0, 1.0, "ideal", 0),
+                         segmenters=("otsu", "otsu_clean"))
+    by = {r["segmenter"]: r for r in rows}
+    assert by["otsu"]["topology_ok"] is True
+    assert by["otsu_clean"]["topology_ok"] is False
+
+
+def test_clean_report_counts_what_was_removed_and_filled():
+    img = _two_level()
+    img[1, 1, 1] = 1.0           # una mota aislada
+    img[10:12, 10, 10] = 0.0     # un hueco de 2 voxeles
+    rep = clean_report(img, (1, 1, 1))
+    assert rep == {"removed_components": 1, "filled_cavities": 1}
+
+
+def test_clean_report_is_zero_when_nothing_is_cleaned():
+    img = _two_level()
+    img[9:15, 9:15, 9:15] = 0.0  # cavidad real de 6^3
+    assert clean_report(img, (1, 1, 1)) == {"removed_components": 0, "filled_cavities": 0}

@@ -1,0 +1,36 @@
+{
+  "h5a": {
+    "max_abs_median": 0.0345071300973197,
+    "verdict": "apoyada"
+  },
+  "h5b": {
+    "max_proportion": 0.0,
+    "verdict": "apoyada"
+  },
+  "h5c": {
+    "t_star_by_segmenter": {
+      "global": NaN,
+      "otsu": NaN,
+      "smoothed_otsu": NaN,
+      "smoothed_otsu_s2": NaN
+    },
+    "verdict": "no apoyada"
+  },
+  "h5d": {
+    "max_abs_median": 0.0577947616644498,
+    "verdict": "no apoyada"
+  },
+  "h5e": {
+    "median_abs_hc": {
+      "us_compound": {
+        "disk": 0.0676,
+        "ellipse": 0.0487
+      },
+      "us_raw": {
+        "disk": 0.1693,
+        "ellipse": 0.1181
+      }
+    },
+    "verdict": "apoyada"
+  }
+}

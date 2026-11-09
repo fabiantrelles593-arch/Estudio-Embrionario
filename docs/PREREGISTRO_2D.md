@@ -67,4 +67,9 @@ que el instrumento puede hacer en el mejor de los casos de un modelo simple.
 
 ## 6. Desviaciones
 
-(Ninguna al momento de este commit.)
+- 2026-11-09 (después de la corrida): el manifiesto `h5_run_manifest.json`
+  marca `code_dirty: true` y el commit `08e927b`. Durante la corrida se editaron
+  `src/geovida/analysis.py` y `scripts/analyze_h1.py` (un ayudante de tres
+  estados para los veredictos de H1, sin relación con 2D). `git diff 08e927b --
+  src/geovida/twod.py src/geovida/h5.py scripts/run_2d.py` es vacío: el código
+  ejecutado es el commiteado. Criterios y predicciones no se tocaron.

@@ -37,7 +37,7 @@ por celda; 58 800 imágenes (`results/summary/h1_*.csv`, `h1_verdicts.json`).
 |---|---|---|
 | H1a volumen universal en t/h, t/h\* ≤ 6 | **Falsada** | t/h\* de V: bola 8, elipsoide 6, toro 4, toro_tight 4, cáscara_tight 3, cáscara 2, tubo 2 (cociente 4.0 > 1.5) |
 | H1b topología universal en t_min/h | **Confirmada** | t_min/h\*: 1.5–2.0 (cociente 1.33 ≤ 1.5); con t_solid: 1.5–4.0 (2.67 > 2.25, como se esperaba) |
-| H1c anisotropía colapsa con el vóxel peor | **Parcial** | ΔAIC(h_max − h_xy) = −387 (V), −1 276 (topología): h_max > h_xy ✓. Rango de t/h\*(h_max) entre anisotropías: 1.5 en topología (borde); no evaluable en V (nivel no alcanzado). **Mejor predictor global: h_geo** (P2 en V, P5 en topología), no h_max |
+| H1c anisotropía colapsa con el vóxel peor | **Falsada** (por el criterio preregistrado; ver E7) | Componente AIC ✓: ΔAIC(h_max − h_xy) = −387 (V), −1 276 (topología). Componente topología ✓: rango de t/h\*(h_max) entre anisotropías 1.5 (≤ un paso). Componente **volumen ✗**: rango 2.0 en cáscara y tubo (> un paso); la bola no alcanza el nivel con anisotropía 3 (solo esa celda es «no evaluable»). El criterio preregistrado dice «falsada si el rango excede un paso», así que basta un fallo. **Mejor predictor global: h_geo** (P2 en V, P5 en topología), no h_max |
 | H1d t/h\* independiente del segmentador | **No confirmada** | cocientes hasta 2.67 (topología) y niveles no alcanzados en V |
 | Consistencia con Horner 2019 (≤ 2 % de diámetro con ≥ 5–6 vóxeles) | **Pasa** | mediana |error diámetro| 0.85 % a t/h = 6; 1.5 % a 4; 2.8 % a 3 |
 
@@ -137,7 +137,10 @@ de estadificación; por eso se preregistró.
   clase. Nada se ha validado con imágenes reales.
 * El estimador de área y el suavizado σ = 1 son decisiones mías que sesgan los
   resultados de S y de V con `smoothed_otsu`; no son "el" método.
-* H1c en V no pudo evaluarse (niveles no alcanzados dentro de la rejilla ≤ 12).
+* H1c en V: solo la bola con anisotropía 3 no alcanza el nivel dentro de la
+  rejilla (≤ 12); las demás formas dan rangos finitos (2.0 en cáscara y tubo),
+  que incumplen el criterio. Una versión anterior de este texto decía «no pudo
+  evaluarse» y H1c «parcial»: era un error (ERRATA E7).
 * H2 supone σ_s conocido, diseño balanceado y tres trayectorias que elegí yo;
   las conclusiones sobre "segundo orden" valen para esos tamaños de efecto.
 * El análisis exploratorio de Q y la regla t_min no son resultados

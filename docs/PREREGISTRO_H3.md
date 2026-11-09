@@ -109,3 +109,18 @@ reales, formas con ramas ni artefactos de adquisición.
 ## 8. Desviaciones
 
 (Ninguna al momento de este commit.)
+
+- 2026-11-09 (después de la corrida; criterios y predicciones no se tocaron):
+  1. El manifiesto `h3_run_manifest.json` marca `code_dirty: true` con el commit
+     `1d0e800`. La única diferencia de código versionado durante la corrida fue
+     `scripts/analyze_2d.py` (límites de un eje de figura 2D, sin relación con
+     H3): `git diff 1d0e800 -- src scripts/run_h3.py` fue vacío al terminar.
+  2. Después de ver los resultados refactoricé `otsu_clean` (nueva función
+     `clean_report`, mismo comportamiento). Verifiqué que el código nuevo
+     reproduce una fila del barrido guardado (cápsula, t/h = 4, anisotropía 2,
+     realista, réplica 7, los cuatro segmentadores) al nivel de 1e-9.
+  3. `scripts/explore_v02_extras.py` es **exploratorio**: márgenes de H3a y
+     prueba de la limpieza en las 7 formas de H1 con una semilla nueva
+     (20261113). No modifica ningún veredicto de H3/H4. Se escribió porque H3a
+     tuvo un empate y porque la extensión de `otsu_clean` solo usaba formas
+     sin rasgos pequeños reales (ver ERRATA E11).

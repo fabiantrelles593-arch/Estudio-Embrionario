@@ -61,7 +61,24 @@ Cohortes transversales con error de estadificación; estimadores lineales
 bootstrap por especímenes en forma cerrada (la matriz de suavizado es fija en
 diseños balanceados). Ver `PREREGISTRO_H2.md`.
 
-## 8. Reproducibilidad
+## 8. Extensiones de v0.2
+
+* **Área por distancia con signo** (`measure._area_sdf`): superficie de nivel 0
+  de una función de distancia con signo de la máscara (frontera a medio paso
+  entre centros de vóxel), suavizada con σ = 0.5 vóxel, y marching cubes. Evita
+  el encogimiento de objetos pequeños que sufre el suavizado de la máscara
+  (`area_mc`). σ se fijó con un piloto (`scripts/pilot_area_sdf.py`).
+* **Segmentador de extensión `otsu_clean`**: Otsu crudo, elimina componentes de
+  primer plano y rellena cavidades de menos de 8 vóxeles. No pertenece al
+  conjunto preregistrado de H1.
+* **Formas nuevas** (`capsule`, `cylinder`, `oblate`) y modelos congelados
+  (`analysis.fit_frozen_logit`): confirmación H3 (`PREREGISTRO_H3.md`).
+* **Módulo 2D** (`twod.py`): fantomas planos, moteado multiplicativo,
+  circunferencia por elipse, topología (8,4) y (4,8) (`PREREGISTRO_2D.md`).
+* **Procedencia** (`provenance.py`): commit y marca de código modificado.
+* **Veredictos de tres estados**: «apoyada», «no apoyada», «no evaluable».
+
+## 9. Reproducibilidad
 
 Semillas derivadas de la celda con `SeedSequence`: el resultado no depende del
 número de procesos (hay una prueba). Cada ejecución escribe un manifiesto con

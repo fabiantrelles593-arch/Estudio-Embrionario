@@ -42,6 +42,9 @@ def main():
             m = summ[(summ["shape"] == shape) & (summ["profile"] == prof) & (summ["segmenter"] == "smoothed_otsu")]
             ax.plot(m["t_over_h"], 100 * m["median_err_hc"], marker="o", ms=3.5, color=c, label=prof)
         ax.axhspan(-3.3, 3.3, color="0.9", zorder=0); ax.axhline(0, color="0.5", lw=.8)
+        ax.set_ylim(-15, 60)
+        ax.annotate("fuera de escala: hasta +380 % a t/h = 2", xy=(0.97, 0.95), xycoords="axes fraction",
+                    ha="right", va="top", fontsize=7, color="0.35")
         ax.set_title(shape); ax.set_xlabel("t / h (píxeles de grosor)"); fmt_log(ax)
     axs[0].set_ylabel("Error mediano de la circunferencia (%)"); axs[0].legend(fontsize=7, frameon=False)
     fig.suptitle("2D: circunferencia por elipse con suavizado + Otsu (banda gris = ±3.3 %)", y=1.03)

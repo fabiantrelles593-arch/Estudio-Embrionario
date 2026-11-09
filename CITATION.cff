@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "Si usas este software, cítalo como se indica."
 title: "geovida: presupuesto de incertidumbre morfométrica/topológica con fantomas de verdad conocida y banco de pruebas 4D sintético"
-version: 0.1.0
+version: 0.2.0
 date-released: 2026-11-09
 license: MIT
 authors:
