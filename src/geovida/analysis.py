@@ -1,0 +1,129 @@
+"""Análisis preregistrado de H1 (ver docs/PREREGISTRO_H1.md, secciones 4-6)."""
+from __future__ import annotations
+
+import math
+
+import numpy as np
+import pandas as pd
+from scipy.special import expit
+
+PREDICTORS = {
+    "P1": "t_solid_over_hxy", "P2": "t_solid_over_hgeo", "P3": "t_solid_over_hmax",
+    "P4": "t_min_over_hxy", "P5": "t_min_over_hgeo", "P6": "t_min_over_hmax",
+}
+
+
+def wilson_interval(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    if n == 0:
+        return (0.0, 1.0)
+    p = k / n
+    den = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / den
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
+    return (max(0.0, centre - half), min(1.0, centre + half))
+
+
+def find_t_star(levels, p, threshold: float = 0.95) -> float:
+    """Menor nivel con éxito >= umbral en él y en todos los niveles mayores."""
+    levels, p = list(levels), list(p)
+    star = math.nan
+    for lvl, pi in zip(reversed(levels), reversed(p)):
+        if pi >= threshold:
+            star = lvl
+        else:
+            break
+    return star
+
+
+def spread_in_steps(levels, tstars) -> float:
+    """Rango de t/h* medido en pasos de la rejilla (nan si alguno no se alcanzó)."""
+    levels = list(levels)
+    if any(isinstance(t, float) and math.isnan(t) for t in tstars):
+        return math.nan
+    idx = [levels.index(t) for t in tstars]
+    return float(max(idx) - min(idx))
+
+
+def add_predictors(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    f = out["anisotropy"] ** (1.0 / 3.0)
+    out["t_solid_over_hgeo"] = out["t_solid_over_hxy"] / f
+    out["t_min_over_hgeo"] = out["t_min_over_hxy"] / f
+    return out
+
+
+def success_by_level(df: pd.DataFrame, endpoint: str, by: list[str]) -> pd.DataFrame:
+    g = df.groupby(by + ["t_over_h"])[endpoint]
+    tab = g.agg(n="size", k="sum").reset_index()
+    tab["k"] = tab["k"].astype(int)
+    tab["p"] = tab["k"] / tab["n"]
+    ci = [wilson_interval(k, n) for k, n in zip(tab["k"], tab["n"])]
+    tab["wilson_lo"] = [c[0] for c in ci]
+    tab["wilson_hi"] = [c[1] for c in ci]
+    return tab
+
+
+def _fit_logit_ridge(x: np.ndarray, y: np.ndarray, lam: float = 1e-2, iters: int = 100):
+    """Logit de 2 parámetros con ridge mínimo sobre la pendiente (evita la
+    separación perfecta sin sesgar apreciablemente cuando no la hay)."""
+    X = np.column_stack([np.ones_like(x), x])
+    b = np.zeros(2)
+    pen = np.diag([0.0, lam])
+    for _ in range(iters):
+        p = expit(X @ b)
+        w = np.clip(p * (1 - p), 1e-9, None)
+        grad = X.T @ (y - p) - pen @ b
+        hess = X.T @ (X * w[:, None]) + pen
+        step = np.linalg.solve(hess, grad)
+        b = b + step
+        if np.abs(step).max() < 1e-10:
+            break
+    return b, expit(X @ b)
+
+
+def compare_predictors(df: pd.DataFrame, endpoint: str) -> pd.DataFrame:
+    """AIC y pseudo-R² de McFadden de ``Pr(ok) ~ log(P)`` para P1..P6.
+
+    El ajuste es conjunto sobre todas las formas/anisotropías del ``df`` que se
+    pase (el llamador lo estratifica por segmentador y perfil): una curva única
+    que describa todo es justamente la hipótesis de universalidad.
+    """
+    df = add_predictors(df) if "t_solid_over_hgeo" not in df else df
+    y = df[endpoint].to_numpy(dtype=float)
+    p0 = y.mean()
+    ll_null = float(np.sum(y * np.log(max(p0, 1e-12)) + (1 - y) * np.log(max(1 - p0, 1e-12))))
+    rows = []
+    for name, col in PREDICTORS.items():
+        x = np.log(df[col].to_numpy(dtype=float))
+        x = (x - x.mean()) / (x.std() or 1.0)
+        _, p = _fit_logit_ridge(x, y)
+        p = np.clip(p, 1e-12, 1 - 1e-12)
+        ll = float(np.sum(y * np.log(p) + (1 - y) * np.log(1 - p)))
+        rows.append({"predictor": name, "column": col, "n": len(y), "loglik": ll,
+                     "aic": -2 * ll + 4,
+                     "mcfadden": 1 - ll / ll_null if ll_null < 0 else math.nan})
+    return pd.DataFrame(rows)
+
+
+def t_star_table(tab: pd.DataFrame, strata: list[str], threshold: float = 0.95) -> pd.DataFrame:
+    """t/h* (menor nivel con éxito sostenido) por estrato, desde ``success_by_level``."""
+    rows = []
+    for key, g in tab.groupby(strata):
+        g = g.sort_values("t_over_h")
+        key = key if isinstance(key, tuple) else (key,)
+        rows.append({**dict(zip(strata, key)),
+                     "t_star": find_t_star(g["t_over_h"], g["p"], threshold)})
+    return pd.DataFrame(rows)
+
+
+def ratio_spread(values) -> float:
+    """Cociente máx/mín de valores positivos (nan si alguno no se alcanzó).
+
+    Se usa cuando los valores viven en rejillas distintas (p. ej. t_min/h* de
+    formas con distinta razón t_min/t_solid): «≤ un paso de rejilla» se traduce
+    en un cociente ≤ 1.5, el mayor cociente entre niveles adyacentes.
+    """
+    vals = [float(v) for v in values]
+    if any(math.isnan(v) for v in vals):
+        return math.nan
+    return max(vals) / min(vals)

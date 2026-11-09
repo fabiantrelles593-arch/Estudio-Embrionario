@@ -120,6 +120,17 @@ contraste no uniforme ni bordes borrosos reales; un solo tamaño de objeto
 relativo a la rejilla por clase. **Estos resultados no se transfieren a
 embriones reales sin validación con datos reales.**
 
-## 10. Desviaciones
+## 10. Desviaciones y aclaraciones
 
-*(ninguna al momento de la firma)*
+*(ninguna desviación al momento de la firma)*
+
+**A1 — Aclaración operativa (registrada el 2026-11-09 tras terminar el barrido
+y ANTES de abrir sus resultados; solo se inspeccionó el recuento de filas).**
+Las secciones 5 y 6 hablan de «un paso de la rejilla» para comparar t/h\*
+entre formas, anisotropías o segmentadores. Cuando la comparación se hace en
+unidades de t_min/h o t/h_max los valores viven en rejillas distintas (p. ej.
+t_min/t_solid = 0.5 en las clases `*_tight`), de modo que se define: **dos
+valores difieren «a lo sumo un paso» si su cociente máx/mín ≤ 1.5** (el mayor
+cociente entre niveles adyacentes de la rejilla t/h: 3/2, 6/4, 12/8). El
+«≥ 2 pasos» de la sección 6 (H1b) se lee como cociente > 2.25 (1.5²). El
+análisis (`scripts/analyze_h1.py`) aplica exactamente estas reglas.
