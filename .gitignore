@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+# Datos: nunca se versionan datos biológicos ni crudos
+data/raw/
+data/private/
+data/biological/
+data/pending_permission/
+*.tif
+*.tiff
+*.nrrd
+*.npy
+*.npz
+# Resultados voluminosos (los resúmenes pequeños en results/summary/ sí se versionan)
+results/raw/

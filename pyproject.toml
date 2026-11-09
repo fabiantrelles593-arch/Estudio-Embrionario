@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geovida"
+version = "0.1.0"
+description = "Geometría de la Vida: presupuesto de incertidumbre morfométrica/topológica con fantomas de verdad conocida y un banco de pruebas 4D sintético."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Fabián Trelles" }]
+dependencies = [
+  "numpy>=2.0",
+  "scipy>=1.13",
+  "scikit-image>=0.24",
+  "pandas>=2.2",
+  "matplotlib>=3.8",
+  "statsmodels>=0.14",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+  "ignore:Setting the shape on a NumPy array:DeprecationWarning",
+]
