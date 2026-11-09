@@ -95,7 +95,8 @@
       "v_ok": NaN,
       "topology_ok": 1.5
     },
-    "supported": false
+    "supported": false,
+    "status": "no apoyada"
   },
   "H1d": {
     "v_ok": {
@@ -116,7 +117,8 @@
       "torus_tight": 2.6666666666666665,
       "tube": 1.3333333333333333
     },
-    "supported": false
+    "supported": false,
+    "status": "no apoyada"
   },
   "horner_consistency": {
     "median_abs_diameter_error_by_t_over_h": {

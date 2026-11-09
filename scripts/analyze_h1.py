@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 
 from geovida.analysis import (
-    add_predictors, compare_predictors, ratio_spread, success_by_level, t_star_table,
+    add_predictors, compare_predictors, ratio_spread, status_label, success_by_level,
+    t_star_table, tristate_all,
 )
 
 OKABE = ["#0072B2", "#D55E00", "#009E73", "#CC79A7", "#E69F00", "#56B4E9", "#000000"]
@@ -115,16 +116,18 @@ def main():
         v = [x for x in d.values()]
         return math.nan if any(math.isnan(x) for x in v) else max(v)
     h1c["max_spread_hmax"] = {ep: finite_max(h1c[ep]["max_ratio_spread_hmax_predictor"]) for ep in ("v_ok", "topology_ok")}
-    verdict["H1c"] = {**h1c, "supported": bool(ok_aic and all(
-        not math.isnan(v) and v <= STEP for v in h1c["max_spread_hmax"].values()))}
+    spreads_all = [x for ep in ("v_ok", "topology_ok")
+                   for x in h1c[ep]["max_ratio_spread_hmax_predictor"].values()]
+    h1c_state = False if not ok_aic else tristate_all(spreads_all, lambda v: v <= STEP)
+    verdict["H1c"] = {**h1c, "supported": bool(h1c_state is True), "status": status_label(h1c_state)}
     # H1d: segmentadores (perfil ideal, a=1)
     h1d = {}
     for name, ts, pcol in (("v_ok", ts_v, "P1"), ("topology_ok", ts_t, "P4")):
         sub = ts[(ts.profile == "ideal") & (ts.anisotropy == 1.0)]
         h1d[name] = {s: ratio_spread(g[pcol]) for s, g in sub.groupby("shape")}
+    h1d_state = tristate_all([x for d in h1d.values() for x in d.values()], lambda x: x <= STEP)
     verdict["H1d"] = {**{k: v for k, v in h1d.items()},
-                      "supported": bool(all((not math.isnan(x)) and x <= STEP
-                                            for d in h1d.values() for x in d.values()))}
+                      "supported": bool(h1d_state is True), "status": status_label(h1d_state)}
     # Chequeo de consistencia (Horner-like)
     b = df[(df["shape"] == "ball") & (df.profile == "ideal") & (df.anisotropy == 1.0)
            & (df.segmenter == "global")].copy()

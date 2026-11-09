@@ -154,3 +154,21 @@ def test_calibration_error_is_small_for_the_true_model_and_large_for_a_shifted_o
 
 def test_x_at_probability_is_nan_for_a_flat_curve():
     assert np.isnan(x_at_probability({"intercept": 0.0, "slope": 0.0}, 0.95))
+
+
+# --- v0.2: un valor no calculable es "no evaluable", no "falsada" -------------
+from geovida.analysis import status_label, tristate_all
+
+
+def test_tristate_all_distinguishes_failure_from_missing_evidence():
+    ok = lambda v: v <= 1.5
+    assert tristate_all([1.0, 1.4], ok) is True
+    assert tristate_all([1.0, 2.0], ok) is False
+    assert tristate_all([1.0, float("nan")], ok) is None
+    assert tristate_all([2.0, float("nan")], ok) is False  # ya hay un incumplimiento
+
+
+def test_status_label_maps_the_three_states():
+    assert status_label(True) == "apoyada"
+    assert status_label(False) == "no apoyada"
+    assert status_label(None) == "no evaluable"

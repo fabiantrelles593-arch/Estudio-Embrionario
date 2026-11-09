@@ -188,3 +188,20 @@ def x_at_probability(model: dict, prob: float = 0.95) -> float:
     if abs(model["slope"]) < 1e-9:
         return math.nan
     return float(math.exp((math.log(prob / (1 - prob)) - model["intercept"]) / model["slope"]))
+
+
+def tristate_all(values, ok) -> bool | None:
+    """True si todos los valores cumplen ``ok``; False si alguno finito no lo
+    cumple; None («no evaluable») si no hay incumplimiento pero falta evidencia (NaN).
+
+    Corrige un defecto de v0.1: un NaN se contaba como «no apoyada».
+    """
+    vals = list(values)
+    finite = [v for v in vals if not (isinstance(v, float) and math.isnan(v))]
+    if any(not ok(v) for v in finite):
+        return False
+    return None if len(finite) < len(vals) else True
+
+
+def status_label(state: bool | None) -> str:
+    return "no evaluable" if state is None else ("apoyada" if state else "no apoyada")
