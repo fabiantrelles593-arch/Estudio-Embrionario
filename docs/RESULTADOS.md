@@ -6,6 +6,12 @@ medida y del método de estadificación, **no sobre embriones reales**. Criterio
 y predicciones se fijaron antes de ejecutar (`PREREGISTRO_H1.md`,
 `PREREGISTRO_H2.md`); lo exploratorio está marcado como tal.
 
+> **Actualización (v0.2).** Este documento describe v0.1. Dos cosas cambiaron:
+> (1) H1c figura ahora como **falsada** (antes «parcial»; ver `ERRATA.md` E7);
+> (2) los pasos 1–3 de la sección 8 ya se ejecutaron: Q se confirmó en formas
+> nuevas, hay un estimador de área nuevo y una limpieza mínima con sus límites.
+> Resultados en [`RESULTADOS_V02.md`](RESULTADOS_V02.md).
+
 ## 1. Resumen
 
 1. **Topología (H1b, confirmada)**: la topología correcta depende del **rasgo
