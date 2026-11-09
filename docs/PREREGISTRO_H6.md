@@ -89,4 +89,21 @@ forma; (iii) comportamiento a t/h ≤ 2.
 
 ## 6. Desviaciones
 
-(Ninguna al momento de este commit.)
+(Ninguna al momento del primer commit.)
+
+- 2026-11-09 (después de la calibración y antes del barrido de confirmación; nada de lo anterior
+  se tocó):
+  1. **Aclaración sobre la entropía cruzada.** El preregistro fija p = 0 para una variable no
+     medible pero no decía cómo evaluar la entropía cruzada con p = 0 (log 0). Se recorta la
+     probabilidad a [0.001, 0.999] **solo** para la entropía cruzada (`h6.P_FLOOR`); el semáforo y
+     el verde falso siguen usando p = 0. Se escribió antes de analizar la calibración.
+  2. **Se retiró `scripts/freeze_h6_models.py`**: ajustaba sobre los datos de H3 con un diseño que
+     el piloto descartó (ver §1) y escribía en el mismo archivo que ahora produce
+     `scripts/calibrate_h6.py`.
+  3. **Resultado de la calibración** (semilla 20261116, 37 800 filas, `code_dirty: false`, commit
+     `db7e37c`): la validación cruzada eligió **F2** (profundidad media): entropía cruzada media
+     0.245 frente a 0.377 de F1; F2 gana en 5 de 6 estratos (en `otsu · realistic` F1 es
+     ligeramente mejor: 0.202 frente a 0.213). Las seis pendientes son positivas (5.7 a 12.5).
+     Mi predicción de que F2 ganaría (70 %) se cumplió.
+  4. El barrido de calibración tardó 737 s (no ~6 min): el de confirmación (40 réplicas) tardará
+     ~16 min.
