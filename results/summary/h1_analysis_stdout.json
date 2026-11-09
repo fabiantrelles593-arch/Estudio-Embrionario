@@ -1,0 +1,133 @@
+{
+  "H1a": {
+    "t_star_by_shape": {
+      "ball": 8.0,
+      "ellipsoid": 6.0,
+      "shell": 2.0,
+      "shell_tight": 3.0,
+      "torus": 4.0,
+      "torus_tight": 4.0,
+      "tube": 2.0
+    },
+    "all_reached": true,
+    "max_t_star": 8.0,
+    "ratio_spread_t_solid": 4.0,
+    "supported": false
+  },
+  "H1b": {
+    "t_star_by_shape_in_t_solid_over_h": {
+      "ball": 2.0,
+      "ellipsoid": 1.5,
+      "shell": 1.5,
+      "shell_tight": 4.0,
+      "torus": 1.5,
+      "torus_tight": 3.0,
+      "tube": 1.5
+    },
+    "t_min_over_h_star_by_shape": {
+      "ball": 2.0,
+      "ellipsoid": 1.5,
+      "shell": 1.5,
+      "shell_tight": 2.0,
+      "torus": 1.5,
+      "torus_tight": 1.5,
+      "tube": 1.5
+    },
+    "ratio_spread_t_min": 1.3333333333333333,
+    "ratio_spread_t_solid": 2.6666666666666665,
+    "supported": true,
+    "solid_predictor_spread_ge_2_steps_as_expected": true
+  },
+  "H1c": {
+    "v_ok": {
+      "max_ratio_spread_hmax_predictor": {
+        "ball": NaN,
+        "ellipsoid": 1.5,
+        "shell": 2.0,
+        "shell_tight": 1.5,
+        "torus": 1.5,
+        "torus_tight": 1.5,
+        "tube": 2.0
+      },
+      "max_ratio_spread_hxy_predictor": {
+        "ball": NaN,
+        "ellipsoid": 2.0,
+        "shell": 1.5,
+        "shell_tight": 2.0,
+        "torus": 2.0,
+        "torus_tight": 2.0,
+        "tube": 1.5
+      }
+    },
+    "topology_ok": {
+      "max_ratio_spread_hmax_predictor": {
+        "ball": 1.5,
+        "ellipsoid": 1.5,
+        "shell": 1.5,
+        "shell_tight": 1.5,
+        "torus": 1.125,
+        "torus_tight": 1.5,
+        "tube": 1.5
+      },
+      "max_ratio_spread_hxy_predictor": {
+        "ball": 2.0,
+        "ellipsoid": 2.0,
+        "shell": 2.0,
+        "shell_tight": 2.0,
+        "torus": 2.6666666666666665,
+        "torus_tight": 2.0,
+        "tube": 2.0
+      }
+    },
+    "delta_aic_ref": {
+      "v_ok": {
+        "P3_minus_P1": -386.9046278801143,
+        "P6_minus_P4": -834.4651935864822,
+        "best": "P2"
+      },
+      "topology_ok": {
+        "P3_minus_P1": -1275.669625716644,
+        "P6_minus_P4": -1669.8650211822733,
+        "best": "P5"
+      }
+    },
+    "max_spread_hmax": {
+      "v_ok": NaN,
+      "topology_ok": 1.5
+    },
+    "supported": false
+  },
+  "H1d": {
+    "v_ok": {
+      "ball": NaN,
+      "ellipsoid": 2.0,
+      "shell": 4.0,
+      "shell_tight": 2.0,
+      "torus": 3.0,
+      "torus_tight": 3.0,
+      "tube": 4.0
+    },
+    "topology_ok": {
+      "ball": 1.3333333333333333,
+      "ellipsoid": 1.0,
+      "shell": 1.0,
+      "shell_tight": 2.0,
+      "torus": 2.0,
+      "torus_tight": 2.6666666666666665,
+      "tube": 1.3333333333333333
+    },
+    "supported": false
+  },
+  "horner_consistency": {
+    "median_abs_diameter_error_by_t_over_h": {
+      "1.5": 0.17286601213413322,
+      "2.0": 0.10529977106035038,
+      "3.0": 0.027565581469093825,
+      "4.0": 0.015254978157303367,
+      "6.0": 0.008482899872564564,
+      "8.0": 0.0038476506414460987,
+      "12.0": 0.002133498022052982
+    },
+    "pass_ge_6": true
+  }
+}

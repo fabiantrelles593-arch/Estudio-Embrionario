@@ -127,3 +127,20 @@ def ratio_spread(values) -> float:
     if any(math.isnan(v) for v in vals):
         return math.nan
     return max(vals) / min(vals)
+
+
+def add_vq_predictors(df: pd.DataFrame) -> pd.DataFrame:
+    """Predictor EXPLORATORIO (post hoc, no preregistrado): Q = V / (S h).
+
+    Es la «longitud volumen/área» del objeto en unidades de vóxel (r/3 en una
+    bola). El error relativo del conteo de vóxeles escala con (S/V)·h, no con el
+    grosor. Requiere que la unidad de longitud sea t = 1 (como en el barrido),
+    de modo que h_xy = 1 / t_over_h.
+    """
+    out = df.copy()
+    h_xy = 1.0 / out["t_over_h"]
+    q = out["volume_true"] / out["area_true"]
+    out["q_over_hxy"] = q / h_xy
+    out["q_over_hgeo"] = q / (h_xy * out["anisotropy"] ** (1.0 / 3.0))
+    out["q_over_hmax"] = q / (h_xy * out["anisotropy"])
+    return out

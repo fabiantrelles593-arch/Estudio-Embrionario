@@ -24,6 +24,17 @@ def _ref(df):
               & (df.segmenter == REF["segmenter"])]
 
 
+def fmt_log(fig):
+    """Etiquetas legibles (0.5, 1, 2, 4...) en ejes logarítmicos."""
+    from matplotlib import ticker
+    for ax in fig.axes:
+        if ax.get_xscale() == "log":
+            ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda v, _: f"{v:g}"))
+            ax.xaxis.set_minor_formatter(ticker.NullFormatter())
+            lo, hi = ax.get_xlim()
+            ax.set_xticks([t for t in (0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 20) if lo <= t <= hi])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--raw", default="results/raw/h1_sweep.csv.gz")
@@ -147,7 +158,7 @@ def main():
         ax.set_xlabel("t / h_xy (vóxeles por grosor)")
     axs[0].set_ylabel("Error mediano de volumen (%)"); axs[0].legend(fontsize=7, frameon=False)
     fig.suptitle("Error de volumen vs resolución (perfil ideal, vóxel isótropo); banda gris = ±5 %", y=1.02)
-    fig.tight_layout(); fig.savefig(figs / "h1_volume_error.png", dpi=150, bbox_inches="tight"); plt.close(fig)
+    fmt_log(fig); fig.tight_layout(); fig.savefig(figs / "h1_volume_error.png", dpi=150, bbox_inches="tight"); plt.close(fig)
 
     fig, axs = plt.subplots(1, 2, figsize=(9, 3.4), sharey=True)
     for ax, (pcol, lab) in zip(axs, [("t_solid_over_hxy", "t_solid / h_xy"), ("t_min_over_hxy", "t_min / h_xy")]):
@@ -157,7 +168,7 @@ def main():
         ax.axhline(0.95, color="0.6", ls=":"); ax.set_xscale("log"); ax.set_xlabel(lab)
     axs[0].set_ylabel("Topología correcta (proporción)"); axs[1].legend(fontsize=7, frameon=False)
     fig.suptitle("¿Colapsan las clases de forma? (ideal, isótropo, umbral oráculo)", y=1.02)
-    fig.tight_layout(); fig.savefig(figs / "h1_topology_collapse_shape.png", dpi=150, bbox_inches="tight"); plt.close(fig)
+    fmt_log(fig); fig.tight_layout(); fig.savefig(figs / "h1_topology_collapse_shape.png", dpi=150, bbox_inches="tight"); plt.close(fig)
 
     fig, axs = plt.subplots(1, 2, figsize=(9, 3.4), sharey=True)
     base = df[(df.profile == "ideal") & (df.segmenter == "global")]
@@ -168,7 +179,7 @@ def main():
         ax.axhline(0.95, color="0.6", ls=":"); ax.set_xscale("log"); ax.set_xlabel(lab)
     axs[0].set_ylabel("Topología correcta (proporción)"); axs[1].legend(fontsize=7, frameon=False)
     fig.suptitle("¿Colapsa la anisotropía con el vóxel peor? (cada punto = forma x nivel)", y=1.02)
-    fig.tight_layout(); fig.savefig(figs / "h1_topology_collapse_anisotropy.png", dpi=150, bbox_inches="tight"); plt.close(fig)
+    fmt_log(fig); fig.tight_layout(); fig.savefig(figs / "h1_topology_collapse_anisotropy.png", dpi=150, bbox_inches="tight"); plt.close(fig)
 
     fig, axs = plt.subplots(1, 2, figsize=(9, 3.4), sharey=True)
     for ax, prof in zip(axs, ["ideal", "realistic"]):
@@ -179,7 +190,7 @@ def main():
         ax.axhspan(-5, 5, color="0.9", zorder=0); ax.set_xscale("log"); ax.set_title(f"elipsoide, perfil {prof}")
         ax.set_xlabel("t / h_xy")
     axs[0].set_ylabel("Error de volumen (%) mediana e IQR"); axs[0].legend(fontsize=7, frameon=False)
-    fig.tight_layout(); fig.savefig(figs / "h1_segmenter_bias.png", dpi=150, bbox_inches="tight"); plt.close(fig)
+    fmt_log(fig); fig.tight_layout(); fig.savefig(figs / "h1_segmenter_bias.png", dpi=150, bbox_inches="tight"); plt.close(fig)
 
     print(json.dumps(verdict, indent=2, default=float))
 

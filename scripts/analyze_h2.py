@@ -25,6 +25,17 @@ def one(df, col, **kw):
     return float(sel[col].iloc[0])
 
 
+def fmt_log(fig):
+    """Etiquetas legibles (0.5, 1, 2, 4...) en ejes logarítmicos."""
+    from matplotlib import ticker
+    for ax in fig.axes:
+        if ax.get_xscale() == "log":
+            ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda v, _: f"{v:g}"))
+            ax.xaxis.set_minor_formatter(ticker.NullFormatter())
+            lo, hi = ax.get_xlim()
+            ax.set_xticks([t for t in (0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 20) if lo <= t <= hi])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cells", default="results/summary/h2_cells.csv")
@@ -93,7 +104,7 @@ def main():
         ax.axhline(0, color="0.5", lw=.8); ax.axhspan(-5, 5, color="0.93", zorder=0); ax.set_title(f)
         ax.set_xlabel("etapa nominal")
     axs[0].set_ylabel("Sesgo relativo (%) — σ_s = 0.5, n = 20"); axs[2].legend(fontsize=7, frameon=False)
-    fig.tight_layout(); fig.savefig(figs / "h2_bias_by_stage.png", dpi=150, bbox_inches="tight"); plt.close(fig)
+    fmt_log(fig); fig.tight_layout(); fig.savefig(figs / "h2_bias_by_stage.png", dpi=150, bbox_inches="tight"); plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(5, 3.4))
     for sg, c in zip((0.0, 0.1, 0.25, 0.5), OKABE):
@@ -103,7 +114,7 @@ def main():
     ax.axhline(95, color="0.5", ls=":"); ax.set_xscale("log"); ax.set_xlabel("especímenes por etapa (n)")
     ax.set_ylabel("Cobertura del IC bootstrap al 95 % (%)"); ax.legend(fontsize=7, frameon=False)
     ax.set_title("Transición ('switch'): más n, más engañoso")
-    fig.tight_layout(); fig.savefig(figs / "h2_coverage_vs_n.png", dpi=150, bbox_inches="tight"); plt.close(fig)
+    fmt_log(fig); fig.tight_layout(); fig.savefig(figs / "h2_coverage_vs_n.png", dpi=150, bbox_inches="tight"); plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(5, 3.4))
     for est, ratio, c, lab in (("stage_mean", 1.0, OKABE[0], "media por etapa"),
@@ -114,7 +125,7 @@ def main():
     ax.set_xscale("log"); ax.set_yscale("log"); ax.set_xlabel("especímenes por etapa (n)")
     ax.set_ylabel("RMSE relativo integrado (%)"); ax.legend(fontsize=7, frameon=False)
     ax.set_title("Costo de corregir: varianza (σ_s = 0.5, switch)")
-    fig.tight_layout(); fig.savefig(figs / "h2_irmse_vs_n.png", dpi=150, bbox_inches="tight"); plt.close(fig)
+    fmt_log(fig); fig.tight_layout(); fig.savefig(figs / "h2_irmse_vs_n.png", dpi=150, bbox_inches="tight"); plt.close(fig)
     print(json.dumps(v, indent=2))
 
 

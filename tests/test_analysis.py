@@ -97,3 +97,15 @@ def test_t_star_table_per_stratum_and_ratio_spread():
     assert tight > ball
     assert ratio_spread([3.0, 4.0, 3.0]) == pytest.approx(4 / 3)
     assert np.isnan(ratio_spread([3.0, np.nan]))
+
+
+def test_volume_to_area_length_predictor_for_the_ball():
+    from geovida.analysis import add_vq_predictors
+    # Bola de t = 1 (r = 0.5): V/S = r/3. Con h_xy = 1/6 -> Q_xy = (1/6)/(1/6) = 1.
+    df = pd.DataFrame({"t_over_h": [6.0, 6.0], "anisotropy": [1.0, 3.0],
+                       "volume_true": [4 / 3 * np.pi * 0.125] * 2,
+                       "area_true": [4 * np.pi * 0.25] * 2})
+    out = add_vq_predictors(df)
+    assert out["q_over_hxy"].iloc[0] == pytest.approx(1.0)
+    assert out["q_over_hgeo"].iloc[1] == pytest.approx(1.0 / 3 ** (1 / 3))
+    assert out["q_over_hmax"].iloc[1] == pytest.approx(1.0 / 3.0)
