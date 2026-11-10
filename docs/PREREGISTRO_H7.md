@@ -79,3 +79,14 @@ t/h ≤ 4 en `ring_tight`; el perfil `us_raw`; el informe de qué se borra (`cle
 ## 6. Desviaciones
 
 (Ninguna al momento de este commit.)
+
+- 2026-11-09 (antes de correr `scripts/run_h7.py`; los criterios de §3 no se tocan):
+  1. **El código del piloto no estaba versionado** y se perdió al reciclarse el contenedor de
+     trabajo. `twod._clean_mask_2d` se escribió de nuevo siguiendo la regla de §1, con pruebas.
+     Los números del piloto de §1 no se han vuelto a comprobar con el código nuevo.
+  2. **Detalles que la regla no fijaba y se fijan ahora:** A es el área (en píxeles) del
+     componente mayor de la máscara de entrada; «menores que» es estricto (un componente de
+     exactamente el umbral se conserva); primero se quitan los componentes y después se rellenan
+     los huecos de la máscara resultante.
+  3. `ring_tight` se añade como `EXTRA_2D` sin mover los índices de semilla de las tres formas
+     de H5 (una prueba lo comprueba).

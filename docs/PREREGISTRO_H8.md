@@ -77,3 +77,16 @@ solo las verdes; (iii) percentil 90 del error y fracción de series en que `no_r
 ## 6. Desviaciones
 
 (Ninguna al momento de este commit.)
+
+- 2026-11-09 (antes de correr `scripts/run_h8.py`; los criterios de §3 no se tocan):
+  1. **El código del piloto no estaba versionado** y se perdió al reciclarse el contenedor de
+     trabajo. `geovida/growth.py` se escribió de nuevo siguiendo este documento, con pruebas
+     (incluida una regresión del fallo que el piloto detectó: `all` no descarta las rojas).
+     Los números del piloto de §1 no se han vuelto a comprobar con el código nuevo.
+  2. **Aclaración: etapa con máscara vacía.** Una etapa cuyo volumen medido es 0 no tiene
+     logaritmo, así que no entra en ningún ajuste, tampoco en `all` («todas las etapas» = todas
+     las de volumen positivo). Si quedan menos de 3, la tasa es NaN.
+  3. **Aclaración: cómo se puntúa la regla de 100 vóxeles** (extensión (i) y su predicción): con
+     las medianas **pareadas**, sobre las series en que las dos reglas tienen tasa definida, y se
+     informa además qué fracción de series deja sin tasa cada regla.
+  4. **Semilla por etapa:** `SeedSequence([20261119, forma, anisotropía, perfil, réplica, etapa])`.
