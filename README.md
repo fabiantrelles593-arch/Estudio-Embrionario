@@ -55,12 +55,12 @@ Cada prueba fijó criterios y predicciones en git **antes** de ejecutarse. Detal
 | H6 (v0.3) | ¿Puede saber, sin la verdad, si su volumen es fiable? | **5 de 5.** Verde falso 0.4–2.6 % |
 | H7 (v0.3) | ¿Arregla la topología 2D una limpieza que escala con el objeto? | 1 de 3 |
 | H8 (v0.3) | ¿Mejora la tasa de crecimiento 4D al descartar las etapas en rojo? | **3 de 3.** Error mediano de 3–64 % a 1–2 %; con suavizado, 70–89 % de series sin tasa |
-| H9 (v0.4) | ¿Puede saber si la topología medida es correcta? | H9_RESULT |
-| H10 (v0.4) | ¿Se da cuenta de que una imagen está fuera de su calibración? | H10_RESULT |
+| H9 (v0.4) | ¿Puede saber si la topología medida es correcta? | **Primaria apoyada** (verde falso ≤ 7.0 % en los 6 estratos; ≤ 7.8 % con formas nuevas). 4 de 6 apoyadas, 1 parcial, 1 no: sin guardia, 2 de 8 estratos de imágenes desplazadas superan 10 % |
+| H10 (v0.4) | ¿Se da cuenta de que una imagen está fuera de su calibración? | **4 de 4.** Sin guardia, el semáforo de volumen daba hasta 97 % de verdes falsos con el doble de ruido; con guardia, 10 de 12 estratos quedan sin verdes y los otros 2 en ≤ 4.1 %. Deja pasar 28 verdes con 21 % de falsas en un caso |
 
 Documentos: [`RESULTADOS.md`](docs/RESULTADOS.md) (v0.1), [`RESULTADOS_V02.md`](docs/RESULTADOS_V02.md),
 [`RESULTADOS_V03.md`](docs/RESULTADOS_V03.md), [`RESULTADOS_V04.md`](docs/RESULTADOS_V04.md),
-[`ERRATA.md`](docs/ERRATA.md) (22 errores propios, con causa y prevención) y
+[`ERRATA.md`](docs/ERRATA.md) (23 errores propios, con causa y prevención) y
 [`ANTECEDENTES_V04.md`](docs/ANTECEDENTES_V04.md) (qué existe ya en la literatura).
 
 ## Lo que este proyecto NO afirma

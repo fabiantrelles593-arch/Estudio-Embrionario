@@ -142,3 +142,7 @@ separado.
 ## 6. Desviaciones
 
 (Ninguna al momento del primer commit.)
+
+* **10-11, antes de analizar:** en H9g escribí «24 = 3 segmentadores × 4 perfiles»; 3 × 4 son
+  **12** estratos. El criterio («verde falso ≤ 0.10 en todos los estratos evaluables de `shift`»)
+  no cambia; solo la cuenta. Es la errata E23.

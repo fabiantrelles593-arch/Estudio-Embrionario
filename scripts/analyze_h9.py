@@ -103,9 +103,10 @@ def main():
             d = d.set_index("profile").reindex(SHIFT_ORDER)
             ax.bar(xs - 0.2, 100 * d[cols[0]].fillna(0), 0.4, color="#D55E00", label="sin guardia")
             ax.bar(xs + 0.2, 100 * d[cols[1]].fillna(0), 0.4, color="#0072B2", label="con guardia")
+            tops = 100 * d[[cols[0], cols[1]]].fillna(0).max(axis=1)
             for k, n in enumerate(d[cols[2]].fillna(0).astype(int)):
-                ax.text(xs[k] + 0.2, 2, f"n={n}", ha="center", va="bottom", fontsize=6,
-                        rotation=90, color="0.2")
+                ax.text(xs[k], tops.iloc[k] + 2, f"n={n}", ha="center", va="bottom", fontsize=6.5,
+                        color="0.2")
             ax.axhline(10, color="0.3", ls="--", lw=1)
             ax.set_title(f"{seg} · {title}", fontsize=8)
             ax.set_xticks(xs)

@@ -1,0 +1,7 @@
+stratum,n,p_ok,auc,ece,logloss,auc_baseline,logloss_baseline,false_green_baseline,n_green_baseline,coverage_baseline,logloss_no_scale,n_green,false_green,fg_lo,fg_hi,coverage,retained_topology,retained_volume,evaluable,h9b_auc,h9c_ece,h9d_ok,h9e_better,h10d_scale_helps
+global|ideal,3150,0.8654,0.9206,0.0134,0.221,0.8415,0.2833,0.0346,1733,0.6137,0.2246,2223,0.0283,0.0222,0.0361,0.7924,0.9753,0.9866,True,True,True,True,True,True
+global|realistic,3150,0.8244,0.817,0.0412,0.3311,0.7758,0.3757,0.0428,1145,0.422,0.3329,1667,0.0702,0.0589,0.0835,0.5968,0.9556,0.9619,True,False,True,True,True,True
+otsu|ideal,3150,0.8937,0.9059,0.0102,0.1936,0.7413,0.301,0.0389,1749,0.5972,0.22,2246,0.0218,0.0165,0.0287,0.7805,0.9835,0.9948,True,True,True,True,True,True
+otsu|realistic,3150,0.5127,0.9797,0.0144,0.1371,0.8755,0.4678,0.1655,562,0.2904,0.1592,1407,0.032,0.024,0.0425,0.8433,0.9524,0.9661,True,True,True,True,True,True
+smoothed_otsu|ideal,3150,0.813,0.8167,0.0372,0.3369,0.6465,0.46,0.0627,542,0.1984,0.3689,1233,0.0041,0.0017,0.0095,0.4795,0.9854,0.9853,True,False,True,True,True,True
+smoothed_otsu|realistic,3150,0.6956,0.9171,0.0339,0.2796,0.8013,0.4918,0.079,823,0.346,0.3044,1203,0.0075,0.0039,0.0142,0.545,0.9659,0.962,True,True,True,True,True,True
