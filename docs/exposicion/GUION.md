@@ -7,7 +7,7 @@ dentro: la tecla **G** lo muestra lámina por lámina.
 
 1. Abre `exposicion-geovida.html` en el navegador del computador que vas a proyectar. No necesita
    internet. Pantalla completa con F11.
-2. Pulsa «Ejecutar la prueba» (lámina 8) una vez, solo para comprobar que corre (5–7 segundos).
+2. Pulsa «Ejecutar la prueba» (lámina 7) una vez, solo para comprobar que corre (5–7 segundos).
 3. Mira que la demostración 1 muestre el cubo rojo de 2 vóxeles: es el punto de partida.
 4. Ten abierta la tecla G para leer las notas de cada lámina si te pierdes.
 
@@ -19,12 +19,12 @@ dentro: la tecla **G** lo muestra lámina por lámina.
 | 3–4 | Por qué importa; pregunta, hipótesis y variables | 2 min |
 | 5 | La solución en tres ideas | 2 min |
 | 6 | Demostración 1: el semáforo en vivo | 2 min |
-| 7–8 | **Demostración 2: la prueba de que funciona** (200 objetos al azar) | 2 min |
-| 9–11 | Demostraciones 3, 4 y 5: volumen y forma, crecimiento 4D, eje de escala | 3 min |
-| 12–14 | Resultados, lo que salió mal, límites | 2 min |
-| 15 | Impacto y siguiente paso | 1 min |
-| 16–19 | Glosario, cuestionario, preguntas del jurado: para estudio o para el turno de preguntas | — |
-| 20 | Cierre | 1 min |
+| 7 | **Demostración 2: la prueba de que funciona** (200 objetos al azar) | 2 min |
+| 8–10 | Demostraciones 3, 4 y 5: volumen y forma, crecimiento 4D, eje de escala | 3 min |
+| 11–13 | Resultados, lo que salió mal, límites | 2 min |
+| 14 | Impacto y siguiente paso | 1 min |
+| 15–17 | Glosario, cuestionario, preguntas del jurado: para estudio o para el turno de preguntas | — |
+| 18 | Cierre | 1 min |
 
 (Los números de lámina pueden cambiar si el mazo se amplía; los títulos de la barra inferior son
 la referencia.)
@@ -36,7 +36,7 @@ la referencia.)
    cuándo no fiarse de una medida, sin necesitar la respuesta.
 3. Las reglas y las predicciones se escriben antes, y lo que sale mal también se publica.
 
-## Qué decir de la prueba en vivo (lámina 8)
+## Qué decir de la prueba en vivo (lámina 7)
 
 * Usa imágenes ideales, sin ruido, y umbral fijo: es la configuración más simple del proyecto.
 * En cuatro corridas de prueba dio entre 2,2 % y 3,8 % de luces verdes falsas; el experimento
