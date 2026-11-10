@@ -63,8 +63,13 @@ def main():
         ax.set_xlabel("etapa (grosor en vóxeles)")
     for ax in axs[:, 0]:
         ax.set_ylabel("proporción de etapas  (barras)")
-    axs[0, 0].legend(fontsize=7, frameon=False, loc="upper left")
-    fig.suptitle("H8: luz del semáforo en cada etapa de una serie que crece con vóxel fijo", y=1.0)
+    for ax in axs.ravel():
+        ax.set_ylim(0, 1)
+    handles, labels = axs[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, ncol=3, loc="lower center",
+               bbox_to_anchor=(0.5, -0.04))
+    fig.suptitle("H8: luz del semáforo en cada etapa de una serie que crece con vóxel fijo "
+                 "(sesgo recortado a ±100 %)", y=1.0)
     fig.tight_layout()
     fig.savefig(FIG / "h8_lights_by_stage.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -79,12 +84,10 @@ def main():
     for i, (lab, col, c) in enumerate(series):
         ax.bar(x + (i - 1) * w, 100 * strata[col], width=w, color=c, label=lab)
     ax.axhline(5, color="0.3", ls="--", lw=1)
-    for xi, r in zip(x, res["strata"]):
-        ax.text(xi, ax.get_ylim()[1] * 0.02, f"sin tasa: {100 * r['frac_undefined']:.0f} %",
-                ha="center", va="bottom", fontsize=7, rotation=90, color="0.25")
     ax.set_yscale("log")
     ax.set_xticks(x)
-    ax.set_xticklabels([k.replace("|", " · ") for k in keys], rotation=15, ha="right")
+    ax.set_xticklabels([f"{k.replace('|', ' · ')}\nseries sin tasa: {100 * r['frac_undefined']:.0f} %"
+                        for k, r in zip(keys, res["strata"])], fontsize=8)
     ax.set_ylabel("error mediano de la tasa (%)")
     ax.legend(fontsize=7, frameon=False)
     ax.set_title(f"H8: error de la tasa de crecimiento (verdad = {TRUE_RATE:.3f} por etapa); "

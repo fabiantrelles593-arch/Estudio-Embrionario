@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import itertools
 
+from .domain import domain_observables
 from .experiment import ANISOTROPY, H6_SHAPES, PROFILES, SHIFT_PROFILES, T_OVER_H, Condition
 from .phantoms import NEW_NAMES
 from .scaleaxis import scale_observables
@@ -27,7 +28,7 @@ H9_TEST_SEED = 20261124
 H9_SHIFT_SEED = 20261125
 
 OBSERVABLE_COLUMNS = ("tau_dil", "tau_ero", "m_lo", "m_hi", "contrast_hat",
-                      "dv1", "dv2", "u_v1", "u_v2", "a1", "a2")
+                      "dv1", "dv2", "u_v1", "u_v2", "a1", "a2", "snr_hat", "edge_width")
 
 
 def _design(shapes, profiles, n_reps: int) -> list[Condition]:
@@ -53,4 +54,5 @@ def cert_extra(image, spacing, mask, seg_name, meas) -> dict:
     out = topological_margin(mask, spacing)
     out.update(intensity_margin(image, spacing, seg_name))
     out.update(scale_observables(image, spacing, seg_name, mask0=mask))
+    out.update(domain_observables(image, mask, spacing, meas["area_sdf"]))
     return out
