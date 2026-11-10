@@ -13,8 +13,8 @@
     ["H6 · v0.3", "¿Puede el instrumento saber, sin conocer la verdad, si su volumen es fiable?", "5 de 5", "ok", "Semáforo por profundidad media. En verde se equivoca entre 0.4 y 2.6 % de las veces. Es el que usa esta página."],
     ["H7 · v0.3", "¿Arregla la topología 2D una limpieza que escala con el objeto?", "1 de 3", "bad", "Ayuda (hasta +82 puntos) pero cierra el margen solo en 8 de 18 casos. Con imagen ideal borra huecos reales pequeños."],
     ["H8 · v0.3", "¿Mejora la tasa de crecimiento si se descartan las etapas en rojo?", "3 de 3", "ok", "El error mediano baja de entre 3 y 64 % a entre 1 y 2 %. Con el segmentador suavizado, 70–89 % de las series se quedan sin tasa."],
-    ["H9 · v0.4", "¿Puede saber si la topología medida es correcta?", "en curso", "mid", "Semáforo topológico por margen de persistencia. Preregistrado; la confirmación está corriendo."],
-    ["H10 · v0.4", "¿Se da cuenta de que una imagen está fuera de su calibración?", "en curso", "mid", "En el piloto, el semáforo de H6 dio hasta 97 % de luces verdes falsas con el doble de ruido. La guardia de dominio se está probando."],
+    ["H9 · v0.4", "¿Puede saber si la topología medida es correcta?", "4 de 6", "mid", "En verde, la topología falla como máximo 7,0 % de las veces (límite: 10 %). Sin guardia, con imágenes desenfocadas pasa de 10 % en 2 de 8 casos."],
+    ["H10 · v0.4", "¿Se da cuenta de que una imagen está fuera de su calibración?", "4 de 4", "ok", "Sin guardia, el volumen daba hasta 97 % de verdes falsos. Con guardia, 10 de 12 casos quedan sin verdes y 2 en 4,1 % o menos. En un caso deja pasar 28 verdes, 21 % falsos."],
   ];
 
   // ---------- controles ----------
