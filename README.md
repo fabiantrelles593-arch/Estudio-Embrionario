@@ -63,6 +63,15 @@ Documentos: [`RESULTADOS.md`](docs/RESULTADOS.md) (v0.1), [`RESULTADOS_V02.md`](
 [`ERRATA.md`](docs/ERRATA.md) (23 errores propios, con causa y prevención) y
 [`ANTECEDENTES_V04.md`](docs/ANTECEDENTES_V04.md) (qué existe ya en la literatura).
 
+## Siguiente fase (v0.5, en curso): embriones reales
+
+Hasta v0.4 todo es sintético. v0.5 lleva el certificado a **ecografía 3D real de embriones de ratón**
+con contornos de expertos, sin reajustar nada y con los criterios fijados antes de abrir los datos
+([`PREREGISTRO_H11.md`](docs/PREREGISTRO_H11.md)). Propósito, objetivos y ruta por etapas, hasta la
+puerta ética y regulatoria que exigiría cualquier uso con humanos:
+[`OBJETIVOS_V05.md`](docs/OBJETIVOS_V05.md). Ya existen el lector de volúmenes NIfTI
+(`geovida.realdata`) y `scripts/real_datasheet.py`. **Todavía no se ha procesado ninguna imagen real.**
+
 ## Lo que este proyecto NO afirma
 
 * No reconstruye ni mide embriones humanos ni de ratón reales (aún).

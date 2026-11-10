@@ -60,6 +60,13 @@ No se haría ninguna afirmación sobre la salud de la persona ni del feto.
 | «material educativo» | «apoya decisiones clínicas» |
 | «solo investigación; no apto para uso clínico» | «mejora el diagnóstico prenatal» |
 
+## 5b. Estado de v0.5 (2026-11-10)
+
+Sigue sin procesarse ninguna imagen real, humana o animal. Para la etapa 1 se prepara el uso de
+**ecografía 3D de embrión de ratón** (conjunto animal, sin datos de personas): ver
+`docs/OBJETIVOS_V05.md` §5 y `docs/PREREGISTRO_H11.md`. Lo animal no exime de verificar la licencia
+y de citar a los autores. Lo humano sigue sujeto a la sección 3.
+
 ## 6. Conjuntos públicos de ecografía 2D identificados (investigación del 2026-11-09)
 
 Informe de una búsqueda asistida por IA, **sin revisión humana**. Las licencias que la tabla marca
