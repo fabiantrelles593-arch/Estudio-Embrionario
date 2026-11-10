@@ -9,6 +9,8 @@ cuestionario de aprendizaje y las preguntas probables del jurado, con respuesta.
   prueba en vivo, cuestionario), `trial.js` (diseño y medida de la prueba, sin DOM), `core.js`
   (núcleo numérico, idéntico al de `docs/laboratorio/`). `sh build.sh offline` reconstruye el
   archivo único (necesita `three.min.js` en `node_modules/three/build/`).
+* `h9data.js` — resultados de la confirmación de H9/H10 (cifras de `results/summary/h9_verdicts.json`):
+  rellena las dos últimas filas de la tabla de resultados.
 * `check_trial.js` — comprueba en Node que la prueba en vivo da menos de 10 % de luces verdes
   falsas (`node docs/exposicion/check_trial.js`).
 

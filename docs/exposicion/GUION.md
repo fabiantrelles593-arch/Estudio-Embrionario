@@ -45,6 +45,21 @@ la referencia.)
 * Salen unas 80 luces verdes, así que el porcentaje cambia de una corrida a otra. Si sale alto,
   repítela y explícalo: es parte de la honestidad del método.
 
+## Qué decir de los resultados de H9 y H10 (láminas 12–14)
+
+* **H9, el semáforo de topología:** la hipótesis principal se cumplió. En verde, la topología medida
+  era incorrecta como máximo 7,0 % de las veces (el límite escrito de antemano era 10 %), con 18 900
+  medidas que el modelo no había visto. Con dos formas nunca vistas, como máximo 7,8 %. De las seis
+  hipótesis, cuatro se cumplieron, una a medias y una no: sin guardia, con imágenes más desenfocadas
+  que la calibración pasa de 10 % en 2 de 8 casos.
+* **H10, la guardia:** sin guardia, el semáforo de volumen daba hasta 97 % de luces verdes falsas con
+  el doble de ruido. Con guardia, 10 de 12 casos quedaron sin ninguna luz verde falsa y los otros 2 en
+  4,1 % o menos. Cuatro de cuatro.
+* **Di también las dos debilidades:** en un caso la guardia dejó pasar 28 luces verdes y 21 % eran
+  falsas; y de las topologías incorrectas, 6,6 % recibieron luz verde (los rasgos que la imagen ya
+  perdió no se ven).
+* Todo es sintético. Detalle y tablas: `docs/RESULTADOS_V04.md`.
+
 ## Frases que no conviene decir
 
 «Primer método» o «nunca antes» (no lo sabemos: solo no encontramos algo igual); «validado» a secas
@@ -59,11 +74,13 @@ detectan); «5D» (en bioimagen ya significa otra cosa: aquí es un eje de escal
   Una imagen de una persona solo con consentimiento, anonimización y aprobación ética.
 * **¿Cómo sabes que el semáforo funciona?** Se calibró con unas imágenes y se comprobó con 50 400
   que no había visto, con el criterio escrito antes: en verde se equivocó entre 0,4 % y 2,6 %.
-  La demostración 2 lo repite en vivo con objetos nuevos.
+  El de topología se comprobó con otras 18 900: en verde, como máximo 7,0 %. La demostración 2
+  repite el de volumen en vivo con objetos nuevos.
 * **¿Qué tiene de nuevo?** Las ideas sueltas ya existen. No encontramos en la literatura la
   combinación: una probabilidad por medida, calibrada con verdad conocida, que además se niega a
-  certificar imágenes distintas de las de su calibración. Es una ausencia en nuestra búsqueda, no
-  una prueba de que nadie lo haya hecho.
+  certificar imágenes distintas de las de su calibración. Esa negativa se probó con 12 600 medidas
+  de imágenes más ruidosas o más desenfocadas: evitó los verdes falsos de volumen en 10 de 12 casos, y
+  no es perfecta. Es una ausencia en nuestra búsqueda, no una prueba de que nadie lo haya hecho.
 * **¿Para qué sirve si no diagnostica?** Para que quien investiga sepa si puede fiarse de sus
   medidas y qué resolución necesita antes de tomar la imagen.
 * **¿Lo hiciste tú?** Yo planteé el problema, dirigí las decisiones y revisé resultados. El código
