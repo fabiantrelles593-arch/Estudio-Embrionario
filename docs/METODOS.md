@@ -1,4 +1,4 @@
-# Métodos (geovida v0.1)
+# Métodos (geovida v0.1 – v0.4)
 
 ## 1. Qué se mide y por qué así
 
@@ -78,8 +78,42 @@ diseños balanceados). Ver `PREREGISTRO_H2.md`.
 * **Procedencia** (`provenance.py`): commit y marca de código modificado.
 * **Veredictos de tres estados**: «apoyada», «no apoyada», «no evaluable».
 
-## 9. Reproducibilidad
+## 9. Extensiones de v0.3
+
+* **Profundidad media interior** (`measure._mean_depth`): media, sobre los vóxeles del
+  objeto, de la distancia a la frontera. No usa ningún estimador de área. En una bola de
+  radio r vale r/4.
+* **Semáforo de volumen** (`budget.py`, H6): logit por segmentador y perfil sobre
+  ln(d̄/h_geo), elegido por validación cruzada dejando una forma fuera, congelado y
+  confirmado con semillas nuevas. Verde p ≥ 0.90; rojo p < 0.50.
+* **Limpieza 2D que escala con el objeto** (`twod._clean_mask_2d`, H7) y forma `ring_tight`.
+* **Series de crecimiento** (`growth.py`, H8): objeto que crece ×1.35 por etapa con vóxel
+  fijo; tasa = pendiente de ln V frente a la etapa, con todas las etapas o sin las rojas.
+
+## 10. Extensiones de v0.4: certificado vectorial
+
+* **Margen de persistencia topológica** (`topomargin.py`). Geométrico: mayor dilatación o
+  erosión euclídea, en vóxeles finos, que conserva el triple de Betti (es la persistencia en
+  la filtración por distancia con signo). De intensidad: cuánto puede moverse el umbral, en
+  fracción del contraste medido, sin cambiarlo. `critical_sites` localiza el primer evento
+  cuando es una separación, una fusión o un componente o cavidad pequeños.
+* **Eje de escala de medición** (`scaleaxis.py`): la imagen se degrada ×2 y ×4 por promedio
+  de bloques y se vuelve a segmentar y medir. Se usa el acuerdo del triple de Betti entre
+  escalas como variable. En bioimagen «5D» ya significa x, y, z, canal y tiempo; este eje
+  es otra cosa: una dimensión de la medición.
+* **Guardia de dominio** (`domain.py`): `snr_hat` (contraste / ruido del fondo lejano) y
+  `edge_width` (grosor de la banda de transición del borde) medidos en la imagen; envolvente
+  entre los cuantiles 1 % y 99 % de las filas de calibración con luz verde. Fuera de la
+  envolvente no hay luz verde.
+* **Formas nunca vistas** (`dumbbell`, `cup`) y **perfiles nunca vistos** (`blurry`, `noisy`,
+  `mild_blur`, `mild_noise`), que no entran en ninguna calibración.
+* **Certificado** (`certificate.py`, orden `geovida certify`): luz de volumen, luz de
+  topología, punto frágil y pertenencia al dominio para una imagen 3D. `geovida plan` da la
+  resolución mínima para luz verde. Antecedentes y citas: `ANTECEDENTES_V04.md`.
+
+## 11. Reproducibilidad
 
 Semillas derivadas de la celda con `SeedSequence`: el resultado no depende del
 número de procesos (hay una prueba). Cada ejecución escribe un manifiesto con
-commit, versiones y duración.
+commit, versiones y duración; desde v0.3 el estado de git se toma al empezar. Dos
+corridas del barrido de H8 dieron tablas idénticas fila a fila.
