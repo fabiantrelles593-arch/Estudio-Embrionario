@@ -1,6 +1,6 @@
 # Guion de la exposición «¿Cuándo podemos fiarnos de una medida?»
 
-Duración sugerida: 15 minutos más preguntas. El mazo (`exposicion-geovida.html`) lleva este guion
+Duración sugerida: 15 a 16 minutos más preguntas. El mazo (`exposicion-geovida.html`) lleva este guion
 dentro: la tecla **G** lo muestra lámina por lámina.
 
 ## Antes de exponer (5 minutos)
@@ -21,10 +21,11 @@ dentro: la tecla **G** lo muestra lámina por lámina.
 | 6 | Demostración 1: el semáforo en vivo | 2 min |
 | 7 | **Demostración 2: la prueba de que funciona** (200 objetos al azar) | 2 min |
 | 8–10 | Demostraciones 3, 4 y 5: volumen y forma, crecimiento 4D, eje de escala | 3 min |
-| 11–13 | Resultados, lo que salió mal, límites | 2 min |
-| 14 | Impacto y siguiente paso | 1 min |
-| 15–17 | Glosario, cuestionario, preguntas del jurado: para estudio o para el turno de preguntas | — |
-| 18 | Cierre | 1 min |
+| 11 | El programa real en Python (salida de `geovida plan` y `geovida certify`) | 1 min |
+| 12–14 | Resultados, lo que salió mal, límites | 2 min |
+| 15 | Impacto y siguiente paso | 1 min |
+| 16–18 | Glosario, cuestionario, preguntas del jurado: para estudio o para el turno de preguntas | — |
+| 19 | Cierre | 1 min |
 
 (Los números de lámina pueden cambiar si el mazo se amplía; los títulos de la barra inferior son
 la referencia.)

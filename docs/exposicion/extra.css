@@ -24,4 +24,12 @@
 .slide[data-demo] p { max-width: 120ch }
 .slide h2 { max-width: 40ch }
 @media (max-width: 640px) { .nav .btn { padding: 8px 10px; font-size: 0.85rem; white-space: nowrap } .nav { gap: 6px } }
+.gloss { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 22px; margin: 0 }
+.gloss dt { font-family: var(--display); font-weight: 600; border-top: 2px solid var(--accent); padding-top: 6px }
+.gloss dd { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem }
+@media (max-width: 1000px) { .gloss { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+@media (max-width: 640px) { .gloss { grid-template-columns: minmax(0, 1fr) } }
+#slides .slide[data-title="Resultados"] td, #slides .slide[data-title="Resultados"] th { padding: 4px 8px; font-size: 0.84rem }
+pre { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-family: var(--mono); font-size: 0.74rem; line-height: 1.5; overflow-x: auto; white-space: pre; color: var(--ink) }
+h3 code { font-family: var(--mono); font-size: 0.92em; color: var(--accent) }
 </style>

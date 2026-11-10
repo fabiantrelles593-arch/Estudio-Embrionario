@@ -1,6 +1,6 @@
 # Exposición interactiva de geovida
 
-Un mazo de 17 láminas que se maneja con el teclado (←/→; **G** muestra el guion del expositor) y
+Un mazo de 19 láminas que se maneja con el teclado (←/→; **G** muestra el guion del expositor) y
 que incluye cinco demostraciones en vivo, una prueba de «¿funciona?» con 200 objetos al azar, un
 cuestionario de aprendizaje y las preguntas probables del jurado, con respuesta.
 

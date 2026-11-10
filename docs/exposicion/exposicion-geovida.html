@@ -170,6 +170,14 @@ details p { margin-top: 8px }
 .slide[data-demo] p { max-width: 120ch }
 .slide h2 { max-width: 40ch }
 @media (max-width: 640px) { .nav .btn { padding: 8px 10px; font-size: 0.85rem; white-space: nowrap } .nav { gap: 6px } }
+.gloss { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 22px; margin: 0 }
+.gloss dt { font-family: var(--display); font-weight: 600; border-top: 2px solid var(--accent); padding-top: 6px }
+.gloss dd { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem }
+@media (max-width: 1000px) { .gloss { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+@media (max-width: 640px) { .gloss { grid-template-columns: minmax(0, 1fr) } }
+#slides .slide[data-title="Resultados"] td, #slides .slide[data-title="Resultados"] th { padding: 4px 8px; font-size: 0.84rem }
+pre { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-family: var(--mono); font-size: 0.74rem; line-height: 1.5; overflow-x: auto; white-space: pre; color: var(--ink) }
+h3 code { font-family: var(--mono); font-size: 0.92em; color: var(--accent) }
 </style>
 </head>
 <body>
@@ -283,6 +291,40 @@ details p { margin-top: 8px }
       <div class="demo-slot"></div>
     </section>
 
+    <section class="slide" data-title="El programa real en Python" data-notes="Esta lámina responde a la pregunta: ¿esto es solo una página web? Las demostraciones del navegador usan una réplica en JavaScript del cálculo del volumen, contrastada con Python en 6 máscaras con resultados idénticos. El programa completo, con el certificado de topología y la guardia de dominio, es el de Python, con 351 pruebas automáticas. Los textos de abajo son la salida real de dos órdenes, ejecutadas hoy sobre imágenes sintéticas, una imagen por caso. Fíjate en el tercer caso: el volumen tenía probabilidad 0,99, pero la imagen está más desenfocada que las de su calibración, y el programa se niega a darle luz verde.">
+      <span class="eyebrow">El programa real</span>
+      <h2>Así responde el programa de Python</h2>
+      <div class="cols">
+        <div class="stack">
+          <h3>Antes de tomar la imagen: <code>geovida plan</code></h3>
+          <pre>segmentador    perfil     bola (diám.)  cilindro  lámina
+global         ideal      6.0           4.5       3.0
+global         realistic  6.7           5.0       3.3
+otsu           ideal      8.1           6.1       4.1
+otsu           realistic  8.0           6.0       4.0
+smoothed_otsu  ideal      12.9          9.7       6.5
+smoothed_otsu  realistic  13.2          9.9       6.6</pre>
+          <p class="muted">Vóxeles mínimos para luz verde de volumen. Es una guía derivada de objetos sintéticos, no una garantía.</p>
+        </div>
+        <div class="stack">
+          <h3>Después de medir: <code>geovida certify</code></h3>
+          <pre>bola, 12 vóxeles, imagen típica
+Volumen    [VERDE]     p = 0.99   valor = 908
+Topología  [VERDE]     p = 0.98   Betti = (1, 0, 0)
+
+bola, 3 vóxeles
+Volumen    [ROJO]      p = 0.02   valor = 770
+Topología  [ROJO]      p = 0.02   Betti = (2, 135, 4)
+
+bola, 12 vóxeles, más desenfocada que su calibración
+Volumen    [AMARILLO]  p = 0.99   valor = 982
+  (fuera del dominio de calibración)
+Topología  [ROJO]      p = 0.06   Betti = (3, 0, 0)</pre>
+          <p class="muted">Una imagen sintética por caso, con segmentador Otsu. El volumen verdadero de la bola de 12 vóxeles es 905.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="slide" data-title="Resultados" data-notes="No leas toda la tabla. Señala tres filas: H6, el semáforo, cinco de cinco; H8, el crecimiento, tres de tres; y H7, que salió mal, uno de tres. Di que la tabla incluye lo que no funcionó porque así se hizo el proyecto.">
       <span class="eyebrow">Resultados</span>
       <h2>Diez pruebas, con sus aciertos y sus fallos</h2>
@@ -335,6 +377,22 @@ details p { margin-top: 8px }
           <tr><td>Suavizado + Otsu, imagen con ruido</td><td class="num">13,2</td><td class="num">9,9</td><td class="num">6,6</td></tr>
         </tbody>
       </table></div>
+    </section>
+
+    <section class="slide" data-title="Glosario" data-notes="Esta lámina es para el público que no conoce los términos y para que tú te apoyes si te preguntan. Detente en topología: la tripleta (piezas, túneles, cavidades) es lo que se ve en las demostraciones. Una bola es (1, 0, 0); un anillo es (1, 1, 0); una cáscara hueca es (1, 0, 1).">
+      <span class="eyebrow">Para entender el resto</span>
+      <h2>Glosario en lenguaje sencillo</h2>
+      <dl class="gloss">
+        <div><dt>Vóxel</dt><dd>El cubito mínimo de una imagen 3D: el píxel del mundo tridimensional.</dd></div>
+        <div><dt>Fantoma</dt><dd>Un objeto de forma conocida (bola, anillo, cáscara) que sirve de patrón para probar el instrumento, como un peso patrón en un laboratorio.</dd></div>
+        <div><dt>Segmentación</dt><dd>Decidir qué vóxeles son objeto y cuáles son fondo. Aquí: umbral fijo, Otsu y Otsu suavizado.</dd></div>
+        <div><dt>Topología</dt><dd>Lo que no cambia al estirar la forma: cuántas piezas, túneles y cavidades tiene. Se escribe (piezas, túneles, cavidades): bola (1, 0, 0), anillo (1, 1, 0), cáscara hueca (1, 0, 1).</dd></div>
+        <div><dt>Semáforo</dt><dd>Verde, amarillo o rojo según la probabilidad estimada de que el error de volumen sea de 5 % o menos.</dd></div>
+        <div><dt>Verde falso</dt><dd>Una luz verde sobre una medida que en realidad era mala. Es el error que más importa evitar.</dd></div>
+        <div><dt>Preregistro</dt><dd>Escribir los criterios y las predicciones antes de ejecutar el experimento, para no poder acomodarlos al resultado.</dd></div>
+        <div><dt>Pseudo-tiempo (4D)</dt><dd>Etapas de crecimiento medidas en especímenes distintos, no el mismo seguido en el tiempo.</dd></div>
+        <div><dt>Eje de escala</dt><dd>Medir otra vez la misma imagen, más gruesa, para ver si la respuesta cambia. Si cambia, la medida no había convergido.</dd></div>
+      </dl>
     </section>
 
     <section class="slide" data-title="Comprueba lo que aprendiste" data-notes="Puedes hacer las preguntas al público. Cada respuesta muestra una explicación corta. Úsalas también para repasar antes de exponer.">
