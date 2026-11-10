@@ -95,7 +95,7 @@
     return out;
   }
   function compute() {
-    const r = GV.render(state.shape, state.t, state.aniso, state.seed, state.t <= 6 ? 3 : 2);
+    const r = GV.render(state.shape, state.t, state.aniso, state.seed, 3);
     const levels = levelsFrom(r), lv = levels[state.scale] || levels[0], m = lv.m;
     current = { r, levels };
     const err = m.volume / r.trueVolume - 1, okV = Math.abs(err) <= 0.05;
@@ -124,7 +124,7 @@
     const step = k => {
       if (token !== growthToken) return;
       if (k === SIZES.length) { finishGrowth(); return; }
-      const r = GV.render(state.shape, SIZES[k], state.aniso, state.seed * 31 + k + 1, SIZES[k] <= 6 ? 3 : 2);
+      const r = GV.render(state.shape, SIZES[k], state.aniso, state.seed * 31 + k + 1, 3);
       const m = GV.measure(GV.threshold(r.cov), r.n, r.sp, "ideal", true);
       growth.push({ v: m.volume, vt: r.trueVolume, light: m.light });
       drawGrowth(); setTimeout(() => step(k + 1), 0);

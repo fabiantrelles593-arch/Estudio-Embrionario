@@ -1,0 +1,239 @@
+<div class="deck">
+  <div class="slides" id="slides">
+
+    <section class="slide" data-title="Portada" data-notes="Preséntate y di en una frase de qué va: antes de comparar la forma de dos embriones hay que saber cuánto se equivoca el instrumento que los mide. Este proyecto construye un instrumento que avisa cuando no hay que creerle. Aclara desde el principio que todo se probó con objetos de forma conocida, no con embriones reales.">
+      <span class="eyebrow">Proyecto de investigación · Geometría de la Vida</span>
+      <h1>¿Cuándo podemos fiarnos de una medida?</h1>
+      <p class="big">Un instrumento para medir la forma de embriones en imágenes 2D, 3D y 4D que avisa cuando no hay que creerle.</p>
+      <p class="muted">Fabián Trelles · 10 de noviembre de 2026</p>
+      <div class="tags"><span class="tag">solo datos sintéticos</span><span class="tag">investigación y educación</span><span class="tag">sin uso clínico</span><span class="tag">código abierto</span></div>
+      <p class="muted">Avanza con las flechas del teclado o con los botones de abajo. La tecla G muestra el guion.</p>
+    </section>
+
+    <section class="slide" data-title="El problema" data-demo='{"shape":"torus_tight","t":2,"aniso":1,"scale":0,"seed":2,"panels":"measure","presets":[["2 vóxeles",{"t":2}],["3 vóxeles",{"t":3}],["8 vóxeles",{"t":8}]],"controls":[]}' data-notes="Pulsa los tres botones en orden. Es el mismo anillo de pared estrecha en las tres imágenes; solo cambia cuántos cubitos caben a través de la pared. Con 2 vóxeles el volumen sale con error y el agujero desaparece: la topología mide (1, 0, 0) en vez de (1, 1, 0). Con 3 el agujero ya está. Con 8 el volumen casi coincide con la verdad. El objeto nunca cambió: cambió la imagen. En 24 orientaciones que probé antes, a 2 vóxeles el agujero se perdió en 12 y a 3 vóxeles en ninguna; el botón de otra orientación te deja comprobarlo.">
+      <span class="eyebrow">El problema</span>
+      <h2>Una imagen no es el objeto</h2>
+      <p>La forma de un embrión se mide en imágenes hechas de cubitos, los <b>vóxeles</b>. Si los cubitos son grandes frente al objeto, el volumen y hasta el número de agujeros cambian, aunque el objeto sea el mismo.</p>
+      <div class="demo-slot"></div>
+    </section>
+
+    <section class="slide" data-title="Por qué importa" data-notes="Di las tres cifras despacio y enseguida la frase de la derecha: este proyecto no cura ni diagnostica. Lo que hace es mejorar la regla con la que se investiga. Si te preguntan por el impacto, es indirecto: sirve a quienes estudian las causas.">
+      <span class="eyebrow">Por qué importa</span>
+      <h2>Un error de medida puede parecer biología</h2>
+      <div class="cols3">
+        <div class="fact"><b>8 millones</b>de bebés nacen cada año con un defecto congénito.<br><small>OMS, junio de 2026</small></div>
+        <div class="fact"><b>16,4 %</b>de las muertes neonatales de 2024 en Perú se debieron a malformaciones congénitas.<br><small>CDC-MINSA, citado por MCLCP, 2025</small></div>
+        <div class="fact"><b>La mayoría</b>de sus causas sigue sin conocerse.<br><small>CDC de Estados Unidos</small></div>
+      </div>
+      <div class="callout"><p>Para buscar esas causas se comparan formas de embriones en imágenes. Si la resolución cambia la medida, una diferencia puede ser del instrumento y no del embrión. <b>Este proyecto no cura ni diagnostica: mejora la regla con la que se investiga.</b></p></div>
+    </section>
+
+    <section class="slide" data-title="Pregunta e hipótesis" data-notes="Lee la pregunta tal cual. Explica las variables: lo que yo cambio es la imagen (resolución, vóxel alargado, ruido, método de segmentación); lo que mido es el error de volumen y si la topología sale correcta. La hipótesis tiene un número: menos de 10 % de luces verdes falsas. Eso la hace comprobable.">
+      <span class="eyebrow">Pregunta de investigación</span>
+      <h2>¿Puede un programa saber, sin conocer la respuesta, si su propia medida es fiable?</h2>
+      <div class="cols">
+        <div class="stack">
+          <h3>Variables</h3>
+          <p><b>Lo que se cambia:</b> la resolución (vóxeles a través del rasgo más fino), el vóxel alargado, el desenfoque, el ruido y el método de segmentación.</p>
+          <p><b>Lo que se mide:</b> el error de volumen y si la topología (piezas, túneles y cavidades) sale correcta.</p>
+        </div>
+        <div class="stack">
+          <h3>Hipótesis principal</h3>
+          <p>Usando solo la máscara y el tamaño del vóxel se puede estimar la probabilidad de que el error de volumen sea de 5 % o menos, y cuando el programa dé luz verde se equivocará menos de 1 vez de cada 10.</p>
+          <p class="muted">Tipo de estudio: cuantitativo, experimental, por simulación. Lenguaje: Python.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="La solución" data-notes="Tres ideas. Uno: como con embriones reales no se conoce la respuesta, uso formas matemáticas cuya respuesta sí se conoce. Dos: con eso calibro un semáforo que luego funciona sin la respuesta. Tres: escribo las reglas y mis predicciones antes de cada experimento, para no poder acomodar el resultado.">
+      <span class="eyebrow">La solución</span>
+      <h2>Tres ideas</h2>
+      <div class="cols3">
+        <div class="idea"><b>1. Objetos de respuesta conocida</b>Bolas, anillos, cáscaras y otras nueve formas matemáticas. Su volumen y su topología se saben exactamente, así que el error se puede medir.</div>
+        <div class="idea"><b>2. Un semáforo</b>Verde, amarillo o rojo para cada medida, calculado solo con lo que el programa ve. No necesita la respuesta.</div>
+        <div class="idea"><b>3. Las reglas, antes de jugar</b>Cada experimento fija sus criterios y mis predicciones en el repositorio antes de ejecutarse. Lo que sale mal también se publica.</div>
+      </div>
+      <h3>Cómo trabaja el programa</h3>
+      <div class="flow">
+        <div><i>1</i><b>Forma conocida</b><span>volumen y topología exactos</span></div>
+        <div><i>2</i><b>Imagen simulada</b><span>vóxeles, desenfoque, ruido</span></div>
+        <div><i>3</i><b>Segmentación</b><span>separar objeto y fondo</span></div>
+        <div><i>4</i><b>Medida</b><span>volumen, área, topología</span></div>
+        <div><i>5</i><b>Comparación</b><span>medida frente a verdad</span></div>
+        <div><i>6</i><b>Semáforo</b><span>calibrado y luego congelado</span></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Demostración 1: el semáforo en vivo" data-demo='{"shape":"ball","t":2,"aniso":1,"scale":0,"seed":11,"panels":"measure","controls":true}' data-notes="Aquí manejas tú. Con la bola a 2 vóxeles sale luz roja. Súbela poco a poco: entre 3 y 5 vóxeles amarilla, y verde a partir de unos 7 (en 24 orientaciones que probé, a 7 vóxeles las 24 fueron verdes). Señala que la luz se calcula sin conocer la respuesta y que el error real aparece al lado solo porque la forma es matemática. Prueba también el vóxel alargado y otras formas.">
+      <span class="eyebrow">Demostración 1</span>
+      <h2>El semáforo en vivo</h2>
+      <ol class="steps"><li>Elige una forma y mueve la resolución.</li><li>La luz se calcula sin conocer la respuesta.</li><li>Al lado se ve el error real, que aquí sí se sabe.</li></ol>
+      <div class="demo-slot"></div>
+    </section>
+
+    <section class="slide" data-title="Demostración 2: ¿funciona?" data-notes="Este es el momento de demostrar que funciona. Pulsa el botón: el programa crea 200 objetos al azar, los mide y enciende el semáforo sin mirar la respuesta; después compara con la verdad. Lo que importa es la casilla verde: casi todas las luces verdes deben ser correctas. Aquí no hay ruido: son imágenes ideales con umbral fijo (la configuración global e ideal del experimento), con nueve formas, dos de ellas (mancuerna y copa) que el semáforo nunca vio al calibrarse. Salen unas 80 luces verdes, así que el porcentaje baila de una corrida a otra: un fallo más o menos cambia más de un punto. Si sale alto, no lo escondas: señálalo y repite. En el experimento completo, en esa misma configuración, las verdes fallaron 2,3 %.">
+      <span class="eyebrow">Demostración 2</span>
+      <h2>La prueba: 200 objetos al azar, ahora mismo</h2>
+      <p>El programa crea objetos al azar, los mide, enciende el semáforo <b>sin mirar la respuesta</b> y solo después compara con la verdad. Si funciona, casi todas las luces verdes deben ser medidas correctas.</p>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="runTrial" type="button">Ejecutar la prueba</button><span class="muted" id="trialStatus">Aún no se ha ejecutado.</span></div>
+      <div class="bar"><i id="trialBar"></i></div>
+      <div class="tally">
+        <div style="border-top-color:var(--go)"><b id="tG">—</b><span>luces verdes</span><span id="tGs">&nbsp;</span></div>
+        <div style="border-top-color:var(--wait)"><b id="tY">—</b><span>luces amarillas</span><span id="tYs">&nbsp;</span></div>
+        <div style="border-top-color:var(--stop)"><b id="tR">—</b><span>luces rojas</span><span id="tRs">&nbsp;</span></div>
+      </div>
+      <p class="callout" id="trialVerdict" hidden></p>
+      <details id="failBox" hidden><summary id="failSum">Las luces verdes que fallaron</summary><p id="failList"></p></details>
+      <p class="muted">«Correcta» significa error de volumen de 5 % o menos. Criterio fijado de antemano: menos de 10 % de luces verdes falsas. Aquí: imágenes ideales (sin ruido), umbral fijo, nueve formas, orientación y vóxel alargado al azar. En el experimento completo, en esa misma configuración, fallaron 2,3 % de 3 771 luces verdes; con ruido y otros segmentadores, entre 0,4 y 2,6 %.</p>
+    </section>
+
+    <section class="slide" data-title="Demostración 3: cuando el volumen no basta" data-demo='{"shape":"dumbbell","t":2,"aniso":1,"scale":0,"seed":2,"panels":"scale","presets":[["Cuello de 2 vóxeles",{"t":2}],["Cuello de 3",{"t":3}],["Cuello de 6",{"t":6}]],"controls":["scale"]}' data-notes="La mancuerna son dos bolas unidas por un cuello delgado. Con la imagen original todo sale bien: volumen en verde y una sola pieza. Ahora pulsa degradar por 2 o por 4 y mira la tabla: con el cuello de 2 vóxeles, la misma imagen medida más gruesa parte la forma en dos piezas. En 24 orientaciones que probé, a 2 vóxeles pasó en 12 al degradar por 2 y en 20 al degradar por 4; con cuello de 3 vóxeles, en ninguna por 2 y en 17 por 4. El volumen no avisa de nada; la topología depende de un hilo. Por eso el programa en Python tiene un segundo semáforo, para la topología (prueba H9, en confirmación), que además dice dónde está el punto frágil.">
+      <span class="eyebrow">Demostración 3</span>
+      <h2>Volumen en verde, forma colgando de un hilo</h2>
+      <p>Dos bolas unidas por un cuello delgado. Con la imagen original el volumen sale en verde y la forma es una sola pieza. Degrada la imagen (×2, ×4) y mira si la forma sigue siendo una pieza. Por eso el programa tiene un segundo semáforo, para la topología (prueba H9, en confirmación).</p>
+      <div class="demo-slot"></div>
+    </section>
+
+    <section class="slide" data-title="Demostración 4: crecimiento (4D)" data-demo='{"shape":"ball","t":4,"aniso":1,"scale":0,"seed":5,"panels":"growth","controls":["shape"]}' data-notes="Cuatro dimensiones: las tres del espacio más el tiempo. Ocho etapas; el objeto crece 1,35 veces en cada etapa y el vóxel no cambia. Las primeras etapas salen en rojo porque el objeto es demasiado pequeño. Compara las dos tasas con la verdadera, 0,900. Aclara que es pseudo-tiempo: cada etapa es un espécimen distinto. Con la bola, en 12 orientaciones que probé, el error mediano fue 3,9 % con todas las etapas y 1,5 % sin las rojas; en una de las 12 empeoró. En el experimento completo (con ruido incluido) quitar las rojas bajó el error de entre 3 y 64 % a entre 1 y 2 %.">
+      <span class="eyebrow">Demostración 4 · 4D</span>
+      <h2>Crecer con el vóxel fijo</h2>
+      <p>Ocho etapas; en cada una el objeto es 1,35 veces mayor. La tasa de crecimiento es la pendiente de la recta. Las etapas en rojo se miden mal: ¿qué pasa si no se usan?</p>
+      <div class="demo-slot"></div>
+    </section>
+
+    <section class="slide" data-title="Demostración 5: el eje de escala" data-demo='{"shape":"torus_tight","t":4,"aniso":1,"scale":0,"seed":2,"panels":"scale","controls":["res","scale"]}' data-notes="Esto es lo que al principio llamábamos 5D. La quinta dimensión que se puede defender no está en el embrión: está en la medición. Degradas la misma imagen por 2 y por 4 y vuelves a medir. Si el resultado cambia, la medida no había convergido. Pulsa por 2 y mira cómo el anillo pierde el agujero: en 24 orientaciones que probé, a 4 vóxeles pasó en 14. Que la medida no cambie al degradar es una condición necesaria, no suficiente.">
+      <span class="eyebrow">Demostración 5 · la escala de medición</span>
+      <h2>La misma imagen, medida otra vez más gruesa</h2>
+      <p>La «quinta dimensión» que se puede defender no está en el embrión: está en la medición. Se degrada la imagen ×2 y ×4 y se vuelve a medir. Si la respuesta cambia, la medida no había convergido.</p>
+      <div class="demo-slot"></div>
+    </section>
+
+    <section class="slide" data-title="Resultados" data-notes="No leas toda la tabla. Señala tres filas: H6, el semáforo, cinco de cinco; H8, el crecimiento, tres de tres; y H7, que salió mal, uno de tres. Di que la tabla incluye lo que no funcionó porque así se hizo el proyecto.">
+      <span class="eyebrow">Resultados</span>
+      <h2>Diez pruebas, con sus aciertos y sus fallos</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Prueba</th><th>Pregunta</th><th>Resultado</th><th>Lo que deja</th></tr></thead>
+        <tbody id="scoreRows"></tbody>
+      </table></div>
+    </section>
+
+    <section class="slide" data-title="Lo que salió mal" data-notes="Esta lámina da credibilidad. Un proyecto que solo muestra aciertos no convence. Cuenta el hallazgo más importante: mi propio semáforo, que había pasado sus cinco pruebas, falla cuando la imagen tiene más ruido o más desenfoque que las de su calibración. Lo descubrí probándolo donde podía fallar, y por eso ahora lleva una guardia que se niega a certificar.">
+      <span class="eyebrow">Honestidad</span>
+      <h2>Lo que salió mal, y por qué lo cuento</h2>
+      <div class="cols">
+        <ul class="limits" style="grid-template-columns:minmax(0,1fr)">
+          <li><b>La primera hipótesis se refutó en parte.</b> Contar vóxeles a través del rasgo más fino sirve para la topología, no para el volumen.</li>
+          <li><b>La limpieza de imágenes 2D cumplió 1 de 3.</b> Ayuda menos de lo que predije.</li>
+          <li><b>Mi propio semáforo falla fuera de su calibración.</b> Con el doble de ruido dio hasta 97 % de luces verdes falsas en el piloto.</li>
+          <li><b>22 errores míos</b> están documentados, cada uno con su causa y cómo se evita.</li>
+        </ul>
+        <div class="callout"><p class="big">Un resultado negativo bien medido también es un resultado.</p><p style="margin-top:8px">De ese fallo salió la pieza más nueva: una <b>guardia de dominio</b> que mide en la propia imagen el ruido y el desenfoque y, si no se parecen a los de la calibración, se niega a dar luz verde.</p></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Límites" data-notes="Dilo tú antes de que te lo pregunten. Lo más importante: no se ha medido ningún embrión real y nadie externo ha revisado el trabajo. No es una herramienta médica.">
+      <span class="eyebrow">Límites</span>
+      <h2>Lo que este proyecto no afirma</h2>
+      <ul class="limits">
+        <li>No mide embriones reales. Todo sale de formas matemáticas y de un simulador de imagen.</li>
+        <li>«4D» es pseudo-tiempo: cada etapa es un espécimen distinto, no el mismo seguido en el tiempo.</li>
+        <li>El semáforo vale para imágenes parecidas a las de su calibración.</li>
+        <li>Un rasgo que la imagen ya perdió por completo no deja rastro: ningún semáforo lo detecta.</li>
+        <li>No es una herramienta diagnóstica ni clínica. No reduce la mortalidad ni mejora diagnósticos.</li>
+        <li>Nadie externo lo ha revisado todavía. El código se escribió con asistencia de inteligencia artificial y así está declarado.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-title="Impacto y siguiente paso" data-notes="El impacto es para quien investiga: laboratorios que miden embriones de ratón, pez cebra o cultivos, y docentes. Lo que entrego es concreto: un programa abierto, una tabla para saber qué resolución hace falta antes de tomar la imagen, y un certificado para cada medida. El siguiente paso real son imágenes públicas con licencia y una revisión externa.">
+      <span class="eyebrow">Impacto y siguiente paso</span>
+      <h2>A quién sirve y qué sigue</h2>
+      <div class="cols3">
+        <div class="idea"><b>A quién sirve</b>A laboratorios que miden embriones de ratón o pez cebra y cultivos de células madre, a quienes validan programas de segmentación y a docentes de biología y computación.</div>
+        <div class="idea"><b>Qué entrega</b>Un programa abierto en Python con 351 pruebas automáticas, una tabla de resolución mínima para planificar y un certificado para cada medida.</div>
+        <div class="idea"><b>Qué sigue</b>Imágenes públicas con licencia verificada, empezando por 2D. Fantomas físicos o un laboratorio aliado. Revisión científica externa.</div>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Antes de tomar la imagen: tamaño mínimo para luz verde</th><th>Bola</th><th>Cilindro</th><th>Lámina</th></tr></thead>
+        <tbody>
+          <tr><td>Umbral fijo, imagen con ruido</td><td class="num">6,7 vóxeles</td><td class="num">5,0</td><td class="num">3,3</td></tr>
+          <tr><td>Otsu, imagen con ruido</td><td class="num">8,0</td><td class="num">6,0</td><td class="num">4,0</td></tr>
+          <tr><td>Suavizado + Otsu, imagen con ruido</td><td class="num">13,2</td><td class="num">9,9</td><td class="num">6,6</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="slide" data-title="Comprueba lo que aprendiste" data-notes="Puedes hacer las preguntas al público. Cada respuesta muestra una explicación corta. Úsalas también para repasar antes de exponer.">
+      <span class="eyebrow">Aprendizaje</span>
+      <h2>Comprueba lo que aprendiste</h2>
+      <div class="quiz" id="quiz"></div>
+      <p class="muted" id="quizScore">&nbsp;</p>
+    </section>
+
+    <section class="slide" data-title="Preguntas del jurado" data-notes="Ensaya estas respuestas en voz alta. Son cortas y dicen la verdad, que es lo que mejor resiste una segunda pregunta.">
+      <span class="eyebrow">Preparación</span>
+      <h2>Seis preguntas que te pueden hacer</h2>
+      <div class="stack">
+        <details><summary>¿Lo probaste con embriones reales?</summary><p>No. Todo se probó con formas matemáticas y un simulador de imagen, porque solo así se conoce la respuesta correcta. El siguiente paso son imágenes públicas con licencia. Una imagen de una persona solo se usaría con consentimiento, anonimización y aprobación ética.</p></details>
+        <details><summary>¿Cómo sabes que el semáforo funciona?</summary><p>Se calibró con unas imágenes y se comprobó con otras 50 400 que no había visto, con el criterio escrito antes. Cuando dio luz verde se equivocó entre 0,4 % y 2,6 % de las veces. La demostración 2 lo repite en vivo con objetos nuevos.</p></details>
+        <details><summary>¿Qué tiene de nuevo?</summary><p>Las ideas sueltas ya existen en otros campos. Lo que no encontré en la literatura es la combinación: una probabilidad para cada medida, calibrada contra una verdad conocida, que además se niega a certificar imágenes distintas de las de su calibración. Es una ausencia en mi búsqueda, no una prueba de que nadie lo haya hecho.</p></details>
+        <details><summary>¿Para qué sirve si no diagnostica?</summary><p>Para que quien investiga sepa si puede fiarse de sus medidas y qué resolución necesita antes de tomar la imagen. Mejora la herramienta de investigación; no sustituye a un médico.</p></details>
+        <details><summary>¿Lo hiciste tú?</summary><p>Yo planteé el problema, dirigí las decisiones y revisé los resultados. El código se desarrolló con asistencia de inteligencia artificial (Claude), y está declarado así en el repositorio. Todavía no tiene revisión científica externa.</p></details>
+        <details><summary>¿Cuál es la parte más débil?</summary><p>Que aún no hay datos reales ni revisión externa, y que un rasgo que la imagen pierde por completo no se puede detectar. Lo digo en el propio proyecto.</p></details>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Cierre" data-notes="Termina con la frase y ofrece el repositorio. Si queda tiempo, vuelve a la demostración 1 y deja que alguien del público mueva la resolución.">
+      <span class="eyebrow">Cierre</span>
+      <h1>Medir bien es saber cuánto no se sabe.</h1>
+      <p class="big">Geometría de la Vida no promete ver más de lo que la imagen permite. Promete decir, para cada medida, si hay que creerle.</p>
+      <p class="muted">Código, preregistros, resultados y erratas: github.com/fabiantrelles593-arch/Estudio-Embrionario (rama geovida/v0.1-desde-cero). Licencia MIT.</p>
+      <div class="tags"><span class="tag">351 pruebas automáticas</span><span class="tag">10 pruebas preregistradas</span><span class="tag">22 erratas publicadas</span></div>
+    </section>
+  </div>
+
+  <div class="notes" id="notes" hidden><b>Guion de esta lámina</b><span id="notesText"></span></div>
+  <nav class="nav" aria-label="Navegación de la exposición">
+    <i class="progress" id="progress"></i>
+    <button class="btn" id="prev" type="button" aria-label="Lámina anterior">← Anterior</button>
+    <span class="where" id="where">1 / 1</span>
+    <span class="title" id="navTitle"></span>
+    <button class="btn" id="toggleNotes" type="button" aria-pressed="false">Guion (G)</button>
+    <button class="btn primary" id="next" type="button" aria-label="Lámina siguiente">Siguiente →</button>
+  </nav>
+</div>
+
+<!-- Laboratorio: una sola instancia que se mueve a la lámina activa -->
+<div id="labRoot" hidden>
+  <div class="lab" id="labGrid">
+    <div class="stage"><canvas id="view" aria-label="Vista 3D de los vóxeles que la imagen atribuye al objeto"></canvas><span class="hint">arrastra para girar · rueda para acercar</span><span class="busy" id="busy" hidden>calculando…</span></div>
+    <div class="panel">
+      <div class="presets" id="presets"></div>
+      <div class="stack" id="ctlAll">
+        <div class="field" id="ctlShape"><label for="shape">Forma (volumen y topología conocidos)</label><select id="shape"></select></div>
+        <div class="stack" id="ctlRest">
+          <div class="field" id="fRes"><label for="res"><span>Resolución: vóxeles a través del rasgo más fino</span><output id="resOut">4.0</output></label><input type="range" id="res" min="1.5" max="12" step="0.5" value="4"></div>
+          <div class="row2" id="rowAS">
+            <div class="field" id="fAniso"><span class="label">Vóxel alargado en z</span><div class="seg" id="aniso" role="group" aria-label="Anisotropía"><button type="button" data-v="1" aria-pressed="true">×1</button><button type="button" data-v="2" aria-pressed="false">×2</button><button type="button" data-v="3" aria-pressed="false">×3</button></div></div>
+            <div class="field" id="fScale"><span class="label">Degradar la imagen</span><div class="seg" id="scale" role="group" aria-label="Escala de medición"><button type="button" data-v="0" aria-pressed="true">nativa</button><button type="button" data-v="1" aria-pressed="false">×2</button><button type="button" data-v="2" aria-pressed="false">×4</button></div></div>
+          </div>
+        </div>
+        <button class="btn" id="reroll" type="button">Otra orientación al azar</button>
+      </div>
+      <div id="pMeasure" class="stack">
+        <div class="verdict" aria-live="polite"><div class="lamp" id="lamp" data-light="rojo" aria-hidden="true"><i></i><i></i><i></i></div><div><strong id="lightText">—</strong><small id="lightSub">—</small></div></div>
+        <dl class="read" id="readList">
+          <dt>Volumen medido / verdadero</dt><dd id="rVol">—</dd>
+          <dt>Topología medida (piezas, túneles, cavidades)</dt><dd id="rTop">—</dd>
+          <dt>Topología verdadera</dt><dd id="rTopTrue">—</dd>
+          <dt>Vóxeles del objeto</dt><dd id="rVox">—</dd>
+        </dl>
+      </div>
+      <div id="pScale" class="scroll"><table><thead><tr><th>Imagen</th><th>Error de volumen</th><th>Topología medida</th><th>¿Igual que la original?</th></tr></thead><tbody id="scaleRows"></tbody></table></div>
+    </div>
+  </div>
+  <div id="pGrowth" class="stack">
+    <div class="chart"><canvas id="growth" aria-label="Logaritmo del volumen medido en cada etapa con la luz del semáforo y las rectas ajustadas"></canvas></div>
+    <div class="legend"><span><i class="dot" style="background:var(--go)"></i>verde</span><span><i class="dot" style="background:var(--wait)"></i>amarillo</span><span><i class="dot" style="background:var(--stop)"></i>rojo</span><span><i class="sw" style="background:var(--muted)"></i>crecimiento verdadero</span><span><i class="sw" style="background:var(--stop)"></i>ajuste con todas</span><span><i class="sw" style="background:var(--accent)"></i>ajuste sin rojas</span></div>
+    <div class="rates"><div class="rate"><b>0.900</b><span>tasa verdadera por etapa</span></div><div class="rate"><b id="rateAll">—</b><span id="rateAllSub">con todas las etapas</span></div><div class="rate"><b id="rateNoRed">—</b><span id="rateNoRedSub">sin las etapas en rojo</span></div></div>
+  </div>
+</div>

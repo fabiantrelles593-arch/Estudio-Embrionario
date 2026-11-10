@@ -37,7 +37,8 @@ geovida certify imagen.npy --spacing 1 1 2 --segmenter otsu --profile realistic 
 punto más frágil de la forma (por ejemplo, el cuello que une dos partes) y si la imagen cae dentro
 del dominio de calibración.
 
-También hay un laboratorio interactivo en el navegador (`docs/laboratorio/`) y un visor 4D para
+También hay un laboratorio interactivo en el navegador (`docs/laboratorio/`), una exposición
+interactiva con demostraciones en vivo y cuestionario (`docs/exposicion/`) y un visor 4D para
 Unity (`unity/`, **sin compilar**: en el entorno de desarrollo no hay Unity).
 
 ## Resultados, prueba por prueba
@@ -59,7 +60,7 @@ Cada prueba fijó criterios y predicciones en git **antes** de ejecutarse. Detal
 
 Documentos: [`RESULTADOS.md`](docs/RESULTADOS.md) (v0.1), [`RESULTADOS_V02.md`](docs/RESULTADOS_V02.md),
 [`RESULTADOS_V03.md`](docs/RESULTADOS_V03.md), [`RESULTADOS_V04.md`](docs/RESULTADOS_V04.md),
-[`ERRATA.md`](docs/ERRATA.md) (20 errores propios, con causa y prevención) y
+[`ERRATA.md`](docs/ERRATA.md) (22 errores propios, con causa y prevención) y
 [`ANTECEDENTES_V04.md`](docs/ANTECEDENTES_V04.md) (qué existe ya en la literatura).
 
 ## Lo que este proyecto NO afirma

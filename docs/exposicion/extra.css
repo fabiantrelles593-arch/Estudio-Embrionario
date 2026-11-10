@@ -1,0 +1,27 @@
+<style>
+[hidden] { display: none !important }
+.slide { display: none }
+.slide.on { display: flex; animation: fadein .18s ease-out }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
+@media (prefers-reduced-motion: reduce) { .slide.on { animation: none } }
+#labRoot { display: flex; flex-direction: column; gap: 14px }
+.demo-slot { min-height: 40px }
+.callout.good { border-left-color: var(--go) } .callout.warn { border-left-color: var(--wait) } .callout.bad { border-left-color: var(--stop) }
+.slide > .tally, .slide > .bar { max-width: 760px }
+.lab.nostage { grid-template-columns: minmax(0, 1fr) }
+.lab.nostage .stage { display: none }
+.lab.nostage .panel { flex-direction: row; flex-wrap: wrap; align-items: end }
+.lab.nostage .panel > * { flex: 1 1 220px }
+.slide[data-demo] h2 { font-size: clamp(1.3rem, 2.5vw, 1.9rem) }
+.slide[data-demo] .steps { flex-direction: row; flex-wrap: wrap; gap: 4px 28px }
+.stage { max-height: 46vh }
+.chart canvas { height: clamp(230px, 36vh, 340px) }
+.slide { gap: 14px; padding-block: clamp(14px, 3vh, 32px) 18px }
+@media (min-width: 900px) { .quiz { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px } }
+.lab.nostage #ctlAll { flex-direction: row; align-items: end; flex-wrap: wrap }
+.lab.nostage #ctlAll > * { flex: 1 1 200px }
+.panel { gap: 8px }
+.slide[data-demo] p { max-width: 120ch }
+.slide h2 { max-width: 40ch }
+@media (max-width: 640px) { .nav .btn { padding: 8px 10px; font-size: 0.85rem; white-space: nowrap } .nav { gap: 6px } }
+</style>
