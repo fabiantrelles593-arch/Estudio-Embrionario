@@ -61,11 +61,36 @@ def main():
                 ax.set_xlabel("t / h (píxeles a través del rasgo)")
             if j == 0:
                 ax.set_ylabel("topología correcta (%)")
-    axs[0, 0].legend(fontsize=7, frameon=False, loc="lower right")
-    fig.suptitle("H7: limpieza 2D con moteado «compuesto». Ayuda en disco, elipse y anillo ancho; "
-                 "en el anillo de hueco estrecho (derecha) puede dañar", y=1.0, fontsize=9)
+    handles, labels = axs[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, ncol=2, loc="lower center",
+               bbox_to_anchor=(0.5, -0.04))
+    fig.suptitle("H7: topología correcta con y sin limpieza, moteado «compuesto» "
+                 "(línea gris: 90 %)", y=1.0, fontsize=10)
     fig.tight_layout()
-    fig.savefig(FIG / "h7_cleaning_help_and_harm.png", dpi=150, bbox_inches="tight")
+    fig.savefig(FIG / "h7_cleaning_compound.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+    # Descriptivo: dónde la limpieza daña (anillo de hueco estrecho, imagen ideal)
+    bases = ("global", "otsu", "smoothed_otsu", "smoothed_otsu_s2")
+    fig, axs = plt.subplots(1, 4, figsize=(12.5, 3.1), sharey=True)
+    for ax, seg in zip(axs, bases):
+        t = tab[(tab["segmenter"] == seg) & (tab["shape"] == "ring_tight")
+                & (tab["profile"] == "ideal")].sort_values("t_over_h")
+        ax.plot(t["t_over_h"], 100 * t["topo_base"], marker="o", ms=4, color="#D55E00",
+                label="sin limpieza")
+        ax.plot(t["t_over_h"], 100 * t["topo_clean"], marker="s", ms=4, color="#0072B2",
+                label="con limpieza")
+        fmt_log(ax)
+        ax.set_title(seg, fontsize=9)
+        ax.set_xlabel("t / h (píxeles a través del rasgo)")
+    axs[0].set_ylabel("topología correcta (%)")
+    handles, labels = axs[0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, ncol=2, loc="lower center",
+               bbox_to_anchor=(0.5, -0.12))
+    fig.suptitle("H7 (descriptivo): con imagen ideal la limpieza rellena el hueco real de "
+                 "ring_tight cuando mide menos que el umbral", y=1.02, fontsize=10)
+    fig.tight_layout()
+    fig.savefig(FIG / "h7_harm_ideal.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
     short = {k: v for k, v in res.items() if not k.startswith("cells_")}

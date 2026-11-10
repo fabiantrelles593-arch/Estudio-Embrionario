@@ -95,7 +95,9 @@ def main():
         ax.set_xlabel("t / h (vóxeles a través del rasgo más fino)")
     for ax in axs[:, 0]:
         ax.set_ylabel("proporción de imágenes")
-    axs[0, 0].legend(fontsize=7, frameon=False, loc="lower right")
+    handles, labels = axs[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, ncol=4, loc="lower center",
+               bbox_to_anchor=(0.5, -0.04))   # fuera de los paneles: no tapa las barras
     fig.suptitle("H6: qué luz enciende el semáforo según la resolución (barras) y cuánto acierta en verde (línea)", y=1.0)
     fig.tight_layout(); fig.savefig(FIG / "h6_lights_by_resolution.png", dpi=150, bbox_inches="tight"); plt.close(fig)
 
