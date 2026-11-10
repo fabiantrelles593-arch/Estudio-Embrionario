@@ -34,6 +34,8 @@ IMAGING_PROFILES: dict[str, dict] = {
 SHIFTED_PROFILES: dict[str, dict] = {
     "blurry": {"psf_fwhm": 2.0, "snr": 10.0},
     "noisy": {"psf_fwhm": 1.0, "snr": 5.0},
+    "mild_blur": {"psf_fwhm": 1.5, "snr": 10.0},
+    "mild_noise": {"psf_fwhm": 1.0, "snr": 7.5},
 }
 
 

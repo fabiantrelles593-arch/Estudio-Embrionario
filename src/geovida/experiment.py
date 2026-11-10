@@ -28,7 +28,7 @@ H6_SHAPES = PHANTOM_NAMES + EXTRA_NAMES   # las 10 formas de H6 (y de la calibra
 ALL_SHAPES = H6_SHAPES + NEW_NAMES        # índice de semilla; los índices previos no cambian
 # v0.4: perfiles de imagen «desplazados», nunca usados para calibrar. Sirven para
 # medir cuánto depende el certificado del simulador con el que se calibró.
-SHIFT_PROFILES = ("blurry", "noisy")
+SHIFT_PROFILES = ("blurry", "noisy", "mild_blur", "mild_noise")
 _SEED_PROFILES = PROFILES + SHIFT_PROFILES
 
 
