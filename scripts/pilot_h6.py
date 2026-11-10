@@ -11,14 +11,14 @@ import numpy as np
 import pandas as pd
 
 from geovida.analysis import add_predictors, add_vq_predictors, predict_frozen
-from geovida.experiment import ALL_SHAPES, Condition, run_sweep
+from geovida.experiment import H6_SHAPES, Condition, run_sweep
 
 PILOT_SEED = 20261115
 FROZEN = Path("results/summary/h3_frozen_models.json")
 
 
 def main():
-    conds = [Condition(s, t, a, p, r) for s in ALL_SHAPES for t in (1.5, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0)
+    conds = [Condition(s, t, a, p, r) for s in H6_SHAPES for t in (1.5, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0)
              for a in (1.0, 3.0) for p in ("ideal", "realistic") for r in range(4)]
     df = run_sweep(conds, n_jobs=2, base_seed=PILOT_SEED,
                    segmenters=("global", "otsu", "smoothed_otsu"))

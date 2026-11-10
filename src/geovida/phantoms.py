@@ -29,6 +29,10 @@ PHANTOM_NAMES = (
 # v0.2: formas nuevas para la confirmación H3 (el conjunto preregistrado de H1
 # no cambia). Todas son sólidos simples (Betti (1,0,0)) con proporciones fijas.
 EXTRA_NAMES = ("capsule", "cylinder", "oblate")
+# v0.4: formas no convexas reservadas como «nunca vistas» para el certificado.
+# ``dumbbell``: dos bolas unidas por un cuello delgado (t = diámetro del cuello).
+# ``cup``: semicáscara esférica abierta de pared t (rasgo laminar).
+NEW_NAMES = ("dumbbell", "cup")
 
 
 @dataclass(frozen=True)
@@ -171,6 +175,48 @@ def _oblate(t: float) -> Phantom:
                    + (p[..., 2] / c) ** 2 <= 1.0)
 
 
+def _dumbbell(t: float) -> Phantom:
+    """Dos bolas de radio 2t unidas por un cuello cilíndrico de diámetro t.
+
+    El tramo libre del cuello mide 1.5t. El cilindro llega hasta los centros de
+    las bolas (su parte interior ya está contenida en ellas), así que el volumen
+    es 2 V_bola + pi r^2 L_libre y el área es la de las dos esferas menos un
+    casquete cada una, más la pared lateral del cuello libre.
+    """
+    r, big_r, l_out = t / 2, 2.0 * t, 1.5 * t
+    root = math.sqrt(big_r**2 - r**2)
+    d = root + l_out / 2                      # distancia del centro de cada bola al origen
+    cap_height = big_r - root
+    volume = 2 * 4 / 3 * math.pi * big_r**3 + math.pi * r * r * l_out
+    area = (2 * (4 * math.pi * big_r**2 - 2 * math.pi * big_r * cap_height)
+            + 2 * math.pi * r * l_out)
+    truth = Truth(volume, area, (1, 0, 0), 1, t, math.inf)
+
+    def inside(p):
+        rho2 = p[..., 0] ** 2 + p[..., 1] ** 2
+        z = p[..., 2]
+        ball_up = rho2 + (z - d) ** 2 <= big_r**2
+        ball_dn = rho2 + (z + d) ** 2 <= big_r**2
+        neck = (rho2 <= r * r) & (np.abs(z) <= d)
+        return ball_up | ball_dn | neck
+
+    return Phantom("dumbbell", t, truth, (big_r, big_r, d + big_r), inside)
+
+
+def _cup(t: float) -> Phantom:
+    """Semicáscara esférica (z >= 0): radio interior 1.5t, exterior 2.5t, borde plano."""
+    ri, ro = 1.5 * t, 2.5 * t
+    truth = Truth(2 / 3 * math.pi * (ro**3 - ri**3),
+                  2 * math.pi * (ro**2 + ri**2) + math.pi * (ro**2 - ri**2),
+                  (1, 0, 0), 1, t, math.inf)
+
+    def inside(p):
+        d2 = (p**2).sum(-1)
+        return (d2 <= ro * ro) & (d2 >= ri * ri) & (p[..., 2] >= 0.0)
+
+    return Phantom("cup", t, truth, (ro, ro, ro), inside)
+
+
 def make_phantom(name: str, t: float) -> Phantom:
     """Construye el fantoma ``name`` con menor grosor sólido ``t`` (>0)."""
     if not t > 0:
@@ -195,4 +241,9 @@ def make_phantom(name: str, t: float) -> Phantom:
         return _cylinder(t)
     if name == "oblate":
         return _oblate(t)
-    raise ValueError(f"fantoma desconocido: {name!r}; opciones: {PHANTOM_NAMES + EXTRA_NAMES}")
+    if name == "dumbbell":
+        return _dumbbell(t)
+    if name == "cup":
+        return _cup(t)
+    raise ValueError(f"fantoma desconocido: {name!r}; "
+                     f"opciones: {PHANTOM_NAMES + EXTRA_NAMES + NEW_NAMES}")

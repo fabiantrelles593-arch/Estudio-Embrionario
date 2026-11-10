@@ -28,6 +28,13 @@ IMAGING_PROFILES: dict[str, dict] = {
     "ideal": {"psf_fwhm": 0.0, "snr": None},
     "realistic": {"psf_fwhm": 1.0, "snr": 10.0},
 }
+# v0.4: dominio desplazado (más desenfoque o más ruido que cualquier perfil usado
+# para calibrar). No entran en H1-H8 ni en ninguna calibración: sirven para medir
+# cuánto depende el certificado del simulador con el que se calibró.
+SHIFTED_PROFILES: dict[str, dict] = {
+    "blurry": {"psf_fwhm": 2.0, "snr": 10.0},
+    "noisy": {"psf_fwhm": 1.0, "snr": 5.0},
+}
 
 
 @dataclass(frozen=True)
@@ -68,10 +75,10 @@ class Rendered:
 def spec_for_t_over_h(t_over_h: float, anisotropy: float, profile: str,
                       t: float = 1.0) -> ImagingSpec:
     """Especificación con ``t / h_xy = t_over_h`` y el perfil de imagen dado."""
-    if profile not in IMAGING_PROFILES:
+    profiles = {**IMAGING_PROFILES, **SHIFTED_PROFILES}
+    if profile not in profiles:
         raise ValueError(f"perfil desconocido: {profile!r}")
-    return ImagingSpec(h_xy=t / t_over_h, anisotropy=anisotropy,
-                       **IMAGING_PROFILES[profile])
+    return ImagingSpec(h_xy=t / t_over_h, anisotropy=anisotropy, **profiles[profile])
 
 
 def render(phantom: Phantom, spec: ImagingSpec, rng: np.random.Generator) -> Rendered:

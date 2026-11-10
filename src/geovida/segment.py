@@ -35,6 +35,21 @@ def _smoothed_otsu(image: np.ndarray, spacing, sigma: float = 1.0) -> np.ndarray
     return sm >= threshold_otsu(sm)
 
 
+def working_image_and_threshold(name: str, image: np.ndarray, spacing):
+    """Imagen de trabajo y umbral de cada segmentador preregistrado, de modo que
+    ``work >= thr`` reproduce exactamente su máscara. Lo usa el margen de
+    intensidad (v0.4) para mover el umbral alrededor del operativo."""
+    if name == "global":
+        return image, 0.5
+    if name == "otsu":
+        return image, float(threshold_otsu(image))
+    if name == "smoothed_otsu":
+        sp = np.asarray(spacing, dtype=float)
+        sm = ndi.gaussian_filter(image, sigma=1.0 * sp.min() / sp)
+        return sm, float(threshold_otsu(sm))
+    raise ValueError(f"sin umbral de trabajo para el segmentador {name!r}")
+
+
 CLEAN_MIN_VOXELS = 8  # 2 x 2 x 2: por debajo no hay rasgo resoluble
 
 
