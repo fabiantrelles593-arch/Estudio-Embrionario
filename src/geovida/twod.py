@@ -32,9 +32,16 @@ from skimage.filters import threshold_otsu
 from skimage.measure import perimeter_crofton, regionprops
 
 PHANTOMS_2D = ("disk", "ellipse", "annulus")
+# v0.3 (H7): anillo con el hueco tan estrecho como la pared (ancho t, hueco de
+# diámetro t). No entra en el diseño de H5 ni mueve sus índices de semilla.
+EXTRA_2D = ("ring_tight",)
+ALL_2D = PHANTOMS_2D + EXTRA_2D
 PROFILES_2D = ("ideal", "us_compound", "us_raw")
 T_OVER_H_2D = (2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 20.0)
 BASE_SEED_2D = 20261112
+H7_SEED = 20261120
+CLEAN2D_MIN_PX = 4          # preregistrado en H7
+CLEAN2D_FRACTION = 0.005    # preregistrado en H7
 BG_LEVEL = 0.25  # fondo a 25 % del primer plano (contraste 4:1)
 FWHM_TO_SIGMA = 1.0 / (2.0 * math.sqrt(2.0 * math.log(2.0)))
 
@@ -94,7 +101,17 @@ def make_phantom2d(name: str, t: float) -> Phantom2D:
             return (d2 <= ro * ro) & (d2 >= ri * ri)
 
         return Phantom2D(name, t, truth, (ro, ro), inside)
-    raise ValueError(f"fantoma 2D desconocido: {name!r}; opciones: {PHANTOMS_2D}")
+    if name == "ring_tight":
+        ri, ro = 0.5 * t, 1.5 * t
+        truth = Truth2D(math.pi * (ro**2 - ri**2), 2 * math.pi * (ro + ri),
+                        2 * math.pi * ro, (1, 1), 0, t, t)
+
+        def inside_tight(p):
+            d2 = (p**2).sum(-1)
+            return (d2 <= ro * ro) & (d2 >= ri * ri)
+
+        return Phantom2D(name, t, truth, (ro, ro), inside_tight)
+    raise ValueError(f"fantoma 2D desconocido: {name!r}; opciones: {ALL_2D}")
 
 
 # --- imagen -----------------------------------------------------------------
@@ -163,6 +180,9 @@ def render2d(ph: Phantom2D, spec: Spec2D, rng: np.random.Generator) -> Rendered2
 
 # --- segmentación -----------------------------------------------------------
 
+_CROSS = ndi.generate_binary_structure(2, 1)
+_FULL = ndi.generate_binary_structure(2, 2)
+
 def _g(image, spacing):
     return image >= 0.5
 
@@ -181,10 +201,61 @@ def _so(sigma):
 SEGMENTERS_2D = {"global": _g, "otsu": _o, "smoothed_otsu": _so(1.0), "smoothed_otsu_s2": _so(2.0)}
 
 
+_CLEAN_SUFFIX = "_clean"
+
+
 def segment2d(name: str, image: np.ndarray, spacing) -> np.ndarray:
-    if name not in SEGMENTERS_2D:
-        raise ValueError(f"segmentador 2D desconocido: {name!r}; opciones: {tuple(SEGMENTERS_2D)}")
-    return SEGMENTERS_2D[name](image, spacing).astype(bool)
+    """Segmenta con uno de los cuatro preregistrados de H5 o con su versión
+    ``<nombre>_clean`` (H7: la misma máscara pasada por ``_clean_mask_2d``)."""
+    base = name[: -len(_CLEAN_SUFFIX)] if name.endswith(_CLEAN_SUFFIX) else name
+    if base not in SEGMENTERS_2D:
+        options = tuple(SEGMENTERS_2D) + tuple(n + _CLEAN_SUFFIX for n in SEGMENTERS_2D)
+        raise ValueError(f"segmentador 2D desconocido: {name!r}; opciones: {options}")
+    mask = SEGMENTERS_2D[base](image, spacing).astype(bool)
+    return _clean_mask_2d(mask)[0] if base != name else mask
+
+
+# --- limpieza que escala con el objeto (H7) ---------------------------------
+
+def _clean_mask_2d(mask: np.ndarray):
+    """Limpieza preregistrada en H7. Devuelve (máscara, componentes quitados,
+    huecos rellenados, umbral en píxeles).
+
+    Se quitan los componentes (8-conexos) y se rellenan los huecos (4-conexos,
+    nunca el exterior) de menos de ``max(4, ceil(0.005 A))`` píxeles, con A el
+    área del componente mayor de la máscara de entrada.
+
+    LÍMITE CONOCIDO (lección de ERRATA E11): el criterio es de tamaño, no de
+    significado. Un hueco REAL más pequeño que el umbral también se rellena.
+    """
+    m = np.asarray(mask, dtype=bool)
+    lab, n = ndi.label(m, structure=_FULL)
+    if n == 0:
+        return m.copy(), 0, 0, CLEAN2D_MIN_PX
+    sizes = np.bincount(lab.ravel())
+    sizes[0] = 0
+    thr = max(CLEAN2D_MIN_PX, int(math.ceil(CLEAN2D_FRACTION * int(sizes.max()))))
+    small = sizes < thr
+    small[0] = False
+    removed = int(small.sum())
+    out = m & ~small[lab]
+    padded = np.pad(~out, 1, constant_values=True)
+    lab_bg, n_bg = ndi.label(padded, structure=_CROSS)
+    filled = 0
+    if n_bg:
+        bg_sizes = np.bincount(lab_bg.ravel())
+        small_bg = bg_sizes < thr
+        small_bg[0] = False
+        small_bg[lab_bg[0, 0]] = False          # el exterior toca el marco
+        filled = int(small_bg.sum())
+        out = out | small_bg[lab_bg][1:-1, 1:-1]
+    return out, removed, filled, thr
+
+
+def clean_report_2d(mask: np.ndarray) -> dict:
+    """Qué borraría la limpieza de H7 en esta máscara (para no limpiar en silencio)."""
+    _, removed, filled, thr = _clean_mask_2d(mask)
+    return {"removed_components": removed, "filled_holes": filled, "threshold_px": thr}
 
 
 # --- medidas ----------------------------------------------------------------
@@ -200,10 +271,6 @@ class Betti2D:
     @property
     def chi(self) -> int:
         return self.b0 - self.b1
-
-
-_CROSS = ndi.generate_binary_structure(2, 1)
-_FULL = ndi.generate_binary_structure(2, 2)
 
 
 def betti_2d(mask: np.ndarray, fg_connectivity: int = 8) -> Betti2D:
@@ -279,39 +346,66 @@ def design_2d(n_reps: int) -> list[Condition2D]:
 
 
 def _rng2d(c: Condition2D, base_seed: int) -> np.random.Generator:
-    key = [base_seed, PHANTOMS_2D.index(c.shape), int(round(c.t_over_h * 100)),
+    key = [base_seed, ALL_2D.index(c.shape), int(round(c.t_over_h * 100)),
            PROFILES_2D.index(c.profile), c.rep]
     return np.random.default_rng(np.random.SeedSequence(key))
+
+
+def _row_2d(c: Condition2D, seg: str, mask: np.ndarray, ref: np.ndarray, tr: Truth2D,
+            spacing: float) -> dict:
+    meas = measure_mask_2d(mask, spacing)
+    tot = mask.sum() + ref.sum()
+    return {
+        "shape": c.shape, "t_over_h": c.t_over_h, "profile": c.profile, "rep": c.rep,
+        "segmenter": seg, "t_min_over_h": tr.t_min * c.t_over_h,
+        "area_true": tr.area, "perimeter_true": tr.perimeter,
+        "outer_perimeter_true": tr.outer_perimeter,
+        **meas, **relative_errors_2d(meas, tr),
+        "dice": 1.0 if tot == 0 else float(2.0 * np.logical_and(mask, ref).sum() / tot),
+    }
 
 
 def run_condition_2d(c: Condition2D, base_seed: int = BASE_SEED_2D) -> list[dict]:
     ph = make_phantom2d(c.shape, 1.0)
     out = render2d(ph, spec2d_for(c.t_over_h, c.profile), _rng2d(c, base_seed))
     ref = out.coverage >= 0.5
-    tr = ph.truth
+    return [_row_2d(c, seg, segment2d(seg, out.image, out.spacing), ref, ph.truth, out.spacing)
+            for seg in SEGMENTERS_2D]
+
+
+def design_h7(n_reps: int) -> list[Condition2D]:
+    """Diseño de H7: las tres formas de H5 más ``ring_tight``, misma rejilla y perfiles."""
+    return [Condition2D(s, t, p, r)
+            for s, t, p, r in itertools.product(ALL_2D, T_OVER_H_2D, PROFILES_2D, range(n_reps))]
+
+
+def run_condition_h7(c: Condition2D, base_seed: int = H7_SEED) -> list[dict]:
+    """Cada segmentador de H5 y su versión limpia sobre LA MISMA imagen (pareado)."""
+    ph = make_phantom2d(c.shape, 1.0)
+    out = render2d(ph, spec2d_for(c.t_over_h, c.profile), _rng2d(c, base_seed))
+    ref = out.coverage >= 0.5
     rows = []
     for seg in SEGMENTERS_2D:
-        mask = segment2d(seg, out.image, out.spacing)
-        meas = measure_mask_2d(mask, out.spacing)
-        tot = mask.sum() + ref.sum()
-        rows.append({
-            "shape": c.shape, "t_over_h": c.t_over_h, "profile": c.profile, "rep": c.rep,
-            "segmenter": seg, "t_min_over_h": tr.t_min * c.t_over_h,
-            "area_true": tr.area, "perimeter_true": tr.perimeter,
-            "outer_perimeter_true": tr.outer_perimeter,
-            **meas, **relative_errors_2d(meas, tr),
-            "dice": 1.0 if tot == 0 else float(2.0 * np.logical_and(mask, ref).sum() / tot),
-        })
+        base = segment2d(seg, out.image, out.spacing)
+        cleaned, removed, filled, thr = _clean_mask_2d(base)
+        for name, mask, is_clean in ((seg, base, False), (seg + _CLEAN_SUFFIX, cleaned, True)):
+            row = _row_2d(c, name, mask, ref, ph.truth, out.spacing)
+            row.update(base=seg, cleaned=is_clean,
+                       removed_components=removed if is_clean else 0,
+                       filled_holes=filled if is_clean else 0,
+                       clean_threshold_px=thr)
+            rows.append(row)
     return rows
 
 
 def _worker(args):
-    return run_condition_2d(*args)
+    fn, cond, base_seed = args
+    return fn(cond, base_seed)
 
 
 def run_sweep_2d(conditions: list[Condition2D], n_jobs: int = 1,
-                 base_seed: int = BASE_SEED_2D) -> pd.DataFrame:
-    jobs = [(c, base_seed) for c in conditions]
+                 base_seed: int = BASE_SEED_2D, condition_fn=run_condition_2d) -> pd.DataFrame:
+    jobs = [(condition_fn, c, base_seed) for c in conditions]
     if n_jobs <= 1:
         chunks = [_worker(j) for j in jobs]
     else:
