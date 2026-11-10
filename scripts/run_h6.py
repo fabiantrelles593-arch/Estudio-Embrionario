@@ -24,12 +24,12 @@ def main():
     seed, out, manifest_path, reps_default = PHASES[a.phase]
     reps = a.reps or reps_default
     design = h6_design(reps)
+    state = git_state()   # al empezar: es el código que se ejecuta
     t0 = time.time()
     df = run_sweep(design, n_jobs=a.jobs, base_seed=seed, segmenters=SEGMENTERS)
     elapsed = time.time() - t0
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out, index=False, compression="gzip")
-    state = git_state()
     manifest = {"phase": a.phase, "started_utc": dt.datetime.fromtimestamp(t0, dt.timezone.utc).isoformat(),
                 "elapsed_s": round(elapsed, 1), "git_commit": state["commit"], "code_dirty": state["dirty_code"],
                 "reps": reps, "conditions": len(design), "rows": len(df), "base_seed": seed,

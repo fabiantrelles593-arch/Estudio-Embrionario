@@ -20,13 +20,13 @@ def main():
     seed = H8_PILOT_SEED if a.pilot else H8_SEED
     tag = "h8pilot" if a.pilot else "h8"
     design = design_h8(a.reps)
+    state = git_state()   # al empezar: es el código que se ejecuta
     t0 = time.time()
     df = run_h8(design, n_jobs=a.jobs, base_seed=seed)
     elapsed = time.time() - t0
     out = Path(f"results/raw/{tag}_sweep.csv.gz")
     out.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out, index=False, compression="gzip")
-    state = git_state()
     manifest = {
         "started_utc": dt.datetime.fromtimestamp(t0, dt.timezone.utc).isoformat(),
         "elapsed_s": round(elapsed, 1), "git_commit": state["commit"],

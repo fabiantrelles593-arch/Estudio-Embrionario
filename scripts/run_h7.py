@@ -19,12 +19,12 @@ def main():
     ap.add_argument("--manifest", default="results/summary/h7_run_manifest.json")
     a = ap.parse_args()
     design = design_h7(a.reps)
+    state = git_state()   # al empezar: es el código que se ejecuta
     t0 = time.time()
     df = run_sweep_2d(design, n_jobs=a.jobs, base_seed=H7_SEED, condition_fn=run_condition_h7)
     elapsed = time.time() - t0
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(a.out, index=False, compression="gzip")
-    state = git_state()
     manifest = {
         "started_utc": dt.datetime.fromtimestamp(t0, dt.timezone.utc).isoformat(),
         "elapsed_s": round(elapsed, 1), "git_commit": state["commit"],

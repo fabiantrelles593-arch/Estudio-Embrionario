@@ -218,3 +218,58 @@ def auc_score(score, y) -> float:
         return float("nan")
     ranks = rankdata(s)  # empates -> rango medio
     return float((ranks[y == 1].sum() - pos * (pos + 1) / 2) / (pos * neg))
+
+
+# --- v0.4: logit de varias variables para los modelos congelados del certificado ---
+
+def fit_logit_multi(X, y, ridge: float = 1.0, features=None, iters: int = 200) -> dict:
+    """Logit con penalización ridge sobre las pendientes estandarizadas.
+
+    El ridge evita coeficientes infinitos bajo separación casi perfecta (a baja
+    resolución casi todo falla y a alta casi todo acierta). Los coeficientes se
+    devuelven en la escala original de las variables y el modelo es un
+    diccionario serializable (para congelarlo en git).
+    """
+    X = np.asarray(X, dtype=float)
+    if X.ndim == 1:
+        X = X[:, None]
+    y = np.asarray(y, dtype=float)
+    mean = X.mean(axis=0)
+    std = X.std(axis=0)
+    scale = np.where(std > 0, std, 1.0)
+    Z = np.column_stack([np.ones(len(X)), (X - mean) / scale])
+    pen = np.diag([0.0] + [ridge] * X.shape[1])
+
+    def objective(b):
+        eta = Z @ b
+        return float(np.sum(y * eta - np.logaddexp(0.0, eta)) - 0.5 * b @ pen @ b)
+
+    b = np.zeros(Z.shape[1])
+    cur = objective(b)
+    for _ in range(iters):
+        p = expit(Z @ b)
+        w = np.clip(p * (1 - p), 1e-9, None)
+        grad = Z.T @ (y - p) - pen @ b
+        hess = Z.T @ (Z * w[:, None]) + pen
+        step = np.linalg.solve(hess, grad)
+        t = 1.0
+        while t > 1e-6 and objective(b + t * step) < cur - 1e-12:
+            t *= 0.5                                  # retroceso: Newton puede pasarse
+        new = b + t * step
+        done = np.abs(new - b).max() < 1e-10
+        b, cur = new, objective(new)
+        if done:
+            break
+    coef = np.where(std > 0, b[1:] / scale, 0.0)
+    model = {"intercept": float(b[0] - np.sum(coef * mean)),
+             "coef": [float(c) for c in coef], "ridge": float(ridge), "n": int(len(y))}
+    if features is not None:
+        model["features"] = list(features)
+    return model
+
+
+def predict_logit_multi(model: dict, X) -> np.ndarray:
+    X = np.asarray(X, dtype=float)
+    if X.ndim == 1:
+        X = X[:, None]
+    return expit(model["intercept"] + X @ np.asarray(model["coef"], dtype=float))
