@@ -103,3 +103,29 @@ Un valor no calculable es «no evaluable», nunca «no apoyada».
 ## 7. Desviaciones
 
 (Ninguna al momento del primer commit.)
+
+### Aclaraciones del 2026-11-11 (escritas al implementar `src/geovida/h11.py`, antes de abrir ningún dato real)
+
+No cambian ningún criterio; fijan lo que el texto dejaba abierto. Se prueban con tablas fabricadas
+(`tests/test_h11.py`), no con imágenes reales.
+
+1. **H11b «no concluyente».** El texto define *apoyada* (estimación puntual ≤ 10 %) y *no apoyada*
+   (límite inferior del IC 95 % > 10 %). Si la estimación puntual supera 10 % pero el límite inferior
+   del intervalo no llega a 10 %, el resultado es **«no concluyente»**: ni se apoya ni se refuta. No se
+   interpreta como fallo ni como éxito.
+2. **Intervalo.** Percentil 95 % por remuestreo de **embriones** (no de filas): 2000 réplicas,
+   semilla 20261126 (`h11.N_BOOT`, `h11.BOOT_SEED`). Varias filas de un mismo embrión (tres
+   segmentadores, dos estructuras) no se tratan como independientes.
+3. **Evaluable.** Mínimo 30 luces verdes y 15 embriones con al menos una verde (H11b, H11c, H11e).
+   Por debajo, el veredicto es «no evaluable», nunca «no apoyada».
+4. **H11a.** Se mide por segmentador sobre las filas de cuerpo; «dentro del dominio» es el índice
+   `in_domain_volume` del certificado. *Apoyada*: ≤ 50 % en los tres; *parcial*: en dos; si no, *no
+   apoyada*.
+5. **Emparejamiento.** Un manifiesto CSV (`embryo_id, structure, image, label, label_value`) lo arma
+   una persona tras leer la ficha de `geovida datasheet`. Si imagen y etiqueta no tienen la misma forma
+   ni el mismo tamaño de vóxel, o el valor de etiqueta no aparece, el caso se rechaza con error: no se
+   adivina ni se omite en silencio.
+6. **Dos calibraciones, un mismo protocolo.** Se corre con los modelos de v0.4 (`--tag v04`) y,
+   aparte, con los de la ecografía simulada de H12 (`--frozen h12_frozen.json --tag h12`). Los dos
+   resultados se publican. Los veredictos de la segunda se interpretan según `PREREGISTRO_H12R.md`
+   (por escribir, también antes de abrir datos).
