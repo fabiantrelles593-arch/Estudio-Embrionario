@@ -70,7 +70,8 @@ con contornos de expertos, sin reajustar nada y con los criterios fijados antes 
 ([`PREREGISTRO_H11.md`](docs/PREREGISTRO_H11.md)). Propósito, objetivos y ruta por etapas, hasta la
 puerta ética y regulatoria que exigiría cualquier uso con humanos:
 [`OBJETIVOS_V05.md`](docs/OBJETIVOS_V05.md). Ya existen el lector de volúmenes NIfTI
-(`geovida.realdata`) y `scripts/real_datasheet.py`. **Todavía no se ha procesado ninguna imagen real.**
+(`geovida.realdata`) y `geovida datasheet` (ficha de volúmenes; guía paso a paso en
+[`GUIA_DATOS_REALES.md`](docs/GUIA_DATOS_REALES.md)). **Todavía no se ha procesado ninguna imagen real.**
 
 ## Lo que este proyecto NO afirma
 

@@ -70,7 +70,7 @@ han comprobado en otra fuente.
 ## 6. Qué se necesita de afuera
 
 * Descargar el conjunto de ecografía de ratón (cuenta gratuita en IEEE DataPort) y entregarlo, o una
-  muestra, o ejecutar `scripts/real_datasheet.py` y devolver la ficha.
+  muestra, o ejecutar `geovida datasheet` y devolver la ficha (paso a paso en `GUIA_DATOS_REALES.md`).
 * Un asesor (docente, laboratorio o clínico) que revise el método antes de cualquier uso externo.
 * Para las etapas 4 y 5: un comité de ética, un grupo clínico y asesoría regulatoria. Eso no se
   improvisa desde un repositorio.
