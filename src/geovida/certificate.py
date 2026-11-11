@@ -65,7 +65,7 @@ def certify(image: np.ndarray, spacing, segmenter: str, profile: str,
     spacing = tuple(float(s) for s in spacing)
     mask = segment(segmenter, image, spacing)
     base = {"declared": {"segmenter": segmenter, "profile": profile}, "spacing": list(spacing),
-            "shape": list(image.shape), "limits": list(LIMITS),
+            "shape": list(image.shape), "limits": list(frozen.get("limits", LIMITS)),
             "thresholds": {"green": GREEN, "red": RED}}
     if not mask.any():
         empty = {"p": 0.0, "light": "rojo", "reason": "máscara vacía", "in_domain": False}

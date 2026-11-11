@@ -24,12 +24,19 @@ import pandas as pd
 from . import h6, h9
 from .analysis import auc_score
 from .budget import GREEN
+from .certificate import LIMITS
 from .experiment import US_PROFILES
 from .h9 import (AUC_MIN, ECE_MAX, FALSE_GREEN_MAX, MIN_GREEN, MIN_GREEN_SMALL, light_metrics)
 
 MIN_CALIB_ROWS = 200       # filas por estrato para evaluar AUC y ECE
 MIN_MINORITY = 0.05        # la clase minoritaria debe ser >= 5 % para que AUC y ECE signifiquen algo
 IN_DOMAIN_MAX = 0.50       # H12b: una imagen de otra modalidad entra en el dominio en <= 50 %
+US_LIMITS = (
+    "Calibrado con ecografía 3D simulada (moteado completamente desarrollado, atenuación en z, "
+    "fondo no nulo); no validado con ecografías reales ni con fantomas físicos.",
+    "El simulador no incluye compresión logarítmica, sombras acústicas ni reverberaciones.",
+    *LIMITS[1:],
+)
 SUPPORTED_FRACTION = 5 / 6
 PARTIAL_FRACTION = 4 / 6
 
@@ -41,6 +48,7 @@ def freeze_us(cal_df: pd.DataFrame) -> dict:
     frozen = h9.freeze(df, volume_models=volume_models)
     present = set(df["profile"].unique())
     frozen["profiles"] = [p for p in US_PROFILES if p in present]
+    frozen["limits"] = list(US_LIMITS)
     return frozen
 
 

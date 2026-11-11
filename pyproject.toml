@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "geovida"
-version = "0.4.0"
+version = "0.5.0.dev0"
 description = "Geometría de la Vida: presupuesto de incertidumbre morfométrica y topológica con fantomas de verdad conocida, y un certificado por medida que sabe cuándo no fiarse."
 readme = "README.md"
 requires-python = ">=3.11"
