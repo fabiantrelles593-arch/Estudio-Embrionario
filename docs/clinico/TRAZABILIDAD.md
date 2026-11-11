@@ -1,0 +1,39 @@
+# Trazabilidad: hipótesis → preregistro → código → pruebas → resultados
+
+> Cada fila enlaza una pregunta con los archivos donde se fijó, se implementó, se probó y se
+> respondió. Una prueba automática (`tests/test_traceability.py`) comprueba que todos los archivos
+> citados con comillas inversas en las tablas existen. **Eso verifica que los archivos existen, no que
+> los resultados sean correctos ni que el software sea seguro.**
+>
+> Los veredictos no se copian aquí para que no puedan divergir de su fuente: están en el documento de
+> resultados de cada fila.
+
+## Matriz
+
+| ID | Pregunta (resumida) | Preregistro | Código | Pruebas | Resultados |
+|---|---|---|---|---|---|
+| H1 | ¿Cuántos vóxeles hacen falta para medir volumen y topología? | `docs/PREREGISTRO_H1.md` | `src/geovida/experiment.py`, `src/geovida/imaging.py`, `src/geovida/phantoms.py`, `src/geovida/measure.py`, `scripts/run_h1.py`, `scripts/analyze_h1.py` | `tests/test_experiment.py`, `tests/test_imaging.py`, `tests/test_phantoms.py`, `tests/test_measure.py` | `docs/RESULTADOS.md`, `results/summary/h1_verdicts.json` |
+| H2 | ¿Cuánto distorsiona una trayectoria 4D el error de estadificación? | `docs/PREREGISTRO_H2.md` | `src/geovida/traj4d.py`, `scripts/run_h2.py`, `scripts/analyze_h2.py` | `tests/test_traj4d.py` | `docs/RESULTADOS.md`, `results/summary/h2_verdicts.json` |
+| H3, H4 | ¿Predice mejor V/(S·h) que el grosor? ¿Sirve el estimador de área por distancia con signo? | `docs/PREREGISTRO_H3.md` | `src/geovida/h3.py`, `scripts/run_h3.py`, `scripts/analyze_h3.py`, `scripts/freeze_h3_models.py` | `tests/test_h3.py` | `docs/RESULTADOS_V02.md`, `results/summary/h3_verdicts.json` |
+| H5 | Prueba de estrés 2D tipo ecografía (moteado 2D) | `docs/PREREGISTRO_2D.md` | `src/geovida/twod.py`, `src/geovida/h5.py`, `scripts/run_2d.py`, `scripts/analyze_2d.py` | `tests/test_twod.py`, `tests/test_h5.py` | `docs/RESULTADOS_V02.md`, `results/summary/h5_verdicts.json` |
+| H6 | ¿Sabe el instrumento cuándo la resolución no alcanza para el volumen? | `docs/PREREGISTRO_H6.md` | `src/geovida/h6.py`, `src/geovida/budget.py`, `scripts/run_h6.py`, `scripts/calibrate_h6.py`, `scripts/analyze_h6.py` | `tests/test_h6.py`, `tests/test_budget.py` | `docs/RESULTADOS_V03.md`, `results/summary/h6_verdicts.json`, `results/summary/h6_frozen_models.json` |
+| H7 | Limpieza 2D que escala con el objeto | `docs/PREREGISTRO_H7.md` | `src/geovida/h7.py`, `scripts/run_h7.py`, `scripts/analyze_h7.py` | `tests/test_h7.py` | `docs/RESULTADOS_V03.md`, `results/summary/h7_verdicts.json` |
+| H8 | El semáforo en la estimación de crecimiento 4D | `docs/PREREGISTRO_H8.md` | `src/geovida/growth.py`, `scripts/run_h8.py`, `scripts/analyze_h8.py` | `tests/test_growth.py` | `docs/RESULTADOS_V03.md`, `results/summary/h8_verdicts.json` |
+| H9, H10 | Semáforo de topología y guardia de dominio | `docs/PREREGISTRO_H9_H10.md` | `src/geovida/h9.py`, `src/geovida/certsweep.py`, `src/geovida/topomargin.py`, `src/geovida/scaleaxis.py`, `src/geovida/domain.py`, `src/geovida/certificate.py`, `scripts/run_h9.py`, `scripts/calibrate_h9.py`, `scripts/analyze_h9.py` | `tests/test_h9.py`, `tests/test_certsweep.py`, `tests/test_topomargin.py`, `tests/test_scaleaxis.py`, `tests/test_domain.py`, `tests/test_certificate.py`, `tests/test_logit_multi.py` | `docs/RESULTADOS_V04.md`, `results/summary/h9_verdicts.json`, `results/summary/h9_frozen.json` |
+| H11 | ¿Transfiere el certificado congelado a ecografía 3D real de ratón? | `docs/PREREGISTRO_H11.md` | `src/geovida/realdata.py`, `scripts/real_datasheet.py` | `tests/test_realdata.py` | **Pendiente de datos reales** |
+| H12 | ¿Se puede recalibrar para ecografía 3D simulada con moteado y atenuación? | `docs/PREREGISTRO_H12.md` | `src/geovida/h12.py`, `src/geovida/imaging.py`, `scripts/run_h12.py`, `scripts/calibrate_h12.py`, `scripts/analyze_h12.py` | `tests/test_h12.py`, `tests/test_ultrasound.py` | **En curso**: la calibración y la confirmación aún no se han corrido (se citarán aquí cuando existan) |
+| Informe por medida | Procedencia de cada certificado | — | `src/geovida/cli.py`, `src/geovida/provenance.py` | `tests/test_cli.py`, `tests/test_provenance.py` | — |
+
+## Errores propios
+
+Todo error encontrado se documenta con su causa y su prevención en `docs/ERRATA.md`. No se borra ni se
+reescribe la historia: una cifra equivocada se corrige y el error queda a la vista.
+
+## Cómo se comprueba que un resultado se puede reproducir
+
+1. Cada barrido guarda un manifiesto (por ejemplo `results/summary/h9_test_manifest.json`) con el commit, si el código estaba limpio,
+   la semilla, el número de filas y las versiones de los paquetes.
+2. Los modelos congelados están versionados (`results/summary/h9_frozen.json`; el de H12 se
+   añadirá al calibrar) y el paquete lleva una copia del de v0.4 que una prueba compara
+   con el original.
+3. `geovida certify --report` imprime las huellas SHA-256 de la imagen y de la calibración usadas.

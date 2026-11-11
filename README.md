@@ -60,7 +60,7 @@ Cada prueba fijó criterios y predicciones en git **antes** de ejecutarse. Detal
 
 Documentos: [`RESULTADOS.md`](docs/RESULTADOS.md) (v0.1), [`RESULTADOS_V02.md`](docs/RESULTADOS_V02.md),
 [`RESULTADOS_V03.md`](docs/RESULTADOS_V03.md), [`RESULTADOS_V04.md`](docs/RESULTADOS_V04.md),
-[`ERRATA.md`](docs/ERRATA.md) (23 errores propios, con causa y prevención) y
+[`ERRATA.md`](docs/ERRATA.md) (24 errores propios, con causa y prevención) y
 [`ANTECEDENTES_V04.md`](docs/ANTECEDENTES_V04.md) (qué existe ya en la literatura).
 
 ## Siguiente fase (v0.5, en curso): embriones reales
