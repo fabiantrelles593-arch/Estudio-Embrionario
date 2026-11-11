@@ -57,11 +57,24 @@ Cada prueba fijó criterios y predicciones en git **antes** de ejecutarse. Detal
 | H8 (v0.3) | ¿Mejora la tasa de crecimiento 4D al descartar las etapas en rojo? | **3 de 3.** Error mediano de 3–64 % a 1–2 %; con suavizado, 70–89 % de series sin tasa |
 | H9 (v0.4) | ¿Puede saber si la topología medida es correcta? | **Primaria apoyada** (verde falso ≤ 7.0 % en los 6 estratos; ≤ 7.8 % con formas nuevas). 4 de 6 apoyadas, 1 parcial, 1 no: sin guardia, 2 de 8 estratos de imágenes desplazadas superan 10 % |
 | H10 (v0.4) | ¿Se da cuenta de que una imagen está fuera de su calibración? | **4 de 4.** Sin guardia, el semáforo de volumen daba hasta 97 % de verdes falsos con el doble de ruido; con guardia, 10 de 12 estratos quedan sin verdes y los otros 2 en ≤ 4.1 %. Deja pasar 28 verdes con 21 % de falsas en un caso |
+| H12 (v0.5) | ¿Se puede recalibrar para ecografía 3D **simulada** (moteado, atenuación)? | **Primaria apoyada solo en 2 de 6 estratos** (`smoothed_otsu`: 0–0.2 % de verdes falsos de volumen, 6.6 % de topología); `global` y `otsu` nunca dan verde. 6 de 8 apoyadas, 1 parcial y 1 no apoyada (H12a: v0.4 sin guardia no daba verdes falsos, solo quedaba vacío); dos de las apoyadas lo son por margen mínimo. Mancuerna: 11 de 30 verdes de topología falsos (no evaluable) |
 
 Documentos: [`RESULTADOS.md`](docs/RESULTADOS.md) (v0.1), [`RESULTADOS_V02.md`](docs/RESULTADOS_V02.md),
 [`RESULTADOS_V03.md`](docs/RESULTADOS_V03.md), [`RESULTADOS_V04.md`](docs/RESULTADOS_V04.md),
-[`ERRATA.md`](docs/ERRATA.md) (24 errores propios, con causa y prevención) y
+[`RESULTADOS_V05.md`](docs/RESULTADOS_V05.md) (ecografía simulada),
+[`ERRATA.md`](docs/ERRATA.md) (25 errores propios, con causa y prevención) y
 [`ANTECEDENTES_V04.md`](docs/ANTECEDENTES_V04.md) (qué existe ya en la literatura).
+
+## v0.5: ecografía simulada (H12), resultado
+
+Se añadió un simulador de ecografía (moteado, atenuación) y se recalibró el certificado, con criterios
+fijados antes de calibrar ([`PREREGISTRO_H12.md`](docs/PREREGISTRO_H12.md)) y el modelo congelado antes de los
+barridos de confirmación. Resultado ([`RESULTADOS_V05.md`](docs/RESULTADOS_V05.md)): la primaria (H12c)
+queda **apoyada solo en 2 de 6 estratos**; en el resto el certificado nunca da verde. Donde se evalúa
+(`smoothed_otsu`), 0–0.2 % de verdes falsos de volumen y ≈ 60–66 % de las medidas correctas con verde
+(v0.4 con su guardia: ≈ 0 %). Puntos débiles publicados: la topología de la mancuerna (11 de 30 verdes
+falsos, por debajo del tamaño mínimo preregistrado), H12g apoyada por un solo estrato (11.2 %), y que
+solo un segmentador de tres es certificable en ecografía. **Solo simulación.**
 
 ## Siguiente fase (v0.5, en curso): embriones reales
 
@@ -71,7 +84,9 @@ con contornos de expertos, sin reajustar nada y con los criterios fijados antes 
 puerta ética y regulatoria que exigiría cualquier uso con humanos:
 [`OBJETIVOS_V05.md`](docs/OBJETIVOS_V05.md). Ya existen el lector de volúmenes NIfTI
 (`geovida.realdata`) y `geovida datasheet` (ficha de volúmenes; guía paso a paso en
-[`GUIA_DATOS_REALES.md`](docs/GUIA_DATOS_REALES.md)). **Todavía no se ha procesado ninguna imagen real.**
+[`GUIA_DATOS_REALES.md`](docs/GUIA_DATOS_REALES.md)). **Todavía no se ha procesado ninguna imagen real.** El código de H11 (`geovida.h11`, `scripts/run_h11.py`)
+y el preregistro de su variante recalibrada ([`PREREGISTRO_H12R.md`](docs/PREREGISTRO_H12R.md)) están listos y
+probados con volúmenes sintéticos; esperan los volúmenes.
 
 ## Lo que este proyecto NO afirma
 

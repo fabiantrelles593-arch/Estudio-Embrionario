@@ -2,8 +2,8 @@
 
 > Ficha de un modelo de investigación, no de un producto sanitario. Resume qué es, con qué se calibró,
 > cómo rindió y dónde falla, con cifras tomadas de `docs/RESULTADOS_V04.md` (v0.4). Los resultados de
-> la recalibración para ecografía simulada (H12) se añaden en su propio documento de resultados cuando
-> existan. **Sin uso clínico.**
+> la recalibración para ecografía simulada (H12) están en `docs/RESULTADOS_V05.md` y se resumen en
+> la sección 5. **Sin uso clínico.**
 
 ## 1. Qué es
 
@@ -23,7 +23,9 @@
   probar formas nunca vistas), observados con un simulador de adquisición (orientación aleatoria,
   volumen parcial, PSF gaussiana, ruido gaussiano, anisotropía).
 * v0.4: rejilla de 7 niveles de resolución × 3 anisotropías × 2 perfiles, 15 réplicas por celda, semilla
-  20261123. v0.5 (H12): ecografía 3D simulada (moteado, atenuación); ver `PREREGISTRO_H12.md`.
+  20261123. v0.5 (H12): ecografía 3D simulada (moteado, atenuación), 8 niveles de resolución × 3
+  anisotropías × 2 perfiles de ecografía, 10 réplicas, semilla 20261131 (14 400 filas); ver
+  `PREREGISTRO_H12.md`.
 * **Ninguna imagen real, ninguna imagen de personas.**
 
 ## 3. Cómo rindió (v0.4, imágenes sintéticas, semillas nuevas)
@@ -51,7 +53,26 @@
 * **Solo vale para este simulador:** una luz verde es una estimación calibrada con imágenes simuladas,
   no una validación con datos reales (H11 espera datos).
 
-## 5. Uso y limitaciones
+## 5. Variante para ecografía simulada (v0.5, H12)
+
+Modelo congelado en `results/summary/h12_frozen.json` (topología elegida por validación cruzada: T4).
+Confirmación con semillas nuevas, solo simulación (`docs/RESULTADOS_V05.md`):
+
+| Evaluación | Resultado |
+|---|---|
+| Estratos con luces verdes | 2 de 6: solo `smoothed_otsu` (`compound` y `raw`); `global` y `otsu` nunca dan verde |
+| Verde falso de volumen | 0.0 % (0–0.8 %) y 0.2 % (0–1.1 %) |
+| Verde falso de topología | 6.6 % (4.9–8.8 %) en `compound`; `raw` no emite ninguna luz verde de topología |
+| Cobertura de volumen (medidas correctas con verde) | 65.8 % y 59.8 %, frente a 0.4 % y 0 % de v0.4 con su guardia |
+| Calibración | 3 de 4 pares evaluables cumplen AUC ≥ 0.85 y ECE ≤ 0.10; `otsu · compound` tiene AUC 0.53 |
+| Formas nunca vistas | volumen 0 de 130 y 0 de 129 verdes falsos; topología no evaluable (66 verdes, 16.7 % falsos; mancuerna 11 de 30) |
+| Dominio desplazado | con guardia, ningún verde de volumen; sin guardia, 0.7 % y 11.2 % de verdes falsos |
+
+**Dónde falla:** un solo segmentador de tres es certificable; la envolvente cubre alrededor de un tercio
+de las imágenes de `smoothed_otsu`; la topología de formas de dos lóbulos (mancuerna) no es fiable; y
+el simulador lo hizo este proyecto y no se comparó con ninguna ecografía real.
+
+## 6. Uso y limitaciones
 
 * **Uso previsto:** investigación y educación; ver `USO_PREVISTO_Y_RIESGOS.md`.
 * **Fuera de alcance:** diagnóstico, decisiones sobre una persona, imágenes de equipos o modalidades

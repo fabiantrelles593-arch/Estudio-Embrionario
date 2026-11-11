@@ -20,8 +20,9 @@
 | H7 | Limpieza 2D que escala con el objeto | `docs/PREREGISTRO_H7.md` | `src/geovida/h7.py`, `scripts/run_h7.py`, `scripts/analyze_h7.py` | `tests/test_h7.py` | `docs/RESULTADOS_V03.md`, `results/summary/h7_verdicts.json` |
 | H8 | El semáforo en la estimación de crecimiento 4D | `docs/PREREGISTRO_H8.md` | `src/geovida/growth.py`, `scripts/run_h8.py`, `scripts/analyze_h8.py` | `tests/test_growth.py` | `docs/RESULTADOS_V03.md`, `results/summary/h8_verdicts.json` |
 | H9, H10 | Semáforo de topología y guardia de dominio | `docs/PREREGISTRO_H9_H10.md` | `src/geovida/h9.py`, `src/geovida/certsweep.py`, `src/geovida/topomargin.py`, `src/geovida/scaleaxis.py`, `src/geovida/domain.py`, `src/geovida/certificate.py`, `scripts/run_h9.py`, `scripts/calibrate_h9.py`, `scripts/analyze_h9.py` | `tests/test_h9.py`, `tests/test_certsweep.py`, `tests/test_topomargin.py`, `tests/test_scaleaxis.py`, `tests/test_domain.py`, `tests/test_certificate.py`, `tests/test_logit_multi.py` | `docs/RESULTADOS_V04.md`, `results/summary/h9_verdicts.json`, `results/summary/h9_frozen.json` |
-| H11 | ¿Transfiere el certificado congelado a ecografía 3D real de ratón? | `docs/PREREGISTRO_H11.md` | `src/geovida/realdata.py`, `scripts/real_datasheet.py` | `tests/test_realdata.py` | **Pendiente de datos reales** |
-| H12 | ¿Se puede recalibrar para ecografía 3D simulada con moteado y atenuación? | `docs/PREREGISTRO_H12.md` | `src/geovida/h12.py`, `src/geovida/imaging.py`, `scripts/run_h12.py`, `scripts/calibrate_h12.py`, `scripts/analyze_h12.py` | `tests/test_h12.py`, `tests/test_ultrasound.py` | **En curso**: la calibración y la confirmación aún no se han corrido (se citarán aquí cuando existan) |
+| H11 | ¿Transfiere el certificado congelado a ecografía 3D real de ratón? | `docs/PREREGISTRO_H11.md` | `src/geovida/realdata.py`, `src/geovida/h11.py`, `scripts/real_datasheet.py`, `scripts/run_h11.py` | `tests/test_realdata.py`, `tests/test_h11.py` | **Pendiente de datos reales** (código y criterios listos; probados solo con volúmenes sintéticos) |
+| H12R | ¿Transfiere a ecografía real de ratón el certificado recalibrado con ecografía simulada? | `docs/PREREGISTRO_H12R.md` | `src/geovida/h11.py`, `scripts/run_h11.py` | `tests/test_h11.py` | **Pendiente de datos reales** (preregistrado antes de abrir ningún dato) |
+| H12 | ¿Se puede recalibrar para ecografía 3D simulada con moteado y atenuación? | `docs/PREREGISTRO_H12.md` | `src/geovida/h12.py`, `src/geovida/imaging.py`, `scripts/run_h12.py`, `scripts/calibrate_h12.py`, `scripts/analyze_h12.py` | `tests/test_h12.py`, `tests/test_ultrasound.py` | `docs/RESULTADOS_V05.md`, `results/summary/h12_verdicts.json`, `results/summary/h12_frozen.json` |
 | Informe por medida | Procedencia de cada certificado | — | `src/geovida/cli.py`, `src/geovida/provenance.py` | `tests/test_cli.py`, `tests/test_provenance.py` | — |
 
 ## Errores propios
@@ -33,7 +34,7 @@ reescribe la historia: una cifra equivocada se corrige y el error queda a la vis
 
 1. Cada barrido guarda un manifiesto (por ejemplo `results/summary/h9_test_manifest.json`) con el commit, si el código estaba limpio,
    la semilla, el número de filas y las versiones de los paquetes.
-2. Los modelos congelados están versionados (`results/summary/h9_frozen.json`; el de H12 se
-   añadirá al calibrar) y el paquete lleva una copia del de v0.4 que una prueba compara
+2. Los modelos congelados están versionados (`results/summary/h9_frozen.json`; el de H12 es
+   `results/summary/h12_frozen.json`) y el paquete lleva una copia del de v0.4 que una prueba compara
    con el original.
 3. `geovida certify --report` imprime las huellas SHA-256 de la imagen y de la calibración usadas.

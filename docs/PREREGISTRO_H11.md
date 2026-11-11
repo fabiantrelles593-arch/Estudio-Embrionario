@@ -128,4 +128,4 @@ No cambian ningún criterio; fijan lo que el texto dejaba abierto. Se prueban co
 6. **Dos calibraciones, un mismo protocolo.** Se corre con los modelos de v0.4 (`--tag v04`) y,
    aparte, con los de la ecografía simulada de H12 (`--frozen h12_frozen.json --tag h12`). Los dos
    resultados se publican. Los veredictos de la segunda se interpretan según `PREREGISTRO_H12R.md`
-   (por escribir, también antes de abrir datos).
+   (ya escrito, commit 24df964, antes de abrir datos).

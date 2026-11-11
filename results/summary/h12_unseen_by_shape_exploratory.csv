@@ -1,0 +1,13 @@
+stratum,shape,n_green_volume,false_green_volume,n_green_topology,false_green_topology
+global|us_compound,cup,0,,0,
+global|us_compound,dumbbell,0,,0,
+global|us_raw,cup,0,,0,
+global|us_raw,dumbbell,0,,0,
+otsu|us_compound,cup,0,,0,
+otsu|us_compound,dumbbell,0,,0,
+otsu|us_raw,cup,0,,0,
+otsu|us_raw,dumbbell,0,,0,
+smoothed_otsu|us_compound,cup,49,0.0,36,0.0
+smoothed_otsu|us_compound,dumbbell,81,0.0,30,0.3667
+smoothed_otsu|us_raw,cup,47,0.0,0,
+smoothed_otsu|us_raw,dumbbell,82,0.0,0,

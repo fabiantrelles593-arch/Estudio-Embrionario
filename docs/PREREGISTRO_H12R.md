@@ -29,8 +29,8 @@ atenuación) y recalibró. H12R pregunta lo que de verdad importa para el siguie
 
 * Mismos datos, mismo manifiesto, mismos segmentadores y mismas estructuras que `PREREGISTRO_H11.md`.
 * Se corre `python scripts/run_h11.py MANIFIESTO.csv --root CARPETA --frozen results/summary/h12_frozen.json --profile us_raw --tag h12`.
-* **Perfil primario: `us_raw`** (adquisición única, sin promediar ángulos). Se declara aquí, antes de
-  ver imágenes. Se corre también `--profile us_compound --tag h12c` y se publica, pero **no** se puede
+* **Perfil primario: `us_raw`** (el de menos promediado de los dos perfiles simulados: 3 «miradas» de
+  moteado frente a 8 de `us_compound`). Se declara aquí, antes de ver imágenes. Se corre también `--profile us_compound --tag h12c` y se publica, pero **no** se puede
   elegir después el perfil que salga mejor.
 * No se reajusta ningún modelo ni envolvente con los datos reales.
 
@@ -82,3 +82,8 @@ Un valor no calculable es «no evaluable», nunca «no apoyada».
 ## 8. Desviaciones
 
 (Ninguna al momento del primer commit.)
+
+* 2026-11-11 (antes de abrir datos): la primera versión describía `us_raw` como «adquisición única, sin
+  promediar ángulos». Es inexacto: en el simulador `us_raw` promedia 3 «miradas» de moteado y
+  `us_compound` promedia 8. Se corrigió la descripción; la elección de `us_raw` como perfil primario y
+  todos los criterios no cambian.
