@@ -24,10 +24,10 @@ from geovida.provenance import git_state
 
 SEGMENTERS = ("global", "otsu", "smoothed_otsu")
 SETS = {  # nombre: (diseño, semilla, réplicas por defecto)
-    "cal": (design_us_cal, H12_CAL_SEED, 12),
-    "test": (design_us_cal, H12_TEST_SEED, 12),
-    "unseen": (design_us_unseen, H12_TEST_SEED, 10),
-    "shift": (design_us_shift, H12_SHIFT_SEED, 4),
+    "cal": (design_us_cal, H12_CAL_SEED, 10),
+    "test": (design_us_cal, H12_TEST_SEED, 10),
+    "unseen": (design_us_unseen, H12_TEST_SEED, 8),
+    "shift": (design_us_shift, H12_SHIFT_SEED, 3),
     "pilot": (design_us_cal, H12_PILOT_SEED, 2),
     "pilot_unseen": (design_us_unseen, H12_PILOT_SEED, 2),
     "pilot_shift": (design_us_shift, H12_PILOT_SEED, 2),

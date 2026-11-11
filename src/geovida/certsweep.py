@@ -28,13 +28,14 @@ H9_CAL_SEED = 20261123
 H9_TEST_SEED = 20261124
 H9_SHIFT_SEED = 20261125
 
-# v0.5 (H12): ecografía 3D simulada. Semillas nuevas; la rejilla añade dos niveles finos (16 y 24)
-# porque con moteado los segmentadores simples necesitan más resolución para entrar en verde.
+# v0.5 (H12): ecografía 3D simulada. Semillas nuevas; la rejilla añade un nivel fino (16) porque con
+# moteado los segmentadores simples necesitan más resolución para entrar en verde. Se descartó 24 por
+# coste de cómputo: la mancuerna a t/h = 24 tarda unos 95 s por realización.
 H12_PILOT_SEED = 20261130
 H12_CAL_SEED = 20261131
 H12_TEST_SEED = 20261132
 H12_SHIFT_SEED = 20261133
-T_OVER_H_US = T_OVER_H + (16.0, 24.0)
+T_OVER_H_US = T_OVER_H + (16.0,)
 
 OBSERVABLE_COLUMNS = ("tau_dil", "tau_ero", "m_lo", "m_hi", "contrast_hat",
                       "dv1", "dv2", "u_v1", "u_v2", "a1", "a2", "snr_hat", "edge_width")
