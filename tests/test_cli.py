@@ -133,3 +133,35 @@ def test_certify_reads_nifti_and_takes_the_voxel_from_its_header(tmp_path, us_fr
                  "--frozen", str(us_frozen_file), "--json", str(js)]) == 0
     cert = json.loads(js.read_text())
     assert cert["spacing"] == pytest.approx(list(sp), rel=1e-5)
+
+
+# --- v0.5: ficha de volúmenes desde la línea de órdenes ------------------------------------------
+def _two_nifti(tmp_path):
+    nib = pytest.importorskip("nibabel")
+    for name, arr, dtype in (("embrion_077_img.nii.gz", np.random.default_rng(0).random((12, 12, 12)),
+                              np.float32),
+                             ("embrion_077_lab.nii.gz", (np.arange(12 ** 3).reshape(12, 12, 12) % 3), np.uint8)):
+        im = nib.Nifti1Image(arr.astype(dtype), np.diag([0.05, 0.05, 0.05, 1.0]))
+        im.header.set_xyzt_units("mm")
+        nib.save(im, str(tmp_path / name))
+
+
+def test_datasheet_command_writes_a_json_summary_without_images(tmp_path, capsys):
+    _two_nifti(tmp_path)
+    out = tmp_path / "ficha.json"
+    assert main(["datasheet", str(tmp_path), "--out", str(out)]) == 0
+    rows = json.loads(out.read_text())
+    assert {r["name"] for r in rows} == {"embrion_077_img.nii.gz", "embrion_077_lab.nii.gz"}
+    assert any(r["label_like"] for r in rows) and any(not r["label_like"] for r in rows)
+    assert all("dice" not in r and "error" not in r for r in rows)     # no compara con nada
+    text = capsys.readouterr().out
+    assert "forma" in text and "2 archivos" in text
+
+
+def test_datasheet_command_can_hide_file_names(tmp_path):
+    _two_nifti(tmp_path)
+    out = tmp_path / "ficha.json"
+    main(["datasheet", str(tmp_path), "--out", str(out), "--hide-names"])
+    raw = out.read_text()
+    assert "embrion_077" not in raw
+    assert {r["name"] for r in json.loads(raw)} == {"vol_001", "vol_002"}

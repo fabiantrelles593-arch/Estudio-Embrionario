@@ -1,6 +1,8 @@
 """Línea de órdenes de geovida.
 
   geovida plan                      tabla de resolución mínima para luz verde de volumen
+  geovida datasheet CARPETA_O_ZIP [--out ficha.json] [--hide-names]
+                                    ficha descriptiva de volúmenes NIfTI (no compara con nada)
   geovida certify IMAGEN.npy --spacing 1 1 2 --segmenter otsu --profile realistic
                                     certificado de una imagen 3D (JSON)
   geovida certify VOLUMEN.nii.gz --segmenter smoothed_otsu --profile us_compound
@@ -129,6 +131,27 @@ def _plan(_args) -> int:
     return 0
 
 
+def _datasheet(args) -> int:
+    from .realdata import scan
+    rows = scan(args.source)
+    if args.hide_names:
+        for i, r in enumerate(rows, start=1):
+            r["name"], r["path"] = f"vol_{i:03d}", f"vol_{i:03d}"
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(rows, indent=1, default=float), encoding="utf-8")
+    for r in rows:
+        if "error" in r:
+            print(f"{r['path']}: ERROR {r['error']}")
+            continue
+        kind = ("etiquetas " + ",".join(r["labels"])) if r["label_like"] else \
+            f"intensidad p1={r['p1']:.3g} p50={r['p50']:.3g} p99={r['p99']:.3g}"
+        print(f"{r['path']}: forma {tuple(r['shape'])}, "
+              f"vóxel {tuple(round(s, 4) for s in r['spacing_mm'])} mm, {kind}")
+    print(f"\n{len(rows)} archivos; ficha guardada en {args.out}")
+    return 0
+
+
 def _certify(args) -> int:
     path = Path(args.image)
     image, header_spacing = _load(path)
@@ -168,6 +191,12 @@ def main(argv=None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("plan", help="tabla de resolución mínima").set_defaults(fn=_plan)
+    d = sub.add_parser("datasheet", help="ficha descriptiva de volúmenes NIfTI")
+    d.add_argument("source", help="carpeta, .zip o un archivo .nii/.nii.gz")
+    d.add_argument("--out", default="ficha_volumenes.json")
+    d.add_argument("--hide-names", action="store_true",
+                   help="sustituir los nombres de archivo por vol_001, vol_002… (privacidad)")
+    d.set_defaults(fn=_datasheet)
     c = sub.add_parser("certify", help="certificado de una imagen 3D")
     c.add_argument("image")
     c.add_argument("--spacing", type=float, nargs=3, default=None, metavar=("HX", "HY", "HZ"),
