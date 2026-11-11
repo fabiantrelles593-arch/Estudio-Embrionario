@@ -83,7 +83,8 @@ def certify(image: np.ndarray, spacing, segmenter: str, profile: str,
     dom_v = bool(env_v is not None and in_domain(obs, env_v))
     dom_t = bool(env_t is not None and in_domain(obs, env_t))
 
-    pv = p_volume_ok(x, segmenter, profile, FROZEN_H6["models"])
+    # v0.5: un congelado recalibrado (H12) trae sus propios modelos de volumen
+    pv = p_volume_ok(x, segmenter, profile, frozen.get("volume_models", FROZEN_H6["models"]))
     light_v, why_v = _capped(traffic_light(pv), dom_v)
 
     model = frozen["models"][key]["main"]

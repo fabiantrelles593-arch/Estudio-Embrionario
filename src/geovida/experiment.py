@@ -29,7 +29,11 @@ ALL_SHAPES = H6_SHAPES + NEW_NAMES        # índice de semilla; los índices pre
 # v0.4: perfiles de imagen «desplazados», nunca usados para calibrar. Sirven para
 # medir cuánto depende el certificado del simulador con el que se calibró.
 SHIFT_PROFILES = ("blurry", "noisy", "mild_blur", "mild_noise")
-_SEED_PROFILES = PROFILES + SHIFT_PROFILES
+# v0.5 (H12): perfiles de ecografía simulada. Se añaden AL FINAL para no mover los índices de
+# semilla de v0.1-v0.4 (hay una prueba que lo vigila).
+US_PROFILES = ("us_compound", "us_raw")
+US_SHIFT_PROFILES = ("us_atten", "us_coarse")
+_SEED_PROFILES = PROFILES + SHIFT_PROFILES + US_PROFILES + US_SHIFT_PROFILES
 
 
 @dataclass(frozen=True)

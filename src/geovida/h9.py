@@ -104,15 +104,16 @@ def select_set(df: pd.DataFrame) -> tuple[str, pd.DataFrame]:
     return str(best), tab
 
 
-def p_volume(df: pd.DataFrame, declared: str | None = None) -> np.ndarray:
-    """Semáforo de volumen congelado en H6, con el perfil real o uno declarado."""
+def p_volume(df: pd.DataFrame, declared: str | None = None, models: dict | None = None) -> np.ndarray:
+    """Semáforo de volumen, con el perfil real o uno declarado. Sin ``models`` usa los congelados
+    en H6; v0.5 (H12) pasa los recalibrados para ecografía simulada."""
+    models = FROZEN_H6["models"] if models is None else models
     df = _prepared(df)
     out = np.zeros(len(df))
     prof = df["profile"] if declared is None else pd.Series(declared, index=df.index)
     for (seg, p), idx in df.groupby([df["segmenter"], prof]).groups.items():
         pos = df.index.get_indexer(idx)
-        out[pos] = h6.predict_p(df["d_over_hgeo"].to_numpy(float)[pos],
-                                FROZEN_H6["models"][f"{seg}|{p}"])
+        out[pos] = h6.predict_p(df["d_over_hgeo"].to_numpy(float)[pos], models[f"{seg}|{p}"])
     return out
 
 
@@ -132,7 +133,9 @@ def _guard(df: pd.DataFrame, envelopes: dict, declared: str | None = None) -> np
     return in_domain_column(df, usable, declared)
 
 
-def freeze(cal_df: pd.DataFrame) -> dict:
+def freeze(cal_df: pd.DataFrame, volume_models: dict | None = None) -> dict:
+    """Congela modelos topológicos y envolventes. ``volume_models`` (opcional) sustituye a los
+    modelos de volumen de H6 y se guarda en el congelado (H12)."""
     df = _prepared(cal_df).reset_index(drop=True)
     best, tab = select_set(df)
     feats = TOPO_SETS[best]
@@ -143,7 +146,10 @@ def freeze(cal_df: pd.DataFrame) -> dict:
                                    "no_scale": fit_set(g, without_scale(feats))}
     frozen = {"selected": best, "features": list(feats), "selection": tab.to_dict("records"),
               "models": models, "green": GREEN, "red": RED, "ridge": RIDGE}
-    lights = {"volume": p_volume(df) >= GREEN, "topology": p_topology(df, frozen) >= GREEN}
+    if volume_models is not None:
+        frozen["volume_models"] = volume_models
+    lights = {"volume": p_volume(df, models=volume_models) >= GREEN,
+              "topology": p_topology(df, frozen) >= GREEN}
     envelopes = {}
     for endpoint, green in lights.items():
         env = fit_envelopes(df[green]) if green.any() else {}
@@ -186,7 +192,7 @@ def evaluate_in_domain(df: pd.DataFrame, frozen: dict) -> dict:
     pt = p_topology(df, frozen)
     pb = p_topology(df, frozen, "baseline")
     pn = p_topology(df, frozen, "no_scale")
-    pv = p_volume(df)
+    pv = p_volume(df, models=frozen.get("volume_models"))
     dom_t = _guard(df, frozen["envelopes"]["topology"])
     dom_v = _guard(df, frozen["envelopes"]["volume"])
     rows = []
@@ -274,7 +280,7 @@ def evaluate_shift(df: pd.DataFrame, frozen: dict, declared: str = DECLARED_FOR_
     df = _prepared(df).reset_index(drop=True)
     pt = p_topology(df, frozen, declared=declared)
     pb = p_topology(df, frozen, "baseline", declared=declared)
-    pv = p_volume(df, declared=declared)
+    pv = p_volume(df, declared=declared, models=frozen.get("volume_models"))
     dom_t = _guard(df, frozen["envelopes"]["topology"], declared)
     dom_v = _guard(df, frozen["envelopes"]["volume"], declared)
     rows = []

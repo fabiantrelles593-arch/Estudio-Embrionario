@@ -17,7 +17,8 @@ from __future__ import annotations
 import itertools
 
 from .domain import domain_observables
-from .experiment import ANISOTROPY, H6_SHAPES, PROFILES, SHIFT_PROFILES, T_OVER_H, Condition
+from .experiment import (ANISOTROPY, H6_SHAPES, PROFILES, SHIFT_PROFILES, T_OVER_H, US_PROFILES,
+                         US_SHIFT_PROFILES, Condition)
 from .phantoms import NEW_NAMES
 from .scaleaxis import scale_observables
 from .topomargin import intensity_margin, topological_margin
@@ -27,13 +28,21 @@ H9_CAL_SEED = 20261123
 H9_TEST_SEED = 20261124
 H9_SHIFT_SEED = 20261125
 
+# v0.5 (H12): ecografía 3D simulada. Semillas nuevas; la rejilla añade dos niveles finos (16 y 24)
+# porque con moteado los segmentadores simples necesitan más resolución para entrar en verde.
+H12_PILOT_SEED = 20261130
+H12_CAL_SEED = 20261131
+H12_TEST_SEED = 20261132
+H12_SHIFT_SEED = 20261133
+T_OVER_H_US = T_OVER_H + (16.0, 24.0)
+
 OBSERVABLE_COLUMNS = ("tau_dil", "tau_ero", "m_lo", "m_hi", "contrast_hat",
                       "dv1", "dv2", "u_v1", "u_v2", "a1", "a2", "snr_hat", "edge_width")
 
 
-def _design(shapes, profiles, n_reps: int) -> list[Condition]:
+def _design(shapes, profiles, n_reps: int, levels=T_OVER_H) -> list[Condition]:
     return [Condition(s, t, a, p, r)
-            for s, t, a, p, r in itertools.product(shapes, T_OVER_H, ANISOTROPY, profiles,
+            for s, t, a, p, r in itertools.product(shapes, levels, ANISOTROPY, profiles,
                                                    range(n_reps))]
 
 
@@ -47,6 +56,18 @@ def design_unseen(n_reps: int) -> list[Condition]:
 
 def design_shift(n_reps: int) -> list[Condition]:
     return _design(H6_SHAPES, SHIFT_PROFILES, n_reps)
+
+
+def design_us_cal(n_reps: int) -> list[Condition]:
+    return _design(H6_SHAPES, US_PROFILES, n_reps, T_OVER_H_US)
+
+
+def design_us_unseen(n_reps: int) -> list[Condition]:
+    return _design(NEW_NAMES, US_PROFILES, n_reps, T_OVER_H_US)
+
+
+def design_us_shift(n_reps: int) -> list[Condition]:
+    return _design(H6_SHAPES, US_SHIFT_PROFILES, n_reps, T_OVER_H_US)
 
 
 def cert_extra(image, spacing, mask, seg_name, meas) -> dict:
