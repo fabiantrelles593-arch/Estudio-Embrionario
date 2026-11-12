@@ -17,6 +17,8 @@ dependencies = [
   "pandas>=2.2",
   "matplotlib>=3.8",
   "statsmodels>=0.14",
+  "opencv-python-headless>=4.9",   # remuestreo y JPEG de geovida.real2d / printchain
+  "pillow>=10",                   # carga de imágenes sin metadatos (geovida.real2d)
 ]
 
 [project.optional-dependencies]

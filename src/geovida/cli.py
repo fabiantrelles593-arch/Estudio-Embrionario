@@ -10,6 +10,11 @@
                                     NIfTI (el vóxel sale de la cabecera), calibración de ecografía
                                     simulada e informe con trazabilidad
 
+  geovida real2d FOTO.jpg --roi X0 Y0 X1 Y1 --ruler X1 Y1 X2 Y2 --ruler-mm 10
+                 [--printed-crl-mm 12.3] [--caliper X1 Y1 X2 Y2] [--human --authorization-note "..."]
+                                    mide una longitud sobre una ecografía 2D real (informe sin nombres ni
+                                    metadatos; el semáforo nunca sale verde sobre imagen real)
+
 Solo investigación y educación. No procesa ni debe procesar imágenes de personas sin las
 condiciones de docs/DATOS_REALES_Y_ETICA.md.
 """
@@ -186,6 +191,58 @@ def _certify(args) -> int:
     return 0
 
 
+def _real2d(args) -> int:
+    from . import real2d as r2
+    from .biometry import models_from_json
+
+    if args.human and not (args.authorization_note or "").strip():
+        print("error: una imagen humana exige --authorization-note (quién autoriza y con qué base; se "
+              "guarda como declaración, no se verifica). Ver docs/DATOS_REALES_Y_ETICA.md.", file=sys.stderr)
+        return 2
+    if args.mm_per_px is not None:
+        scale = r2.Scale(float(args.mm_per_px), "declarada", 0.0)
+    elif args.ruler is not None and args.ruler_mm is not None:
+        scale = r2.scale_from_ruler(tuple(args.ruler[:2]), tuple(args.ruler[2:]), args.ruler_mm)
+    elif args.ticks is not None and args.tick_mm is not None:
+        scale = r2.scale_from_ticks([float(v) for v in args.ticks.split(",")], args.tick_mm)
+    else:
+        print("error: da la escala con --mm-per-px, o --ruler X1 Y1 X2 Y2 --ruler-mm L, o --ticks a,b,c --tick-mm L",
+              file=sys.stderr)
+        return 2
+    frozen = Path(args.frozen)
+    if not frozen.exists():
+        print(f"error: no existe la calibración {frozen}", file=sys.stderr)
+        return 2
+    models = models_from_json(frozen.read_text())
+    img = r2.load_gray(args.image)
+    res = r2.measure_roi(img.gray, tuple(args.roi), scale, models, bright=not args.dark_object,
+                         blur_mm_grid=tuple(args.blur_mm) if args.blur_mm else r2.DEFAULT_BLUR_MM_GRID)
+    printed = None
+    if args.printed_crl_mm:
+        ok = [r["measured_mm"] for r in res["rows"] if r.get("in_box") and r["measured_mm"]]
+        mm = float(np.median(ok)) if ok else res["native"]["length_mm"]
+        printed = r2.compare_printed(mm, args.printed_crl_mm)
+    caliper = None
+    if args.caliper:
+        caliper = {"length_mm": r2.caliper_mm(tuple(args.caliper[:2]), tuple(args.caliper[2:]), scale)}
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    kw = dict(sha256=img.sha256, image_shape=img.gray.shape, authorization_note=args.authorization_note,
+              printed=printed, caliper=caliper, version=__version__)
+    (out / "informe.md").write_text(r2.report_markdown(res, **kw), encoding="utf-8")
+    (out / "informe.json").write_text(json.dumps(r2.report_dict(res, **kw), indent=2, ensure_ascii=False),
+                                      encoding="utf-8")
+    r2.save_overlay(img.gray, res["roi"], res["native"]["mask"], out / "superposicion.png")
+    print(f"medida nativa: {res['native']['length_mm']:.2f} mm; control: "
+          f"{'objeto recortado por la ROI' if res['qc']['touches_roi_border'] else 'ok'}")
+    for r in res["rows"]:
+        m = "—" if r["measured_mm"] is None else f"{r['measured_mm']:.2f} mm"
+        print(f"  desenfoque {r['blur_mm']:g} mm: {LIGHT_MARK.get(r['light'], r['light'])} {m}"
+              f"{'  (' + r['reason'] + ')' if r.get('reason') else ''}")
+    print(f"informe y superposición en {out}/ (guardar fuera del repositorio si la imagen es de una persona)")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="geovida", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -211,6 +268,27 @@ def main(argv=None) -> int:
     c.add_argument("--include-filename", action="store_true",
                    help="incluir el nombre del archivo en el informe (por defecto se omite)")
     c.set_defaults(fn=_certify)
+    r = sub.add_parser("real2d", help="medir una longitud sobre una ecografía 2D real (investigación)")
+    r.add_argument("image")
+    r.add_argument("--roi", type=int, nargs=4, required=True, metavar=("X0", "Y0", "X1", "Y1"),
+                   help="región de interés en píxeles de la imagen completa")
+    r.add_argument("--mm-per-px", type=float, default=None, help="escala declarada")
+    r.add_argument("--ruler", type=float, nargs=4, default=None, metavar=("X1", "Y1", "X2", "Y2"),
+                   help="dos puntos de la regla impresa")
+    r.add_argument("--ruler-mm", type=float, default=None, help="longitud real entre los dos puntos de la regla")
+    r.add_argument("--ticks", default=None, help="posiciones en píxeles de marcas igualmente espaciadas, 'a,b,c,…'")
+    r.add_argument("--tick-mm", type=float, default=None, help="espaciado real entre marcas")
+    r.add_argument("--caliper", type=float, nargs=4, default=None, metavar=("X1", "Y1", "X2", "Y2"),
+                   help="dos puntos marcados a mano para una segunda lectura")
+    r.add_argument("--printed-crl-mm", type=float, default=None, help="medida impresa por el equipo u operador")
+    r.add_argument("--dark-object", action="store_true", help="el objeto es más oscuro que el fondo")
+    r.add_argument("--blur-mm", type=float, nargs="+", default=None, help="rejilla de desenfoque en mm")
+    r.add_argument("--human", action="store_true", help="la imagen es de una persona")
+    r.add_argument("--authorization-note", default=None,
+                   help="quién autoriza y con qué base (obligatorio con --human; se guarda como declaración)")
+    r.add_argument("--frozen", default="results/summary/h14_frozen.json", help="calibración congelada (JSON)")
+    r.add_argument("--out", default="real2d_out")
+    r.set_defaults(fn=_real2d)
     args = ap.parse_args(argv)
     return args.fn(args)
 

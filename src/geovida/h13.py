@@ -164,7 +164,8 @@ def _certify(kind, measured_mm, h, f, model):
 
 def _conf_worker(case):
     kind = case["kind"]
-    r = bio.run_case(kind, case["size_mm"], case["n"], case["fwhm_px"], case["seed"])
+    r = bio.run_case(kind, case["size_mm"], case["n"], case["fwhm_px"], case["seed"], chain=case.get("chain"))
+    chain_cols = {f"chain_{k}": v for k, v in case["chain"].items()} if case.get("chain") else {}
     rows = []
     for seg, meas in r["measured_mm"].items():
         model = _MODELS[f"{kind}|{seg}"]
@@ -184,6 +185,7 @@ def _conf_worker(case):
             "light_clamped": cert_c["light"],
             "p_clamped": cert_c.get("p_within_tolerance", cert_c.get("p_same_side", float("nan")))
             if cert_c["in_domain"] else float("nan"),
+            **chain_cols,
         })
     return rows
 

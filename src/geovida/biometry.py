@@ -35,6 +35,7 @@ from scipy.spatial import ConvexHull
 from scipy.spatial.distance import pdist
 
 from . import dating
+from . import printchain
 from .twod import Phantom2D, Spec2D, Truth2D, render2d, segment2d
 
 BODY, SLOT = "body", "slot"
@@ -143,11 +144,13 @@ def spec_for(h_mm: float, fwhm_px: float, looks: int = LOOKS) -> Spec2D:
     return Spec2D(h_mm, fwhm_px=fwhm_px, looks=looks, grain_fwhm_px=max(MIN_GRAIN_PX, fwhm_px))
 
 
-def run_case(kind: str, size_mm: float, n: float, fwhm_px: float, seed, looks: int = LOOKS) -> dict:
+def run_case(kind: str, size_mm: float, n: float, fwhm_px: float, seed, looks: int = LOOKS,
+             chain: dict | None = None) -> dict:
     """Simula una imagen y mide con cada segmentador.
 
     ``n`` son los píxeles a lo largo de la magnitud verdadera (``size_mm``), de modo que el píxel
-    mide ``h = size_mm / n``. ``seed`` puede ser un entero o una ``SeedSequence``.
+    mide ``h = size_mm / n``. ``seed`` puede ser un entero o una ``SeedSequence``. ``chain`` (opcional, H15) aplica
+    ``geovida.printchain`` a la imagen antes de segmentar.
     """
     if kind not in KINDS:
         raise ValueError(f"tipo desconocido: {kind!r}; opciones: {KINDS}")
@@ -156,6 +159,8 @@ def run_case(kind: str, size_mm: float, n: float, fwhm_px: float, seed, looks: i
     h = size_mm / n
     ph = make_body(size_mm) if kind == BODY else make_slot(size_mm)
     img = render2d(ph, spec_for(h, fwhm_px, looks), np.random.default_rng(seed)).image
+    if chain is not None:                      # H15: la imagen pasó por pantalla, impresión y foto
+        img = printchain.apply_chain(img, chain)
     measured = {s: measure(kind, segment2d(s, img, h), h) for s in SEGMENTERS}
     return {"kind": kind, "size_mm": float(size_mm), "truth_mm": float(size_mm), "h_mm": float(h),
             "n": float(n), "fwhm_px": float(fwhm_px), "measured_mm": measured}
