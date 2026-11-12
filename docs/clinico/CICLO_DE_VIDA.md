@@ -54,7 +54,7 @@ de bloqueo.
    las desviaciones se anotan en el mismo documento con fecha.
 3. **Todo cambio de código con prueba.** Primero la prueba, que debe fallar por la razón correcta.
 4. **Errores propios a la vista.** Una cifra o una afirmación errónea se corrige y se documenta en
-   `ERRATA.md` (hasta ahora 24, incluida la discordancia de versión entre el paquete y `pyproject`).
+   `ERRATA.md` (hasta ahora 26, incluida la discordancia de versión entre el paquete y `pyproject`).
 5. **Cada barrido guarda su procedencia:** commit, si el código estaba sin guardar, semilla, número de
    filas, versiones de paquetes.
 6. **Cada informe de certificado guarda su procedencia:** versión, commit, huella de imagen y

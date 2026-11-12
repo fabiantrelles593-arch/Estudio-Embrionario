@@ -62,7 +62,7 @@ Cada prueba fijó criterios y predicciones en git **antes** de ejecutarse. Detal
 Documentos: [`RESULTADOS.md`](docs/RESULTADOS.md) (v0.1), [`RESULTADOS_V02.md`](docs/RESULTADOS_V02.md),
 [`RESULTADOS_V03.md`](docs/RESULTADOS_V03.md), [`RESULTADOS_V04.md`](docs/RESULTADOS_V04.md),
 [`RESULTADOS_V05.md`](docs/RESULTADOS_V05.md) (ecografía simulada),
-[`ERRATA.md`](docs/ERRATA.md) (25 errores propios, con causa y prevención) y
+[`ERRATA.md`](docs/ERRATA.md) (26 errores propios, con causa y prevención) y
 [`ANTECEDENTES_V04.md`](docs/ANTECEDENTES_V04.md) (qué existe ya en la literatura).
 
 ## v0.5: ecografía simulada (H12), resultado
