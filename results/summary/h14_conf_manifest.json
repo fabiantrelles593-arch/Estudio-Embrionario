@@ -1,0 +1,20 @@
+{
+  "set": "conf",
+  "started_utc": "2026-11-12T02:29:02.475236+00:00",
+  "elapsed_s": 217.6,
+  "git_commit": "faf885e6752848878c5303cba260c1a42a78f6e9",
+  "code_dirty": false,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  },
+  "rows": 15200,
+  "base_seed": 20261215,
+  "n_in": 1500,
+  "n_out": 400,
+  "h14_frozen_sha256": "676c7c841b8a3d2b85e25cdfa8347fe5659df13179229308f2ed7f736d7aeb97",
+  "h13_frozen_sha256": "60943f4855ebf9c10cafe5503db0fa9ff6285be53df7044b6968b8b3e4315b0a"
+}

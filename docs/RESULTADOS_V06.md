@@ -1,9 +1,12 @@
-# Resultados v0.6 — H13: biometría fetal temprana con certificado de incertidumbre (Programa B)
+# Resultados v0.6 — Programa B: biometría fetal temprana con certificado de incertidumbre (H13) y su compuerta (H14)
 
 > Solo investigación y educación. **Todo es simulación**: fantomas 2D sintéticos, ninguna ecografía de
 > personas ni de animales. Nada de esto es evidencia clínica. Reglas fijadas en `docs/PREREGISTRO_H13.md`
 > (commit 0932c51, antes de calibrar). Modelos congelados: `results/summary/h13_frozen.json`, SHA-256
 > `60943f48…315b0a` (commit b27443f). Confirmación con semilla 20261213, código limpio en el commit 9d14b15.
+> **H14** (§8): reglas en `docs/PREREGISTRO_H14.md` (commit 59f0f8d, escrito tras ver H13 y antes de generar
+> ninguna imagen de confirmación de H14); modelos con compuerta `results/summary/h14_frozen.json`, SHA-256
+> `676c7c84…b7aeb97` (commit faf885e); confirmación con semilla nueva 20261215, código limpio en faf885e.
 
 ![H13](figures/h13_certificate.png)
 
@@ -110,8 +113,73 @@ calibrada; la guardia rechazó 99 % de lo no calibrado.
 * El umbral de 3.0 mm es ilustrativo; no se evaluó rendimiento de cribado.
 * Una datación certificada no es una datación correcta: domina la variación biológica.
 
-## 7. Siguiente paso
+## 7. Siguiente paso (escrito tras H13; la primera mitad se ejecutó como H14, §8)
 
 El mecanismo apunta a una corrección concreta, que **es otra hipótesis y exige otro preregistro y otra semilla**:
 una compuerta de «tasa de medidas utilizables» por celda (rechazar donde la medida suele fallar) y un `n` que no dependa
 de la medida que se está certificando. Después, ecografía real de animal con referencia (H11/H12R) cuando haya volúmenes.
+
+## 8. H14 — la compuerta de «tasa de medidas utilizables» (confirmación con semilla 20261215)
+
+La compuerta se diseñó **mirando los datos de H13**; por eso se probó con casos nuevos (los mismos casos se certifican
+con el modelo de H13, `ungated`, y con el de H14, `gated`). Todo sigue siendo simulación.
+
+| Hipótesis | Resultado | Veredicto |
+|---|---|---|
+| **H14a** Ranura, PSF > 3.5 px: verdes equivocados por caso ≤ 2 % | con compuerta **0 de 321** [0–0]; sin compuerta 5 de 321 = 1.56 % [0.31–3.11] | **apoyada** (ver «Lo que este resultado no dice») |
+| **H14b** Cobertura retenida (≥ 80 % ranura y ≥ 95 % cuerpo) | ranura 864 de 984 = **87.8 %**; cuerpo 758 de 758 = **100 %** | **apoyada** |
+| **H14c** El agregado no se rompe (falso verde ≤ 10 %) | cuerpo **0.26 %** [0–0.66]; ranura **0.58 %** [0.12–1.16] | **apoyada** |
+| **H14d** Control `otsu`, ranura, todos los PSF | con compuerta **0 de 1 500**; sin compuerta 3.87 % por caso | **apoyada** |
+| **H14e** Guardia: fuga fuera de la caja ≤ 5 % | cuerpo 0/400, ranura 0/400 | **apoyada** |
+
+Mis cinco predicciones (80 %, 70 %, 95 %, 50 %, 85 %) ocurrieron; **Brier medio 0.081**. Es un puntaje bueno sobre cinco
+puntos y un simulador mío: no demuestra que mi calibración sea buena.
+
+**Lo que este resultado no dice (leer antes de citar H14a):**
+
+* **H14a se cumple por construcción.** La compuerta cerró los 321 casos del estrato: no emitió ni un verde, así que no
+  pudo equivocarse. El criterio lo fijé de antemano y se cumplió, pero un certificado que no certifica nada ahí no
+  «arregla» la medida: **se niega a opinar**. Lo informativo es H14b (el costo) y la comparación de abajo.
+* **El fallo, en casos nuevos, fue menor que en H13.** Sin compuerta, el estrato PSF > 3.5 dio 5 verdes equivocados de
+  76 (**6.6 %** de los verdes, Wilson 2.8–14.5 %), frente a 15 de 81 (**18.5 %**, 9.9–27.2 %) en H13. Y por caso, sin
+  compuerta, el criterio del 2 % habría quedado «no concluyente» (IC 0.31–3.11 %). Los intervalos se tocan; mi lectura
+  es que elegí el estrato **después** de ver que era el peor, y esa selección infla la cifra («maldición del ganador»),
+  pero no puedo separar eso del azar con estos datos. **El problema era real, pero probablemente más chico de lo que dijo H13.**
+* **Qué hizo la compuerta (exploratorio, no preregistrado, mismos casos):** en la ranura quitó 120 verdes: 76 del
+  estrato ancho (5 equivocados) y 44 del estrato 2–3.5 px (0 equivocados: costo puro). Entre los verdes quitados el 4.2 % estaba
+  equivocado (5/120, 1.8–9.4 %); entre los que dejó, el 0.58 % (5/864). Es decir, filtra en la dirección correcta, pero con
+  un costo que no se ve en el agregado: en el estrato 2–3.5 px los casos sin certificado pasaron de 37 a 170 de 539
+  (31.5 %), y 26 casos que eran rojos pasaron a amarillo (se perdió la decisión «bajo el umbral»).
+* **Los 5 verdes equivocados que quedan** (3 con PSF ≤ 2, 2 con PSF 2–3.5; el cuerpo tiene 2 más) son el nivel de fondo del
+  método en este simulador, no un fallo de la compuerta. Siguen por debajo de los criterios de 10 % y 2 %, pero no son cero.
+* **`otsu` con compuerta no emite ningún verde en la ranura:** es seguro en el sentido de no equivocarse, y vacío en el sentido
+  de que no sirve para nada. No es una prueba de que `otsu` se haya vuelto fiable.
+
+**Descriptivas (sin criterio), mismos casos** — error del grosor tras corregir el sesgo modelado, solo en los verdes de la ranura:
+
+| | verdes | mediana | percentil 95 | dentro de 0.25 mm | dentro de 0.40 mm |
+|---|---|---|---|---|---|
+| Sin compuerta | 984 | 0.060 mm | 1.232 mm | 83.7 % | 88.9 % |
+| Con compuerta | 864 | 0.050 mm | **0.286 mm** | 93.4 % | 97.8 % |
+
+La cola pesada que señalaba H13e (percentil 95 de 1.2 mm) venía del estrato de PSF ancha; sin él, el percentil 95 baja a 0.29 mm.
+Sigue sin poder decirse «mejor que un operador» (la tarea, la imagen, el píxel y la forma son otros). La parte de varianza
+de la edad que pone la medida (H13f) es parecida a la de H13 (mediana 1.0 % frente a 0.9 %, percentil 90 de 26 % frente a 30 %,
+3.5 % frente a 3.8 % de casos con más de la mitad) y es idéntica con y sin compuerta: la compuerta solo afecta a la ranura y la datación usa el cuerpo.
+
+**Lo que sigue sin resolverse.** La compuerta consulta la tasa utilizable en el `n` **medido** y en el PSF **declarado**: trata
+el síntoma (dónde falla la medida) pero no la causa (que `n` salga de la medida que se certifica). Con casos de PSF ancha el
+síntoma está bien cubierto en este simulador; con otra mezcla de condiciones, otra forma de fallar o ecografía real, no hay razón
+para pensar que el mismo umbral 0.90 y la misma definición de «utilizable» (|error| ≤ 0.5·n) sirvan.
+
+**Qué se puede concluir de H14.** En este simulador, con casos nuevos, la compuerta eliminó el estrato que fallaba a un costo de
+12 % de los verdes de la ranura y sin tocar el cuerpo. **No** se concluye nada sobre ecografía real, sobre la NT (el «slot» es
+un bloque limpio con una ranura oscura), ni que el umbral de 3.0 mm sea clínico.
+
+## 9. Siguiente paso (tras H14)
+
+Según la tabla decidida de antemano (H14a y H14b apoyadas): mantener la compuerta en el certificado y **probar con ecografía real de
+animal con referencia** (H11/H12R, pendientes de volúmenes del usuario). La limitación conocida que queda es la circularidad de `n`;
+la hipótesis natural siguiente (H15, aún sin preregistrar) es estimar `n` con una referencia independiente de la medida
+(por ejemplo, el tamaño del objeto desde la escala declarada del equipo o una segmentación gruesa independiente) y comprobar si
+con eso la compuerta se vuelve innecesaria o menos costosa.

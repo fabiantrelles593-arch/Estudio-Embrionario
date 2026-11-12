@@ -84,4 +84,6 @@ Remuestreo por caso: 2 000 réplicas, semilla 20261214. «No evaluable» nunca e
 
 ## 8. Desviaciones
 
-(Ninguna al momento del primer commit.)
+Ninguna en la ejecución: congelado en el commit faf885e, confirmación con semilla 20261215 sobre ese mismo commit (código limpio), análisis con
+`scripts/analyze_h14.py` ejecutado una vez. Los cálculos de `docs/RESULTADOS_V06.md` §8 sobre verdes quitados frente a conservados, la
+comparación con H13 y el error de los verdes con y sin compuerta son **exploratorios** (no estaban en este preregistro).

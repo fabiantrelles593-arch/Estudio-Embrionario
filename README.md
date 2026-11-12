@@ -76,7 +76,7 @@ queda **apoyada solo en 2 de 6 estratos**; en el resto el certificado nunca da v
 falsos, por debajo del tamaño mínimo preregistrado), H12g apoyada por un solo estrato (11.2 %), y que
 solo un segmentador de tres es certificable en ecografía. **Solo simulación.**
 
-## v0.6 · Programa B: biometría temprana con certificado (H13), resultado
+## v0.6 · Programa B: biometría temprana con certificado (H13, H14), resultado
 
 Un segundo programa, que reutiliza el instrumento de incertidumbre pero lo propaga hasta una pregunta que
 alguien tendría que contestar: **¿cuántos días puede estar equivocada una datación por longitud cráneo-rabadilla?** y
@@ -87,7 +87,10 @@ datación y 1.8 % en decisión), **pero** la ranura con función de dispersión 
 (exploratorio), el control `otsu` falla (30 %), y una datación certificada no es una datación correcta (domina la
 variación biológica). Módulos nuevos: `geovida.dating` (INTERGROWTH-21st, Robinson), `geovida.atlas` (estadios de
 Carnegie), `geovida.biometry`, `geovida.h13`, `geovida.labeling` (validador de manifiestos de anotación con
-compuerta para datos humanos). Atlas de los 23 estadios con rotulado y niveles de evidencia:
+compuerta para datos humanos). **H14** ([`PREREGISTRO_H14.md`](docs/PREREGISTRO_H14.md)) probó con casos nuevos una compuerta
+de «tasa de medidas utilizables»: cinco criterios apoyados, pero H14a se cumple porque la compuerta **se niega a certificar**
+el estrato difícil (no lo arregla), cuesta 12 % de los verdes de la ranura, y en casos nuevos el fallo original fue menor que en
+H13 (6.6 % de los verdes frente a 18.5 %; el estrato lo elegí después de verlo). Atlas de los 23 estadios con rotulado y niveles de evidencia:
 [`ATLAS_ESTADIOS.md`](docs/ATLAS_ESTADIOS.md); protocolo de revisión de panel (propuesta; el panel aún no existe):
 [`PANEL_DE_REVISION.md`](docs/PANEL_DE_REVISION.md). **Solo simulación; sin uso clínico.**
 
