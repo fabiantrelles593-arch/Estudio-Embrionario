@@ -241,3 +241,65 @@ def test_expected_calibration_error_rejects_bad_input():
         bio.expected_calibration_error(np.array([0.5, 1.2]), np.array([1, 0]))
     with pytest.raises(ValueError):
         bio.expected_calibration_error(np.array([]), np.array([]))
+
+
+# --- compuerta de «tasa de medidas utilizables» (H14) -----------------------------------------
+
+def _table_with_failures(kind="body", fail_cell=(60.0, 4.0), n_fail=2):
+    """Como _table, pero en una celda n_fail de las 3 repeticiones fallan (|error| > 0.5·n)."""
+    df = _table(kind)
+    mask = (df["n"] == fail_cell[0]) & (df["fwhm_px"] == fail_cell[1])
+    idx = df[mask].index[:n_fail]
+    df.loc[idx, "err_px"] = -0.9 * fail_cell[0]
+    return df
+
+
+def test_usable_rate_is_the_fraction_of_measurements_within_half_the_true_size():
+    model = bio.ErrorModel.from_calibration(_table_with_failures(), "body", "smoothed_otsu")
+    assert model.usable_rate_at(60.0, 4.0) == pytest.approx(1 / 3)
+    assert model.usable_rate_at(30.0, 1.0) == pytest.approx(1.0)
+
+
+def test_usable_rate_is_interpolated_in_log_n_and_log_fwhm():
+    model = bio.ErrorModel.from_calibration(_table_with_failures(), "body", "smoothed_otsu")
+    n_mid, f_mid = math.sqrt(60.0 * 120.0), math.sqrt(2.0 * 4.0)
+    corners = [model.usable_rate_at(n, f) for n in (60.0, 120.0) for f in (2.0, 4.0)]
+    assert model.usable_rate_at(n_mid, f_mid) == pytest.approx(np.mean(corners))
+    assert model.usable_rate_at(5000.0, 2.0) is None            # fuera de la caja
+
+
+def test_the_gate_is_off_by_default_so_h13_behaviour_is_unchanged():
+    bad = _table_with_failures()
+    ungated = bio.ErrorModel.from_calibration(bad, "body", "smoothed_otsu")
+    assert ungated.min_usable_rate is None
+    c = bio.certify_body(45.0, 0.5, 4.0, ungated)                # n = 90, f = 4: la celda con fallos cercana
+    assert c["in_domain"]
+
+
+def test_a_closed_gate_refuses_with_a_reason_and_never_gives_green():
+    bad = _table_with_failures()
+    gated = bio.ErrorModel.from_calibration(bad, "body", "smoothed_otsu", min_usable_rate=0.9)
+    refused = bio.certify_body(45.0, 0.75, 4.0, gated)           # n = 60, f = 4: tasa 1/3
+    assert not refused["in_domain"] and refused["light"] == "amarillo" and "utilizables" in refused["reason"]
+    ok = bio.certify_body(45.0, 1.5, 1.0, gated)                 # n = 30, f = 1: tasa 1
+    assert ok["in_domain"]
+
+
+def test_the_gate_also_applies_to_the_slot_certificate():
+    bad = _table_with_failures("slot")
+    gated = bio.ErrorModel.from_calibration(bad, "slot", "smoothed_otsu", min_usable_rate=0.9)
+    refused = bio.certify_slot(4.0, 4.0 / 60.0, 4.0, gated)      # n = 60, f = 4
+    assert not refused["in_domain"] and "utilizables" in refused["reason"]
+
+
+def test_gate_and_usable_rate_survive_json_and_old_files_still_load():
+    bad = _table_with_failures()
+    m = bio.ErrorModel.from_calibration(bad, "body", "smoothed_otsu", min_usable_rate=0.9)
+    back = bio.models_from_json(bio.models_to_json({"body|smoothed_otsu": m}))["body|smoothed_otsu"]
+    assert back.min_usable_rate == 0.9
+    assert back.usable_rate_at(60.0, 4.0) == pytest.approx(1 / 3)
+    old = json.loads(bio.models_to_json({"k": bio.ErrorModel.from_calibration(_table(), "body", "smoothed_otsu")}))
+    for key in ("usable_rate", "min_usable_rate"):
+        old["models"]["k"].pop(key, None)                        # un archivo congelado de H13 no los tiene
+    loaded = bio.models_from_json(json.dumps(old))["k"]
+    assert loaded.min_usable_rate is None and loaded.usable_rate_at(60.0, 2.0) is None

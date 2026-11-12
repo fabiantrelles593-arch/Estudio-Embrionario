@@ -173,6 +173,10 @@ class ErrorModel:
     bias_px: np.ndarray            # forma (len(n_nodes), len(f_nodes))
     sd_px: np.ndarray
     reps_per_cell: int = 0
+    # H14: fracción de medidas de la calibración con |error| ≤ 0.5·n («utilizables») y, si se fija
+    # ``min_usable_rate``, compuerta que rechaza las condiciones donde esa fracción es menor.
+    usable_rate: np.ndarray | None = None
+    min_usable_rate: float | None = None
 
     def __post_init__(self):
         self.bias_px = np.asarray(self.bias_px, dtype=float)
@@ -181,18 +185,26 @@ class ErrorModel:
         kw = dict(method="linear", bounds_error=False, fill_value=np.nan)
         self._ib = RegularGridInterpolator(axes, self.bias_px, **kw)
         self._is = RegularGridInterpolator(axes, self.sd_px, **kw)
+        self._iu = None
+        if self.usable_rate is not None:
+            self.usable_rate = np.asarray(self.usable_rate, dtype=float)
+            self._iu = RegularGridInterpolator(axes, self.usable_rate, **kw)
 
     @classmethod
-    def from_calibration(cls, df: pd.DataFrame, kind: str, segmenter: str) -> "ErrorModel":
-        d = df[(df["kind"] == kind) & (df["segmenter"] == segmenter)]
+    def from_calibration(cls, df: pd.DataFrame, kind: str, segmenter: str,
+                         min_usable_rate: float | None = None) -> "ErrorModel":
+        d = df[(df["kind"] == kind) & (df["segmenter"] == segmenter)].copy()
         if d.empty:
             raise ValueError(f"sin datos de calibración para {kind}|{segmenter}")
-        g = d.groupby(["n", "fwhm_px"])["err_px"].agg(["mean", "std", "count"])
+        d["usable"] = d["err_px"].abs() <= 0.5 * d["n"]
+        g = d.groupby(["n", "fwhm_px"]).agg(mean=("err_px", "mean"), std=("err_px", "std"),
+                                            count=("err_px", "size"), usable=("usable", "mean"))
         ns, fs = sorted(d["n"].unique()), sorted(d["fwhm_px"].unique())
         if len(ns) < 2 or len(fs) < 2:
             raise ValueError("la cuadrícula necesita al menos 2 valores de n y 2 de fwhm_px")
         bias = np.full((len(ns), len(fs)), np.nan)
         sd = np.full_like(bias, np.nan)
+        usable = np.full_like(bias, np.nan)
         reps = []
         for i, n in enumerate(ns):
             for j, f in enumerate(fs):
@@ -201,9 +213,10 @@ class ErrorModel:
                 row = g.loc[(n, f)]
                 if row["count"] < 2:
                     raise ValueError(f"el nodo n={n}, fwhm_px={f} necesita ≥ 2 repeticiones")
-                bias[i, j], sd[i, j] = row["mean"], row["std"]
+                bias[i, j], sd[i, j], usable[i, j] = row["mean"], row["std"], row["usable"]
                 reps.append(int(row["count"]))
-        return cls(kind, segmenter, tuple(map(float, ns)), tuple(map(float, fs)), bias, sd, min(reps))
+        return cls(kind, segmenter, tuple(map(float, ns)), tuple(map(float, fs)), bias, sd, min(reps),
+                   usable, min_usable_rate)
 
     def predict(self, n: float, fwhm_px: float):
         """(sesgo, desviación) en píxeles, o ``None`` fuera de la caja calibrada."""
@@ -215,15 +228,25 @@ class ErrorModel:
             return None
         return b, s
 
+    def usable_rate_at(self, n: float, fwhm_px: float):
+        """Fracción de medidas utilizables interpolada, o ``None`` sin tabla o fuera de la caja."""
+        if self._iu is None or not (n > 0 and fwhm_px > 0) or math.isnan(n) or math.isnan(fwhm_px):
+            return None
+        v = float(self._iu([[math.log(n), math.log(fwhm_px)]])[0])
+        return None if math.isnan(v) else v
+
     def to_dict(self) -> dict:
         return {"kind": self.kind, "segmenter": self.segmenter, "n_nodes": list(self.n_nodes),
                 "f_nodes": list(self.f_nodes), "bias_px": self.bias_px.tolist(),
-                "sd_px": self.sd_px.tolist(), "reps_per_cell": self.reps_per_cell}
+                "sd_px": self.sd_px.tolist(), "reps_per_cell": self.reps_per_cell,
+                "usable_rate": None if self.usable_rate is None else self.usable_rate.tolist(),
+                "min_usable_rate": self.min_usable_rate}
 
     @classmethod
     def from_dict(cls, d: dict) -> "ErrorModel":
         return cls(d["kind"], d["segmenter"], tuple(d["n_nodes"]), tuple(d["f_nodes"]),
-                   np.array(d["bias_px"]), np.array(d["sd_px"]), d.get("reps_per_cell", 0))
+                   np.array(d["bias_px"]), np.array(d["sd_px"]), d.get("reps_per_cell", 0),
+                   None if d.get("usable_rate") is None else np.array(d["usable_rate"]), d.get("min_usable_rate"))
 
 
 def models_to_json(models: dict, meta: dict | None = None) -> str:
@@ -244,9 +267,17 @@ def _out_of_domain(measured_mm: float, reason: str) -> dict:
 def _predict(measured_mm: float, h_mm: float, fwhm_px: float, model: ErrorModel):
     if not (measured_mm > 0 and h_mm > 0):
         return None, "medida no positiva: no hay nada que certificar"
-    pred = model.predict(measured_mm / h_mm, fwhm_px)
+    n = measured_mm / h_mm
+    pred = model.predict(n, fwhm_px)
     if pred is None:
         return None, "fuera de la caja de calibración (n o ancho de la función de dispersión)"
+    gate = getattr(model, "min_usable_rate", None)
+    if gate is not None:
+        rate = model.usable_rate_at(n, fwhm_px)
+        if rate is None or rate < gate:
+            shown = "sin tabla" if rate is None else f"{rate:.2f}"
+            return None, (f"tasa de medidas utilizables baja ({shown} < {gate:.2f}): "
+                          "la medida suele fallar en estas condiciones")
     return pred, ""
 
 

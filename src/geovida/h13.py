@@ -117,8 +117,8 @@ def run_calibration(reps: int, base_seed: int, n_jobs: int = 1, grid: dict | Non
     return pd.DataFrame(rows)
 
 
-def fit_models(df: pd.DataFrame) -> dict:
-    return {f"{k}|{s}": bio.ErrorModel.from_calibration(df, k, s)
+def fit_models(df: pd.DataFrame, min_usable_rate: float | None = None) -> dict:
+    return {f"{k}|{s}": bio.ErrorModel.from_calibration(df, k, s, min_usable_rate)
             for k in df["kind"].unique() for s in bio.SEGMENTERS}
 
 
