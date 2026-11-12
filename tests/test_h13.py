@@ -164,21 +164,47 @@ def test_calibration_verdict_uses_point_ece_and_needs_enough_cases():
     assert h13.calibration_verdict(good.iloc[:50])["verdict"] == "no evaluable"
 
 
-def test_guard_verdict_counts_greens_outside_the_box():
-    outside = _frame(bio.BODY, [True] * 120, region="n_high", light="amarillo", in_domain=False)
-    assert h13.guard_verdict(outside)["verdict"] == "apoyada"
-    leak = outside.copy()
-    leak.loc[0, "light"] = "verde"
-    r = h13.guard_verdict(leak)
-    assert r["verdict"] == "no apoyada" and r["n_green"] == 1
-    assert h13.guard_verdict(outside.iloc[:20])["verdict"] == "no evaluable"
+def test_guard_verdict_is_about_the_leak_rate_outside_the_box_not_zero_greens():
+    # n se estima a partir de la medida, así que cerca del borde algo puede filtrarse: criterio = tasa de fuga ≤ 5 %
+    outside = _frame(bio.BODY, [True] * 400, region="n_high", light="amarillo", in_domain=False)
+    clean = h13.guard_verdict(outside, n_boot=300, seed=1)
+    assert clean["verdict"] == "apoyada" and clean["leak_rate"] == 0.0 and clean["n_out"] == 400
+    leaky = outside.copy()
+    leaky.loc[:79, "light"] = "verde"                       # 20 % de fuga
+    r = h13.guard_verdict(leaky, n_boot=300, seed=1)
+    assert r["verdict"] == "no apoyada" and r["leak_n_green"] == 80 and r["leak_ci"][0] > 0.05
+    border = outside.copy()
+    border.loc[:19, "light"] = "verde"                      # 20/400 = 5 %: el intervalo contiene 5 %
+    assert h13.guard_verdict(border, n_boot=500, seed=1)["verdict"] == "no concluyente"
+    assert h13.guard_verdict(outside.iloc[:20], n_boot=300, seed=1)["verdict"] == "no evaluable"
+
+
+def test_guard_verdict_reports_correctness_of_the_leaked_greens():
+    outside = _frame(bio.BODY, [True] * 200, region="n_high", light="amarillo", in_domain=False)
+    outside.loc[:9, "light"] = "verde"
+    outside.loc[:2, "correct"] = False
+    r = h13.guard_verdict(outside, n_boot=100, seed=1)
+    assert r["leak_n_green"] == 10 and r["leak_false_green"] == pytest.approx(0.3)
 
 
 def test_guard_verdict_reports_how_often_clamping_would_have_been_a_false_green():
     outside = _frame(bio.BODY, [True] * 60 + [False] * 60, region="n_high", light="amarillo", in_domain=False)
     outside["light_clamped"] = "verde"
-    r = h13.guard_verdict(outside)
+    r = h13.guard_verdict(outside, n_boot=100, seed=1)
     assert r["clamped_n_green"] == 120 and r["clamped_false_green"] == pytest.approx(0.5)
+
+
+def test_human_yardstick_reports_all_in_domain_cases_and_the_green_ones_separately():
+    df = _frame(bio.SLOT, [True] * 6)
+    df["measured_mm"] = [3.0, 3.1, 2.9, 3.5, 3.0, 2.0]       # errores 0, .1, −.1, .5, 0, −1.0 (bias 0, truth 3.0)
+    df["light"] = ["verde"] * 4 + ["amarillo"] * 2
+    r = h13.human_yardstick(df)
+    assert r["all"]["n"] == 6 and r["green"]["n"] == 4
+    assert r["all"]["median_abs_error_mm"] == pytest.approx(0.1)
+    assert r["green"]["median_abs_error_mm"] == pytest.approx(0.1)
+    assert r["all"]["p95_abs_error_mm"] > r["green"]["p95_abs_error_mm"]
+    assert r["human_sd_intra_mm"] == pytest.approx(0.35 / 2 ** 0.5)
+    assert r["human_sd_inter_mm"] == pytest.approx(0.56 / 2 ** 0.5)
 
 
 def test_evaluate_h13_returns_every_hypothesis_key():

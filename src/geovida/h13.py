@@ -38,6 +38,7 @@ SLOT_SIZE_RANGE_MM = (1.5, 4.5)        # alrededor del umbral ilustrativo de 3.0
 OUT_REGIONS = ("n_high", "n_low", "f_high", "f_low")
 
 FALSE_GREEN_MAX = 0.10
+GUARD_LEAK_MAX = 0.05
 ECE_MAX = 0.10
 MIN_GREEN = 30
 MIN_OUT = 100
@@ -250,32 +251,55 @@ def calibration_verdict(df: pd.DataFrame, n_boot: int = 0, seed: int = BOOT_SEED
     return out
 
 
-def guard_verdict(df: pd.DataFrame) -> dict:
-    """H13d: con (n, fwhm) claramente fuera de la caja calibrada no debe haber ninguna luz verde.  Además se
-    informa, sin criterio, qué fracción de falsos verdes habría tenido un modelo que extrapola al borde."""
+def guard_verdict(df: pd.DataFrame, n_boot: int = N_BOOT, seed: int = BOOT_SEED) -> dict:
+    """H13d: con (n, fwhm) claramente fuera de la caja calibrada, la guardia debe negarse en casi todos los casos.
+
+    El ``n`` del certificado sale de la medida (medida / píxel), no de la verdad, así que cerca del borde algo
+    puede filtrarse y «cero verdes» no se puede garantizar. Criterio: tasa de fuga (fracción de casos fuera de la
+    caja con luz verde) ≤ 5 %.  Apoyada: límite superior del IC 95 % ≤ 5 %.  No apoyada: límite inferior > 5 %.
+    No concluyente: el intervalo contiene el 5 %.  No evaluable: < 100 casos fuera.
+    Se informa, sin criterio, qué tan acertados fueron los verdes filtrados y cuántos falsos verdes habría tenido
+    un modelo que extrapola al borde en vez de negarse."""
     d = df[(df["segmenter"] == PRIMARY_SEGMENTER) & (df["region"] != "in")]
-    n_green = int((d["light"] == "verde").sum())
+    green = (d["light"] == "verde").to_numpy()
+    leaked = d[d["light"] == "verde"]
     gc = d[d["light_clamped"] == "verde"]
-    out = {"n_out": int(len(d)), "n_green": n_green, "clamped_n_green": int(len(gc)),
+    out = {"n_out": int(len(d)), "leak_n_green": int(green.sum()),
+           "leak_rate": float(green.mean()) if len(d) else float("nan"), "leak_ci": None,
+           "leak_false_green": float((~leaked["correct"].astype(bool)).mean()) if len(leaked) else float("nan"),
+           "clamped_n_green": int(len(gc)),
            "clamped_false_green": float((~gc["correct"].astype(bool)).mean()) if len(gc) else float("nan"),
            "verdict": "no evaluable"}
-    if len(d) >= MIN_OUT:
-        out["verdict"] = "apoyada" if n_green == 0 else "no apoyada"
+    if len(d) < MIN_OUT:
+        return out
+    rng = np.random.default_rng(seed)
+    rates = green[rng.integers(0, len(d), size=(n_boot, len(d)))].mean(axis=1)
+    lo, hi = np.percentile(rates, [2.5, 97.5])
+    out["leak_ci"] = (float(lo), float(hi))
+    out["verdict"] = ("apoyada" if hi <= GUARD_LEAK_MAX else "no apoyada" if lo > GUARD_LEAK_MAX else "no concluyente")
+    return out
+
+
+def _error_stats(d: pd.DataFrame) -> dict:
+    err = (d["measured_mm"] - d["bias_mm"] - d["truth_mm"]).to_numpy(float)
+    out = {"n": int(len(d))}
+    if len(d):
+        a = np.abs(err)
+        out.update(median_abs_error_mm=float(np.median(a)), p95_abs_error_mm=float(np.percentile(a, 95)),
+                   sd_mm=float(err.std(ddof=1)) if len(d) > 1 else float("nan"),
+                   share_within_intra=float((a <= HUMAN_SD_INTRA_MM).mean()),
+                   share_within_inter=float((a <= HUMAN_SD_INTER_MM).mean()))
     return out
 
 
 def human_yardstick(df: pd.DataFrame) -> dict:
     """H13e (descriptiva): error de la NT simulada tras corregir el sesgo modelado, en mm, frente a la
-    repetibilidad humana publicada. No dice que supere a un operador: la tarea, la imagen y el píxel son otros."""
+    repetibilidad humana publicada: para todos los casos con certificado y solo para los verdes. No dice que
+    supere a un operador: la tarea, la imagen y el píxel son otros."""
     d = _primary_in(df[df["kind"] == bio.SLOT])
     d = d[d["in_domain"].astype(bool)]
-    err = (d["measured_mm"] - d["bias_mm"] - d["truth_mm"]).to_numpy(float)
-    out = {"n": int(len(d)), "human_sd_intra_mm": HUMAN_SD_INTRA_MM, "human_sd_inter_mm": HUMAN_SD_INTER_MM}
-    if len(d):
-        out.update(median_abs_error_mm=float(np.median(np.abs(err))), sd_mm=float(err.std(ddof=1)) if len(d) > 1 else float("nan"),
-                   share_within_intra=float((np.abs(err) <= HUMAN_SD_INTRA_MM).mean()),
-                   share_within_inter=float((np.abs(err) <= HUMAN_SD_INTER_MM).mean()))
-    return out
+    return {"human_sd_intra_mm": HUMAN_SD_INTRA_MM, "human_sd_inter_mm": HUMAN_SD_INTER_MM,
+            "all": _error_stats(d), "green": _error_stats(d[d["light"] == "verde"])}
 
 
 def measurement_share_summary(df: pd.DataFrame) -> dict:
@@ -293,7 +317,7 @@ def evaluate_h13(df: pd.DataFrame, n_boot: int = N_BOOT, seed: int = BOOT_SEED) 
     body, slot = df[df["kind"] == bio.BODY], df[df["kind"] == bio.SLOT]
     h13c = {"body": calibration_verdict(body, n_boot, seed), "slot": calibration_verdict(slot, n_boot, seed)}
     h13c["verdict"] = _combine(v["verdict"] for v in h13c.values())
-    h13d = {"body": guard_verdict(body), "slot": guard_verdict(slot)}
+    h13d = {"body": guard_verdict(body, n_boot, seed), "slot": guard_verdict(slot, n_boot, seed)}
     h13d["verdict"] = _combine(v["verdict"] for v in h13d.values())
     return {"h13a": false_green_verdict(body, n_boot, seed), "h13b": false_green_verdict(slot, n_boot, seed),
             "h13c": h13c, "h13d": h13d, "h13e": human_yardstick(df), "h13f": measurement_share_summary(df)}
