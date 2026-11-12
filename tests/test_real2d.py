@@ -219,3 +219,16 @@ def test_cli_runs_with_authorization_note_and_writes_private_report(tmp_path):
     assert "declarado por el usuario" in text
     assert "foto.png" not in text and str(tmp_path) not in text
     assert (out / "superposicion.png").exists()
+
+
+# --- lo que H15 mostró sobre fotos de impresiones ---------------------------------------------
+
+def test_report_warns_that_h15_found_the_dating_certificate_overconfident_on_prints(models):
+    canvas, roi = synthetic_photo()
+    res = real2d.measure_roi(canvas, roi, real2d.Scale(0.05, "declarada", 0.0), models=models,
+                             blur_mm_grid=(0.5,))
+    text = real2d.report_markdown(res, sha256="0" * 64, image_shape=canvas.shape)
+    assert "H15" in text
+    assert "foto de una impresión" in text or "fotos de impresiones" in text
+    assert any("H15" in a for a in res["assumptions"])
+    assert not any("No se modelan la compresión logarítmica" in a for a in res["assumptions"])

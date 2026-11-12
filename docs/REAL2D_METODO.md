@@ -55,6 +55,6 @@ alternativa (autocorrelación del moteado) depende de que el simulador ate el ta
 ## Supuestos no verificados
 
 * El error de la medida se calibró con fantomas simulados (cápsula, moteado, PSF gaussiana). Nadie lo comparó con una ecografía real.
-* No se modelan la compresión logarítmica, la ganancia, la impresión, la fotografía ni el JPEG (la hipótesis H15 los pone a prueba en simulación).
+* La calibración no incluye la compresión logarítmica, la ganancia, la impresión, la fotografía ni el JPEG. H15 los puso a prueba en simulación (`docs/RESULTADOS_V07.md`): sobre una foto de una impresión el certificado de datación se vuelve optimista (11.9 % de falsos verdes, ECE 0.195); el de decisión aguanta.
 * La ROI la elige una persona; si incluye otras estructuras brillantes (pared del saco, saco vitelino), la medida es de otra cosa.
 * El tamaño de trabajo sale de la propia medida nativa: la circularidad que H14 dejó abierta.

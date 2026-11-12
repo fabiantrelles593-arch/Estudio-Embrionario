@@ -42,7 +42,10 @@ FALLBACK_BOX = {"n": (50.0, 300.0), "f": (1.0, 5.0)}
 ASSUMPTIONS = (
     "El error de la medida se calibró solo con fantomas simulados (cápsula 2D, moteado y PSF gaussiana).",
     "El desenfoque real no se conoce: se informa para cada valor de la rejilla, no para uno estimado.",
-    "No se modelan la compresión logarítmica, la ganancia, la impresión, la fotografía ni el JPEG.",
+    "La calibración no incluye la compresión logarítmica, la ganancia, la impresión, la fotografía ni el JPEG. La hipótesis H15 "
+    "(simulación, `docs/RESULTADOS_V07.md`) los puso a prueba: sobre una foto de una impresión el certificado de datación dejó de ser fiable "
+    "(11.9 % de falsos verdes y probabilidades demasiado optimistas), el de decisión aguantó (0.8 %). El `light_if_simulation_held` de una foto "
+    "de una impresión no debe leerse como confianza.",
     "La región de interés la elige una persona; si incluye otras estructuras brillantes, la medida es de otra cosa.",
     "El tamaño de trabajo (n) sale de la propia medida nativa: la circularidad que H14 dejó abierta sigue ahí.",
 )
@@ -282,6 +285,8 @@ def report_markdown(res: dict, *, sha256: str, image_shape, authorization_note: 
                     printed=printed, caliper=caliper, version=version)
     L = ["# Medida sobre imagen 2D real — informe (solo investigación y educación)", "",
          "> No es un resultado clínico. La calibración viene solo de simulación; sobre imagen real el semáforo no sale verde.",
+         "> Si la imagen es una foto de una impresión, la hipótesis H15 mostró (en simulación) que el certificado de datación se vuelve optimista: "
+         "la columna «Si la simulación valiera» no es una garantía.",
          "", f"* Imagen: SHA-256 `{sha256}`, {image_shape[1]}×{image_shape[0]} px (no se guarda nombre, ruta ni metadatos).",
          f"* Autorización: {authorization_note or 'no aplica (no se declaró imagen humana)'}",
          f"* Escala: {d['scale']['mm_per_px']:.5f} mm/px (fuente: {d['scale']['source']}; dispersión de la regla {100*d['scale']['spread_rel']:.1f} %)",

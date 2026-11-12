@@ -1,4 +1,4 @@
-# Geometría de la Vida (`geovida`) v0.4
+# Geometría de la Vida (`geovida`) v0.7
 
 **Un instrumento de medida de formas que sabe cuándo no fiarse de sí mismo.**
 
@@ -93,6 +93,28 @@ el estrato difícil (no lo arregla), cuesta 12 % de los verdes de la ranura, y e
 H13 (6.6 % de los verdes frente a 18.5 %; el estrato lo elegí después de verlo). Atlas de los 23 estadios con rotulado y niveles de evidencia:
 [`ATLAS_ESTADIOS.md`](docs/ATLAS_ESTADIOS.md); protocolo de revisión de panel (propuesta; el panel aún no existe):
 [`PANEL_DE_REVISION.md`](docs/PANEL_DE_REVISION.md). **Solo simulación; sin uso clínico.**
+
+## v0.7 · De simulador a instrumento que mide una imagen real (H15), resultado
+
+Lo nuevo es una **orden para medir una imagen 2D real** y, sobre todo, una prueba de cuánto hay que fiarse de ella:
+
+```bash
+geovida real2d FOTO.jpg --roi X0 Y0 X1 Y1 --ruler X1 Y1 X2 Y2 --ruler-mm 10 --printed-crl-mm 12.3 --out ../informe_privado
+```
+
+Saca la escala de la regla impresa, mide una longitud dentro de una región que fija una persona, aplica el modelo de error
+congelado para cada desenfoque posible (en mm; la foto no dice cuál es) y escribe un informe con control de calidad y
+superposición. Privacidad por diseño: sin EXIF, solo el SHA-256 del archivo, informes fuera del repositorio; con `--human` exige
+una nota de autorización que queda como **declaración sin verificar**. **Sobre imagen real el semáforo no sale verde**, y ahora hay un
+dato que lo justifica: la hipótesis **H15** ([`PREREGISTRO_H15.md`](docs/PREREGISTRO_H15.md),
+[`RESULTADOS_V07.md`](docs/RESULTADOS_V07.md)) simuló la cadena pantalla → impresión → foto y encontró que el certificado de datación
+**no resiste**: 11.9 % de falsos verdes (IC 95 % 9.7–14.1 %, veredicto *no concluyente* por la regla fijada) frente a 1.2 % sin cadena,
+probabilidades demasiado optimistas (ECE 0.195) y un error que crece con la compresión logarítmica (4.3 %, 9.3 %, 22.0 %). El certificado de
+decisión sí aguanta (0.8 %). El semáforo no se entera de la cadena (776 verdes con ella, 774 sin ella). **Todo es simulación y la cadena es mía.**
+Otros documentos: [`REAL2D_METODO.md`](docs/REAL2D_METODO.md) (método, límites y lo descartado: un estimador del desenfoque que
+fracasó), [`PREREGISTRO_REAL2D_PILOTO.md`](docs/PREREGISTRO_REAL2D_PILOTO.md) (el piloto n = 1, escrito antes de medir ninguna imagen real),
+[`RUTA_DE_VALIDACION_REAL.md`](docs/RUTA_DE_VALIDACION_REAL.md) (compuertas G0–G4 y tamaños de muestra) y
+[`ARQUITECTURA.md`](docs/ARQUITECTURA.md). **Todavía no se ha medido ninguna imagen real, y el uso es solo de investigación y educación.**
 
 ## Siguiente fase (v0.5, en curso): embriones reales
 

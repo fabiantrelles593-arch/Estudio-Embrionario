@@ -79,4 +79,5 @@ y con cadena (`chain`). Segmentador primario `smoothed_otsu`; `otsu` como contro
 
 ## 9. Desviaciones
 
-(Ninguna al momento del primer commit.)
+* Confirmación generada el 12-11-2026 con código limpio en eebe7f2 (semilla 20261216). `scripts/analyze_h15.py` y `scripts/figure_h15.py` se escribieron
+  **después** de generar los datos y **antes** de ver ningún resultado; el análisis se ejecutó una vez. Las reglas de §5 no cambiaron. Resultados en `docs/RESULTADOS_V07.md`.
