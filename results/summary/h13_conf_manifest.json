@@ -1,0 +1,23 @@
+{
+  "set": "conf",
+  "started_utc": "2026-11-12T02:16:49.596713+00:00",
+  "elapsed_s": 113.3,
+  "git_commit": "9d14b155836421c710ea32de50f26d6fd71d388f",
+  "code_dirty": false,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  },
+  "n_in": 1500,
+  "n_out": 400,
+  "rows": 7600,
+  "base_seed": 20261213,
+  "frozen_sha256": "60943f4855ebf9c10cafe5503db0fa9ff6285be53df7044b6968b8b3e4315b0a",
+  "segmenters": [
+    "smoothed_otsu",
+    "otsu"
+  ]
+}

@@ -76,6 +76,19 @@ queda **apoyada solo en 2 de 6 estratos**; en el resto el certificado nunca da v
 falsos, por debajo del tamaño mínimo preregistrado), H12g apoyada por un solo estrato (11.2 %), y que
 solo un segmentador de tres es certificable en ecografía. **Solo simulación.**
 
+## v0.6 · Programa B: biometría temprana con certificado (H13), resultado
+
+Un segundo programa, que reutiliza el instrumento de incertidumbre pero lo propaga hasta una pregunta que
+alguien tendría que contestar: **¿cuántos días puede estar equivocada una datación por longitud cráneo-rabadilla?** y
+**¿está el grosor medido del mismo lado de un umbral que el verdadero?** Fantomas 2D con verdad exacta, modelo de error
+congelado, confirmación con semillas nuevas ([`PREREGISTRO_H13.md`](docs/PREREGISTRO_H13.md),
+[`RESULTADOS_V06.md`](docs/RESULTADOS_V06.md)). Los cuatro criterios agregados quedaron apoyados (falso verde 0.5 % en
+datación y 1.8 % en decisión), **pero** la ranura con función de dispersión > 3.5 px tiene 18.5 % de falsos verdes
+(exploratorio), el control `otsu` falla (30 %), y una datación certificada no es una datación correcta (domina la
+variación biológica). Módulos nuevos: `geovida.dating` (INTERGROWTH-21st, Robinson), `geovida.atlas` (estadios de
+Carnegie), `geovida.biometry`, `geovida.h13`, `geovida.labeling` (validador de manifiestos de anotación con
+compuerta para datos humanos). **Solo simulación; sin uso clínico.**
+
 ## Siguiente fase (v0.5, en curso): embriones reales
 
 Hasta v0.4 todo es sintético. v0.5 lleva el certificado a **ecografía 3D real de embriones de ratón**
