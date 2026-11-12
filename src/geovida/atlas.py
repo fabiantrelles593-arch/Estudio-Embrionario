@@ -1,8 +1,12 @@
 """Atlas de estadios de Carnegie del desarrollo embrionario humano.
 
-Solo investigación y educación. Los números salen de una tabla pública y se citan tal cual; los rangos
-de edad y de longitud **se solapan** porque el desarrollo varía entre embriones, así que buscar por una
+Solo investigación y educación. Las edades y longitudes salen de una tabla pública y se citan tal cual; los
+rangos de edad y de longitud **se solapan** porque el desarrollo varía entre embriones, así que buscar por una
 edad o una longitud puede devolver más de un estadio.
+
+LÍMITE: la columna ``features`` es una paráfrasis breve y orientativa que **no se comprobó una por una**
+contra la fuente (la verificación en línea no pudo repetirse al cierre). Úsela solo como ayuda de lectura y
+consulte la fuente antes de citar un rasgo.
 
 Fuente abierta y verificada (2026-11-11): UNSW Embryology, «Carnegie stage table» (Dr. Mark Hill,
 última modificación 21-12-2017), basada en la serie «Developmental Horizons in Human Embryos» de
