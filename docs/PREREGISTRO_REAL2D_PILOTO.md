@@ -55,3 +55,19 @@
 ## 6. Desviaciones
 
 (Ninguna al momento de escribir. La imagen no estaba disponible en la sesión al preparar este protocolo.)
+
+## 7. Decisiones fijadas el 12-11-2026, DESPUÉS de ver la imagen y ANTES de correr la medida automática
+
+La imagen llegó el 12-11-2026 (una hoja con tres capturas de pantalla fotografiadas; la capa de la medida de interés es la de la longitud cráneo-nalga, CRL).
+Todo lo de abajo se fijó al mirar la imagen, **sin correr `geovida real2d`**. Los números están en píxeles de una copia **girada 90° en sentido antihorario sin remuestrear** (1233 × 873 px), que queda fuera del repositorio.
+
+* **Qué se mide:** solo la captura de la CRL. Las otras dos (Doppler del latido, otra estructura) no se miden.
+* **Escala, de las marcas de profundidad de la propia captura:** posiciones en y de las marcas igualmente espaciadas = 112, 138, 165, 192, 218, 246, 271, 298, 324, 351, 379, 403.
+  Regla de exclusión fijada antes de usar la función: se descarta una marca que rompa la regularidad en más de 30 % del espaciado (se descartó una en y = 231, a media distancia, que es un marcador del equipo y no una marca de profundidad).
+  **Supuesto que no se puede verificar desde la imagen: que el espaciado entre marcas pequeñas es 10 mm.** Apoyo indirecto: la profundidad de imagen indicada en los parámetros en pantalla es 11 cm y 11 marcas de 26–27 px llenan casi toda la altura del sector. No usé la medida impresa para elegirlo.
+  Se usa la función `scale_from_ticks` (mediana de los espaciados, como dice §2). Como análisis de sensibilidad, sin cambiar la escala principal, se informa también la pendiente de un ajuste por mínimos cuadrados a las mismas marcas.
+* **ROI** (una persona, mirando la imagen): x de 172 a 296, y de 175 a 241. Deja unos 8–13 px de margen alrededor del embrión. Incluye otras estructuras brillantes pequeñas (saco vitelino, un pliegue arriba); si la medida las toma, se informa como fallo del método, no se corrige la ROI.
+* **Segunda lectura (calibrador manual)**, dos puntos puestos a ojo sobre la imagen ampliada: (186, 210) y (285, 204), extremos de la masa del embrión. **La puse sabiendo que la medida impresa era 37.4 mm**, así que **no es independiente**; además la hizo el asistente, no un ecografista.
+* **La medida impresa de referencia** es la CRL que el equipo escribió en la captura (37.4 mm). No se sabe quién la midió ni cómo; es una referencia, no una verdad.
+* **Qué NO se ajusta después:** ROI, escala, segmentador, rejilla de desenfoque, modelo congelado. Si algo falla (el objeto toca el borde, varios componentes grandes, contraste/ruido < 3), se informa como fallo del método.
+* **Limitación que no estaba prevista en §2 y que cambia la lectura:** la captura está pintada con un mapa de color naranja (no es escala de grises) y fue fotografiada de una hoja impresa. H15 simuló una cadena de ese tipo **sin mapa de color**; el efecto del mapa de color no se ha probado en ningún sitio.
