@@ -1,0 +1,18 @@
+{
+  "set": "pilot",
+  "started_utc": "2026-11-12T02:08:41.547981+00:00",
+  "elapsed_s": 23.1,
+  "git_commit": "87cbf72633c18d36adb3edd9e221cd998ea0fac3",
+  "code_dirty": true,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  },
+  "reps": 10,
+  "n_in": 100,
+  "n_out": 40,
+  "base_seed": 20261211
+}
