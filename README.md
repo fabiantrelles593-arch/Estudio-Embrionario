@@ -87,7 +87,9 @@ datación y 1.8 % en decisión), **pero** la ranura con función de dispersión 
 (exploratorio), el control `otsu` falla (30 %), y una datación certificada no es una datación correcta (domina la
 variación biológica). Módulos nuevos: `geovida.dating` (INTERGROWTH-21st, Robinson), `geovida.atlas` (estadios de
 Carnegie), `geovida.biometry`, `geovida.h13`, `geovida.labeling` (validador de manifiestos de anotación con
-compuerta para datos humanos). **Solo simulación; sin uso clínico.**
+compuerta para datos humanos). Atlas de los 23 estadios con rotulado y niveles de evidencia:
+[`ATLAS_ESTADIOS.md`](docs/ATLAS_ESTADIOS.md); protocolo de revisión de panel (propuesta; el panel aún no existe):
+[`PANEL_DE_REVISION.md`](docs/PANEL_DE_REVISION.md). **Solo simulación; sin uso clínico.**
 
 ## Siguiente fase (v0.5, en curso): embriones reales
 
