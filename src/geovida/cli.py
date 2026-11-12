@@ -15,6 +15,10 @@
                                     mide una longitud sobre una ecografía 2D real (informe sin nombres ni
                                     metadatos; el semáforo nunca sale verde sobre imagen real)
 
+  geovida trajectory --crl 37.6 [--crl-rel-sd 0.02] [--ga-days 74] [--horizons 7 14 21 28] [--out DIR]
+                                    franja de la referencia poblacional (INTERGROWTH-21st) en semanas posteriores, con la
+                                    incertidumbre de medida y de edad propagada; NO predice crecimiento ni aspecto
+
 Solo investigación y educación. No procesa ni debe procesar imágenes de personas sin las
 condiciones de docs/DATOS_REALES_Y_ETICA.md.
 """
@@ -243,6 +247,30 @@ def _real2d(args) -> int:
     return 0
 
 
+def _trajectory(args) -> int:
+    from . import trajectory as tj
+    try:
+        p = tj.projection(args.crl, crl_rel_sd=args.crl_rel_sd, crl_rel_bias=args.crl_rel_bias, ga_known_days=args.ga_days,
+                          horizons_days=tuple(args.horizons), n_draws=args.draws, seed=args.seed)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "trayectoria.json").write_text(json.dumps(p, indent=2, ensure_ascii=False))
+    (out / "trayectoria.md").write_text(tj.report_markdown(p))
+    ga = p["ga_now"]
+    print(f"edad ahora ({ga['source']}): {ga['median_days']:.1f} d ({ga['weeks_days'][0]}+{ga['weeks_days'][1]})")
+    for r in p["rows"]:
+        if r["in_source_range"]:
+            print(f"  +{r['days_ahead']} d: media poblacional {r['population_mean_mm']:.1f} mm; "
+                  f"envolvente {r['envelope']['lo']:.1f}–{r['envelope']['hi']:.1f} mm")
+        else:
+            print(f"  +{r['days_ahead']} d: fuera del rango de la fuente; no se calcula")
+    print(f"informe en {out}/ (no predice crecimiento ni aspecto; solo investigación y educación)")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="geovida", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -289,6 +317,16 @@ def main(argv=None) -> int:
     r.add_argument("--frozen", default="results/summary/h14_frozen.json", help="calibración congelada (JSON)")
     r.add_argument("--out", default="real2d_out")
     r.set_defaults(fn=_real2d)
+    t = sub.add_parser("trajectory", help="franja de referencia poblacional en semanas posteriores (no es una predicción)")
+    t.add_argument("--crl", type=float, required=True, help="longitud cráneo-rabadilla medida (mm)")
+    t.add_argument("--crl-rel-sd", type=float, default=0.02, help="error relativo (SD) declarado de la medida; 0.02 = 2 %%")
+    t.add_argument("--crl-rel-bias", type=float, default=0.0, help="sesgo relativo declarado de la medida")
+    t.add_argument("--ga-days", type=float, default=None, help="edad en días por otra vía; sin ella se estima con la misma CRL")
+    t.add_argument("--horizons", type=float, nargs="+", default=[7, 14, 21, 28], help="días después de la medida")
+    t.add_argument("--draws", type=int, default=20000)
+    t.add_argument("--seed", type=int, default=20261218)
+    t.add_argument("--out", default="trayectoria_out")
+    t.set_defaults(fn=_trajectory)
     args = ap.parse_args(argv)
     return args.fn(args)
 

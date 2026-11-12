@@ -1,4 +1,4 @@
-# Geometría de la Vida (`geovida`) v0.7
+# Geometría de la Vida (`geovida`) v0.8
 
 **Un instrumento de medida de formas que sabe cuándo no fiarse de sí mismo.**
 
@@ -115,6 +115,17 @@ Otros documentos: [`REAL2D_METODO.md`](docs/REAL2D_METODO.md) (método, límites
 fracasó), [`PREREGISTRO_REAL2D_PILOTO.md`](docs/PREREGISTRO_REAL2D_PILOTO.md) (el piloto n = 1, escrito antes de medir ninguna imagen real),
 [`RUTA_DE_VALIDACION_REAL.md`](docs/RUTA_DE_VALIDACION_REAL.md) (compuertas G0–G4 y tamaños de muestra) y
 [`ARQUITECTURA.md`](docs/ARQUITECTURA.md). **Todavía no se ha medido ninguna imagen real, y el uso es solo de investigación y educación.**
+
+## v0.8 · Primera ecografía 2D real medida (n = 1) y trayectoria de referencia
+
+* **Piloto REAL2D** ([`RESULTADOS_V08.md`](docs/RESULTADOS_V08.md)): el usuario aportó una ecografía (con la declaración, sin verificar, de que
+  tiene el permiso legal). Con escala, región y segunda lectura fijadas antes de correr la medida, `geovida real2d` midió una longitud cráneo-nalga de **37.57 mm**
+  frente a **37.4 mm** impresos por el equipo (+0.5 %), sin moverse al cambiar de segmentador ni de región. **Es una imagen y no valida nada**: la escala sale de un supuesto (10 mm entre marcas),
+  la cifra impresa tiene operador desconocido y la imagen es una foto de una impresión con mapa de color, un caso donde H15 vio que el certificado de datación falla. Mis predicciones sobre el piloto
+  fueron malas (3 de 6; Brier 0.31). Nada identificable está en el repositorio.
+* **`geovida trajectory`**: franja de la referencia poblacional INTERGROWTH-21st (ecuaciones leídas en el texto abierto y comprobadas contra su Tabla 2) en las semanas siguientes, con el error de medida y
+  la incertidumbre de la edad propagados y dos escenarios extremos. **No predice el crecimiento ni el aspecto de ningún feto**, solo calcula entre 58 y 105 días, y sus dos escenarios no están validados:
+  **H17** ([`PREREGISTRO_H17.md`](docs/PREREGISTRO_H17.md)) pide datos seriados reales que no tengo.
 
 ## Siguiente fase (v0.5, en curso): embriones reales
 

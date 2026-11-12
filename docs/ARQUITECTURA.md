@@ -1,7 +1,7 @@
 # Arquitectura del programa «Geometría de la Vida» (geovida)
 
 > Solo investigación y educación. Un único programa con un núcleo (instrumento + certificado), dos programas de investigación, una rama de datos reales y un paquete de gobernanza.
-> **Validado con imagen real: nada todavía.**
+> **Validado con imagen real: nada todavía** (una imagen medida en el piloto REAL2D, n = 1, sin validar).
 
 ```mermaid
 flowchart TB
@@ -18,7 +18,8 @@ flowchart TB
   end
   subgraph R[Rama de datos reales]
     R1[realdata · volúmenes 3D NIfTI<br/>H11 / H12R pendientes] 
-    R2[real2d · foto/2D con regla<br/>piloto REAL2D]
+    R2[real2d · foto/2D con regla<br/>piloto REAL2D n=1 medido]
+    R3[trajectory · franja de referencia<br/>H17 pendiente de datos seriados]
   end
   subgraph Y[Gobernanza]
     Y1[labeling · compuerta de consentimiento] 
@@ -40,9 +41,9 @@ flowchart TB
 | Núcleo | `phantoms`, `twod`, `imaging`, `measure`, `segment`, `certificate`, `domain`, `biometry` | `docs/METODOS.md`, `docs/clinico/FICHA_DEL_MODELO.md` | Probado en simulación |
 | Programa A | `h3`…`h12`, `growth`, `traj4d`, `scaleaxis`, `topomargin` | `RESULTADOS_V02`…`V05` | Confirmatorio en simulación |
 | Programa B | `dating`, `atlas`, `biometry`, `h13`, `h14`, `h15` | `RESULTADOS_V06`, `PREREGISTRO_H13/H14/H15` | Confirmatorio en simulación |
-| Datos reales | `realdata` (3D), `real2d` (2D) | `GUIA_DATOS_REALES`, `REAL2D_METODO`, `PREREGISTRO_REAL2D_PILOTO`, `PREREGISTRO_H11`, `PREREGISTRO_H12R` | Código listo; **sin imágenes reales medidas** |
+| Datos reales | `realdata` (3D), `real2d` (2D), `trajectory` (franja de referencia) | `GUIA_DATOS_REALES`, `REAL2D_METODO`, `PREREGISTRO_REAL2D_PILOTO`, `PREREGISTRO_H11`, `PREREGISTRO_H12R` | Código listo; **sin imágenes reales medidas** |
 | Gobernanza | `labeling`, `provenance` | `ATLAS_ESTADIOS`, `PANEL_DE_REVISION`, `clinico/*`, `ERRATA`, `RUTA_DE_VALIDACION_REAL` | Borrador; el panel no existe |
-| Interfaces | `cli` (`plan`, `datasheet`, `certify`, `real2d`) | `README`, laboratorio y exposición (v0.4), visor Unity sin compilar | Parcial |
+| Interfaces | `cli` (`plan`, `datasheet`, `certify`, `real2d`, `trajectory`) | `README`, laboratorio y exposición (v0.4), visor Unity sin compilar | Parcial |
 
 ## Principios que atraviesan todo
 
