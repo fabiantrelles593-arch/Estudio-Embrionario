@@ -27,11 +27,17 @@ flowchart TB
     Y3[clinico/ · riesgos, ciclo de vida, trazabilidad, ficha]
     Y4[panel de revisión · propuesta]
   end
+  subgraph U[Interfaces]
+    U1[cli]
+    U2[prototype · Calibre Geovida<br/>navegador, sin red]
+  end
   N --> A
   N --> B
   A --> R1
   B --> R2
   R --> Y
+  N --> U
+  R --> U2
 ```
 
 ## Dónde está cada cosa
@@ -45,7 +51,7 @@ flowchart TB
 | Guardia de cadena | `chainguard` (índices de la imagen, soporte por régimen, recalibración condicionada a la imagen), `h16`, `printchain` (familias A y B) | `PREREGISTRO_H16`, `RESULTADOS_V10` | Confirmado en simulación; seguro por rechazo con cadenas nuevas; sin imagen real en el soporte |
 | Acuerdo y color | `agreement` (solapamiento, distancia de contorno, Bland–Altman), `colorbar` (linealiza un mapa de color con la barra de la captura) | `INTEGRACION_PDF_EXTERNO`, `RESULTADOS_V09` | Probado con datos sintéticos; sin comparaciones reales |
 | Gobernanza | `labeling`, `provenance` | `ATLAS_ESTADIOS`, `PANEL_DE_REVISION`, `clinico/*`, `ERRATA`, `RUTA_DE_VALIDACION_REAL` | Borrador; el panel no existe |
-| Interfaces | `cli` (`plan`, `datasheet`, `certify`, `real2d`, `trajectory`) | `README`, laboratorio y exposición (v0.4), visor Unity sin compilar | Parcial |
+| Interfaces | `cli` (`plan`, `datasheet`, `certify`, `real2d`, `trajectory`); `prototype/` (Calibre Geovida, navegador) | `README`, `PROTOTIPO`, laboratorio y exposición (v0.4), visor Unity sin compilar | Parcial; el prototipo está probado contra el código Python y en Chromium, sin imágenes reales ni lectores |
 
 ## Principios que atraviesan todo
 

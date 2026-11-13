@@ -1,4 +1,4 @@
-# Geometría de la Vida (`geovida`) v0.10
+# Geometría de la Vida (`geovida`) v0.11
 
 **Un instrumento de medida de formas que sabe cuándo no fiarse de sí mismo.**
 
@@ -145,6 +145,13 @@ fracasó), [`PREREGISTRO_REAL2D_PILOTO.md`](docs/PREREGISTRO_REAL2D_PILOTO.md) (
   El primer diseño (sumar varianza) quedó como secundario: casi no deja verdes y su probabilidad no está calibrada. La imagen real n = 1 **cae fuera del soporte**: la guardia se niega a certificarla y el tope amarillo de `geovida.real2d` no cambia.
 * **No es evidencia sobre ninguna ecografía real**; la novedad de la combinación no se verificó en la literatura.
 
+## v0.11 · Calibre Geovida: un prototipo que corre en el navegador
+
+* **Qué es** ([`PROTOTIPO.md`](docs/PROTOTIPO.md)): una página de un solo archivo (`prototype/calibre_geovida.standalone.html`) para abrir una imagen, calibrar la escala con la regla, medir la CRL con el ratón y ver la edad con su incertidumbre, el semáforo, la huella de la imagen y la franja de tamaño de referencia de las semanas siguientes. La imagen no sale del navegador.
+* **Qué la distingue**: se niega fuera de rango o sin datos, **no emite verde** sobre imagen sin validar, separa lo que mide de lo que supone y dice cuánto pesa la medida en el error de edad (poco: la variación biológica domina).
+* **Cómo se comprueba**: el núcleo matemático se ejecuta con Node y se compara con `geovida.dating`, `geovida.trajectory` y `geovida.chainguard` (`tests/test_prototype_core.py`); la interfaz se recorre en Chromium (`tests/test_prototype_ui.py`). Construir: `python scripts/build_prototype.py`.
+* **Lo que no es**: no está validado con imágenes reales ni con lectores humanos (la incertidumbre al marcar es un supuesto); no predice el crecimiento ni el aspecto de nadie.
+
 ## Siguiente fase (v0.5, en curso): embriones reales
 
 Hasta v0.4 todo es sintético. v0.5 lleva el certificado a **ecografía 3D real de embriones de ratón**
@@ -207,6 +214,7 @@ del mismo barrido dan tablas idénticas (comprobado en H8).
 | `growth.py`, `traj4d.py` | Series de crecimiento con semáforo (H8) y cohortes con error de estadificación (H2) |
 | `experiment.py`, `analysis.py`, `h3.py`, `h5.py`, `h7.py` | Barridos factoriales preregistrados y su análisis, con veredictos de tres estados |
 | `provenance.py` | Commit y estado del código al empezar cada corrida |
+| `prototype/` | Calibre Geovida: página del navegador (fuentes en `prototype/src/`, ensamblada con `scripts/build_prototype.py`) |
 
 ## Método de trabajo (por qué se puede confiar en el proceso, no en mí)
 
