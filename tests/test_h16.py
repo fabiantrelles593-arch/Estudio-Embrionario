@@ -126,7 +126,8 @@ def _paired(n, green_base_clean, green_cg_chain):
             g = (i < green_base_clean) if v == "clean" else (i < green_cg_chain)
             rows.append({"idx": i, "kind": "body", "variant": v, "region": "in", "segmenter": "smoothed_otsu",
                          "light": "verde" if (v == "clean" and g) else "amarillo",
-                         "light_cg": "verde" if (v == "chain" and g) else "amarillo", "correct": True})
+                         "light_cg": "verde" if (v == "chain" and g) else "amarillo",
+                         "light_rc": "verde" if (v == "chain" and g) else "amarillo", "correct": True})
     return pd.DataFrame(rows)
 
 
@@ -150,7 +151,7 @@ def test_evaluate_h16_returns_every_hypothesis_and_the_descriptive_block(models)
     train = h16.training_table(pd.concat([a, b]))
     cm = {"body": cg.fit_chain_model(_frame(), "body"), "slot": cg.fit_chain_model(_frame().assign(kind="slot"), "slot")}
     a2, b2 = h16.apply_chain_aware(a, models, cm), h16.apply_chain_aware(b, models, cm)
-    out = h16.evaluate_h16(a2, b2, n_boot=50, seed=3)
+    out = h16.evaluate_h16(a2, b2, n_boot=50, seed=3, guard="cg")
     assert {"h16a", "h16b", "h16c", "h16d", "h16e", "h16f", "descriptive"} <= set(out)
     assert {"baseline_false_green", "out_of_support", "greens"} <= set(out["descriptive"])
     assert len(train) > 0
@@ -164,9 +165,10 @@ def _eval_frame(n=300):
             wrong = i % 2 == 0
             for v in ("clean", "chain"):
                 bad = wrong and v == "chain"
+                lg = "amarillo" if bad else "verde"
                 rows.append({"idx": i + off, "kind": kind, "variant": v, "region": "in", "segmenter": "smoothed_otsu",
-                             "light": "verde", "light_cg": "amarillo" if bad else "verde", "in_domain": True,
-                             "in_domain_cg": True, "p": 0.9, "p_cg": 0.9, "correct": not bad})
+                             "light": "verde", "light_cg": lg, "light_rc": lg, "in_domain": True,
+                             "in_domain_cg": True, "in_domain_rc": True, "p": 0.9, "p_cg": 0.9, "p_rc": 0.9, "correct": not bad})
     return pd.DataFrame(rows)
 
 
@@ -184,9 +186,11 @@ def test_evaluate_h16_scores_the_guarded_certificate_and_reports_the_baseline_ap
 
 def test_clean_cost_fails_when_the_guard_removes_more_than_a_tenth_of_the_clean_greens():
     df = _eval_frame()
-    df.loc[(df["variant"] == "clean") & (df["idx"] % 5 < 2), "light_cg"] = "amarillo"      # quita el 40 % de los verdes limpios
-    out = h16.evaluate_h16(df, df, n_boot=100, seed=1)
-    assert out["h16f"]["body"]["ratio"] == pytest.approx(0.6) and out["h16f"]["verdict"] == "no apoyada"
+    for col in ("light_cg", "light_rc"):
+        df.loc[(df["variant"] == "clean") & (df["idx"] % 5 < 2), col] = "amarillo"      # quita el 40 % de los verdes limpios
+    for guard in ("rc", "cg"):
+        out = h16.evaluate_h16(df, df, n_boot=100, seed=1, guard=guard)
+        assert out["h16f"]["body"]["ratio"] == pytest.approx(0.6) and out["h16f"]["verdict"] == "no apoyada"
 
 
 def test_training_table_marks_clean_images_as_the_clean_regime():
@@ -200,3 +204,65 @@ def test_training_table_leaves_out_cases_outside_the_calibrated_box():
     df.loc[df["idx"] == 0, "region"] = "n_high"
     t = h16.training_table(df)
     assert 0 not in set(t["idx"]) and len(t) == len(df) - 2        # las dos filas (limpia y con cadena) del caso 0
+
+
+# --------------------------------------------------------------------------- diseño 2 (recalibración) dentro de H16
+
+def test_training_table_carries_the_base_probability_and_the_outcome_for_the_recalibration():
+    df = _eval_frame(6).assign(in_domain=True, ln_cv=1.0, skew=1.0, resid_px=0.1, sd_clean_px=0.5, family="A")
+    t = h16.training_table(df)
+    assert {"p_base", "correct"} <= set(t.columns) and (t["p_base"] == 0.9).all()
+
+
+def _recal_frames(models, seed=31):
+    df = h16.run(h16.cases(6, seed, "A"), models, 1)
+    far = {k: cg.RecalModel(k, (cg.RecalRegime("chain", {"ln_cv": (50.0, 51.0), "skew": (50.0, 51.0)}, (0.0, 0.0, 0.0), (1.0, 1.0, 1.0),
+                                                (5.0, 0.0, 0.0, 0.0)),)) for k in bio.KINDS}
+    return df, far
+
+
+def test_apply_recal_refuses_green_outside_the_support(models):
+    df, far = _recal_frames(models)
+    out = h16.apply_recal(df, models, far)
+    assert (out["light_rc"] != "verde").all() and (~out["in_domain_rc"].astype(bool)).all()
+
+
+def test_apply_recal_uses_the_recalibrated_probability_and_leaves_the_base_columns_alone(models):
+    df = h16.run(h16.cases(6, 33, "A"), models, 1)
+    sure = {k: cg.RecalModel(k, (cg.RecalRegime("any", {"ln_cv": (-99.0, 99.0), "skew": (-99.0, 99.0)}, (0.0, 0.0, 0.0), (1.0, 1.0, 1.0),
+                                                 (6.0, 0.0, 0.0, 0.0)),)) for k in bio.KINDS}          # p = σ(6) ≈ 0.9975 siempre
+    out = h16.apply_recal(df, models, sure)
+    ok = out[out["in_domain"].astype(bool)]
+    assert len(ok) > 0 and np.allclose(ok["p_rc"].to_numpy(float), 1 / (1 + np.exp(-6.0))) and (ok["light"] == df.loc[ok.index, "light"]).all()
+    body_ok = ok[(ok["kind"] == bio.BODY) & (ok["measured_mm"] >= 15.0) & (ok["measured_mm"] <= 95.0)]
+    assert (body_ok["light_rc"] == "verde").all()
+
+
+def test_fit_recal_and_the_frozen_json_round_trip_both_designs(models):
+    t = _frame()
+    t = t.assign(p_base=np.random.default_rng(1).uniform(0.4, 0.99, len(t)), correct=True)
+    both = pd.concat([t, t.assign(kind="slot")], ignore_index=True)
+    par, rec = h16.fit(both), h16.fit_recal(both)
+    assert set(par) == {"body", "slot"} and set(rec) == {"body", "slot"}
+    par2, rec2 = h16.freeze_from_json(h16.freeze_to_json(par, rec, {"nota": "prueba"}))
+    probe = {"ln_cv": -1.0, "skew": 0.8}
+    assert par2["body"].adjustment(probe) == par["body"].adjustment(probe)
+    assert rec2["slot"].predict(0.9, probe) == pytest.approx(rec["slot"].predict(0.9, probe))
+
+
+def test_evaluate_h16_reads_the_columns_of_the_guard_it_is_asked_for():
+    df = _eval_frame()
+    df["light_rc"] = "amarillo"                                             # el diseño 2 no da ningún verde; el 1 sí
+    sin = h16.evaluate_h16(df, df, n_boot=100, seed=1, guard="rc")
+    con = h16.evaluate_h16(df, df, n_boot=100, seed=1, guard="cg")
+    assert sin["h16a"]["n_green"] == 0 and con["h16a"]["n_green"] > 0
+    with pytest.raises(ValueError):
+        h16.evaluate_h16(df, df, n_boot=10, seed=1, guard="zz")
+
+
+def test_the_descriptive_refusal_count_follows_the_chosen_guard():
+    df = _eval_frame()
+    df.loc[(df["variant"] == "chain") & (df["idx"] % 3 == 0) & (df["kind"] == bio.BODY), "in_domain_rc"] = False
+    rc = h16.evaluate_h16(df, df, n_boot=50, seed=1, guard="rc")["descriptive"]["out_of_support"]["A|body"]
+    cgd = h16.evaluate_h16(df, df, n_boot=50, seed=1, guard="cg")["descriptive"]["out_of_support"]["A|body"]
+    assert rc["refused_by_guard"] == 100 and rc["share"] == pytest.approx(1 / 3) and cgd["refused_by_guard"] == 0

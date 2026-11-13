@@ -94,12 +94,28 @@ def training_table(df: pd.DataFrame) -> pd.DataFrame:
 
     La variante sin cadena entra como régimen ``clean`` y la variante con cadena como régimen ``chain``."""
     d = df[(df["region"] == "in") & df["in_domain"].astype(bool)].dropna(subset=["ln_cv", "skew", "resid_px", "sd_clean_px"])
-    t = d.assign(regime=np.where(d["variant"] == "clean", "clean", "chain"))
-    return t[["idx", "kind", "family", "regime", "ln_cv", "skew", "resid_px", "sd_clean_px"]]
+    t = d.assign(regime=np.where(d["variant"] == "clean", "clean", "chain"), p_base=d["p"])
+    return t[["idx", "kind", "family", "regime", "ln_cv", "skew", "resid_px", "sd_clean_px", "p_base", "correct"]]
 
 
 def fit(train: pd.DataFrame, **kw) -> dict:
     return {k: cg.fit_chain_model(train, k, **kw) for k in bio.KINDS if (train["kind"] == k).any()}
+
+
+def fit_recal(train: pd.DataFrame, **kw) -> dict:
+    return {k: cg.fit_recal_model(train, k, **kw) for k in bio.KINDS if (train["kind"] == k).any()}
+
+
+def freeze_to_json(parametric: dict, recal: dict, meta: dict | None = None) -> str:
+    """Un solo archivo congelado con los dos diseños de la guardia."""
+    return json.dumps({"meta": meta or {}, "parametric": {k: m.to_dict() for k, m in parametric.items()},
+                       "recal": {k: m.to_dict() for k, m in recal.items()}}, indent=2, sort_keys=True)
+
+
+def freeze_from_json(text: str):
+    d = json.loads(text)
+    return ({k: cg.ChainModel.from_dict(v) for k, v in d["parametric"].items()},
+            {k: cg.RecalModel.from_dict(v) for k, v in d["recal"].items()})
 
 
 def chain_models_to_json(models: dict, meta: dict | None = None) -> str:
@@ -125,25 +141,50 @@ def apply_chain_aware(df: pd.DataFrame, base_models: dict, chain_models: dict) -
     return df.assign(light_cg=light, in_domain_cg=dom, p_cg=p, chain_regime=reg, chain_bin=bn)
 
 
+def apply_recal(df: pd.DataFrame, base_models: dict, recal_models: dict) -> pd.DataFrame:
+    """Añade el certificado del diseño 2, con la probabilidad recalibrada (``light_rc``, ``p_rc``, ``in_domain_rc``, ``chain_regime_rc``)."""
+    light, dom, p, reg = [], [], [], []
+    for r in df.itertuples(index=False):
+        cert = cg.certify_recal(r.kind, r.measured_mm, r.h_mm, r.fwhm_px, base_models[f"{r.kind}|{r.segmenter}"], recal_models[r.kind],
+                                {"ln_cv": r.ln_cv, "skew": r.skew})
+        ok = bool(cert["in_domain"])
+        light.append(cert["light"])
+        dom.append(ok)
+        p.append(cert.get("p_within_tolerance", cert.get("p_same_side", math.nan)) if ok else math.nan)
+        reg.append(cert.get("chain_regime", "") if ok else "")
+    return df.assign(light_rc=light, in_domain_rc=dom, p_rc=p, chain_regime_rc=reg)
+
+
 # --- análisis: reglas fijas de antemano -------------------------------------------------------
 
-def _view(d: pd.DataFrame, *, guarded: bool) -> pd.DataFrame:
-    """Vista con las columnas que esperan las reglas de H13 (``light``, ``in_domain``, ``p``) tomadas del certificado base o del ajustado."""
+GUARDS = ("rc", "cg")          # rc: diseño 2 (recalibración, principal); cg: diseño 1 (ajuste paramétrico, secundario)
+
+
+def _check_guard(guard: str) -> str:
+    if guard not in GUARDS:
+        raise ValueError(f"guardia desconocida: {guard!r}; opciones: {GUARDS}")
+    return guard
+
+
+def _view(d: pd.DataFrame, *, guarded: bool, guard: str = "rc") -> pd.DataFrame:
+    """Vista con las columnas que esperan las reglas de H13 (``light``, ``in_domain``, ``p``) tomadas del certificado base o del de la guardia."""
+    g = _check_guard(guard)
     d = d[(d["segmenter"] == PRIMARY) & (d["region"] == "in")]
     return pd.DataFrame({"kind": d["kind"], "segmenter": h13.PRIMARY_SEGMENTER, "region": "in",
-                         "light": d["light_cg"] if guarded else d["light"],
-                         "in_domain": d["in_domain_cg"] if guarded else d["in_domain"],
-                         "p": d["p_cg"] if guarded else d["p"], "correct": d["correct"]})
+                         "light": d[f"light_{g}"] if guarded else d["light"],
+                         "in_domain": d[f"in_domain_{g}"] if guarded else d["in_domain"],
+                         "p": d[f"p_{g}"] if guarded else d["p"], "correct": d["correct"]})
 
 
-def retention_verdict(df: pd.DataFrame, kind: str, n_boot: int = h13.N_BOOT, seed: int = h13.BOOT_SEED) -> dict:
+def retention_verdict(df: pd.DataFrame, kind: str, n_boot: int = h13.N_BOOT, seed: int = h13.BOOT_SEED,
+                      guard: str = "rc") -> dict:
     """H16d: verdes correctos de la guardia sobre la imagen con cadena / verdes correctos del semáforo base sobre la imagen limpia,
     mismos casos. Apoyada: límite inferior del IC 95 % ≥ 0.5.  No apoyada: límite superior < 0.5.  No concluyente: el intervalo contiene
     0.5.  No evaluable: < 30 verdes correctos de referencia."""
     d = df[(df["segmenter"] == PRIMARY) & (df["region"] == "in") & (df["kind"] == kind)]
     chain, clean = d[d["variant"] == "chain"].set_index("idx"), d[d["variant"] == "clean"].set_index("idx")
     idx = chain.index.intersection(clean.index)
-    num = ((chain.loc[idx, "light_cg"] == "verde") & chain.loc[idx, "correct"].astype(bool)).to_numpy(int)
+    num = ((chain.loc[idx, f"light_{_check_guard(guard)}"] == "verde") & chain.loc[idx, "correct"].astype(bool)).to_numpy(int)
     den = ((clean.loc[idx, "light"] == "verde") & clean.loc[idx, "correct"].astype(bool)).to_numpy(int)
     out = {"n_cases": int(len(idx)), "n_ref_green_correct": int(den.sum()), "n_guard_green_correct": int(num.sum()),
            "ratio": float(num.sum() / den.sum()) if den.sum() else math.nan, "ci": None, "verdict": "no evaluable"}
@@ -158,10 +199,10 @@ def retention_verdict(df: pd.DataFrame, kind: str, n_boot: int = h13.N_BOOT, see
     return out
 
 
-def clean_cost(df: pd.DataFrame, kind: str) -> dict:
+def clean_cost(df: pd.DataFrame, kind: str, guard: str = "rc") -> dict:
     """H16f: sobre imágenes sin cadena, verdes de la guardia / verdes del semáforo base (mismos casos)."""
     d = df[(df["segmenter"] == PRIMARY) & (df["region"] == "in") & (df["kind"] == kind) & (df["variant"] == "clean")]
-    gb, gc = int((d["light"] == "verde").sum()), int((d["light_cg"] == "verde").sum())
+    gb, gc = int((d["light"] == "verde").sum()), int((d[f"light_{_check_guard(guard)}"] == "verde").sum())
     return {"n_cases": int(len(d)), "green_base": gb, "green_guard": gc, "ratio": gc / gb if gb else math.nan}
 
 
@@ -169,24 +210,31 @@ def _by_variant(df: pd.DataFrame, variant: str) -> pd.DataFrame:
     return df[df["variant"] == variant]
 
 
-def evaluate_h16(df_a: pd.DataFrame, df_b: pd.DataFrame, n_boot: int = h13.N_BOOT, seed: int = h13.BOOT_SEED) -> dict:
-    """``df_a`` y ``df_b``: salida de ``run`` + ``apply_chain_aware`` para la familia A (vista al ajustar) y la B (nunca vista)."""
+def evaluate_h16(df_a: pd.DataFrame, df_b: pd.DataFrame, n_boot: int = h13.N_BOOT, seed: int = h13.BOOT_SEED,
+                 guard: str = "rc") -> dict:
+    """``df_a`` y ``df_b``: salida de ``run`` + ``apply_recal`` (y/o ``apply_chain_aware``) para la familia A (vista al ajustar) y la
+    B (nunca vista). ``guard`` elige qué diseño se evalúa: ``"rc"`` (principal) o ``"cg"`` (secundario)."""
+    _check_guard(guard)
+
     def fg(df, kind, guarded=True):
-        return h13.false_green_verdict(_view(_by_variant(df, "chain")[lambda x: x["kind"] == kind], guarded=guarded), n_boot, seed)
+        return h13.false_green_verdict(_view(_by_variant(df, "chain")[lambda x: x["kind"] == kind], guarded=guarded, guard=guard),
+                                       n_boot, seed)
 
     def ece(df, kind):
-        return h13.calibration_verdict(_view(_by_variant(df, "chain")[lambda x: x["kind"] == kind], guarded=True), n_boot, seed)
+        return h13.calibration_verdict(_view(_by_variant(df, "chain")[lambda x: x["kind"] == kind], guarded=True, guard=guard),
+                                       n_boot, seed)
 
     h16c = {"A": ece(df_a, bio.BODY), "B": ece(df_b, bio.BODY)}
     h16c["verdict"] = h13._combine(v["verdict"] for v in h16c.values())
-    h16d = {"A": retention_verdict(df_a, bio.BODY, n_boot, seed), "B": retention_verdict(df_b, bio.BODY, n_boot, seed)}
+    h16d = {"A": retention_verdict(df_a, bio.BODY, n_boot, seed, guard), "B": retention_verdict(df_b, bio.BODY, n_boot, seed, guard)}
     h16d["verdict"] = h13._combine(v["verdict"] for v in h16d.values())
     h16e = {"A": fg(df_a, bio.SLOT), "B": fg(df_b, bio.SLOT)}
     h16e["verdict"] = h13._combine(v["verdict"] for v in h16e.values())
     h16f = {}
     for kind in bio.KINDS:
-        cost = clean_cost(df_a, kind)
-        fgc = h13.false_green_verdict(_view(_by_variant(df_a, "clean")[lambda x: x["kind"] == kind], guarded=True), n_boot, seed)
+        cost = clean_cost(df_a, kind, guard)
+        fgc = h13.false_green_verdict(_view(_by_variant(df_a, "clean")[lambda x: x["kind"] == kind], guarded=True, guard=guard),
+                                      n_boot, seed)
         ok = bool(cost["ratio"] >= CLEAN_COST_MIN) and fgc["verdict"] != "no apoyada"
         h16f[kind] = {**cost, "false_green": fgc, "verdict": "apoyada" if ok else "no apoyada"}
     h16f["verdict"] = h13._combine(v["verdict"] for v in h16f.values())
@@ -196,14 +244,14 @@ def evaluate_h16(df_a: pd.DataFrame, df_b: pd.DataFrame, n_boot: int = h13.N_BOO
         for kind in bio.KINDS:
             ch = _by_variant(df, "chain")[lambda x: x["kind"] == kind]
             ch = ch[(ch["segmenter"] == PRIMARY) & (ch["region"] == "in")]
-            desc["baseline_false_green"][f"{fam}|{kind}"] = h13.false_green_verdict(_view(ch, guarded=False), n_boot, seed)
+            desc["baseline_false_green"][f"{fam}|{kind}"] = h13.false_green_verdict(_view(ch, guarded=False, guard=guard), n_boot, seed)
             base_in = ch[ch["in_domain"].astype(bool)]
+            refused = ~base_in[f"in_domain_{guard}"].astype(bool)
             desc["out_of_support"][f"{fam}|{kind}"] = {
-                "n_base_in_domain": int(len(base_in)),
-                "refused_by_guard": int((~base_in["in_domain_cg"].astype(bool)).sum()),
-                "share": float((~base_in["in_domain_cg"].astype(bool)).mean()) if len(base_in) else math.nan}
+                "n_base_in_domain": int(len(base_in)), "refused_by_guard": int(refused.sum()),
+                "share": float(refused.mean()) if len(base_in) else math.nan}
             desc["greens"][f"{fam}|{kind}"] = {"base_on_chain": int((ch["light"] == "verde").sum()),
-                                                "guard_on_chain": int((ch["light_cg"] == "verde").sum()),
+                                                "guard_on_chain": int((ch[f"light_{guard}"] == "verde").sum()),
                                                 "base_on_clean": int((_by_variant(df, "clean")[lambda x: x["kind"] == kind]["light"] == "verde").sum())}
     return {"h16a": fg(df_a, bio.BODY), "h16b": fg(df_b, bio.BODY), "h16c": h16c, "h16d": h16d, "h16e": h16e, "h16f": h16f,
             "descriptive": desc}

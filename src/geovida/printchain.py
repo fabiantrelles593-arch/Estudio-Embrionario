@@ -28,7 +28,7 @@ UPSAMPLE = 3
 # mapa de color naranja INVENTADO (no es el de ningún equipo) y puede oscurecer (γ > 1), cosa que A nunca hace; además más
 # desenfoque, más ruido, JPEG más duro y más gradiente de ganancia que A. Rangos fijados en ``docs/PREREGISTRO_H16.md``.
 RANGES_B = {
-    "gamma": (0.5, 1.6),              # log-uniforme; y = luminancia(mapa_naranja(x^γ)) normalizada
+    "gamma": (0.3, 2.5),              # log-uniforme (≈ 1/3.3 a 2.5: compresión y oscurecimiento de pantallas e impresoras); y = luminancia(mapa_naranja(x^γ)) normalizada
     "gain_slope": (0.0, 0.40),
     "blur_sigma_px": (0.8, 1.6),
     "noise_sd": (0.03, 0.08),

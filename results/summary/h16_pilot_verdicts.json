@@ -1,0 +1,416 @@
+{
+  "rc": {
+    "h16a": {
+      "n_cases": 200,
+      "n_green": 67,
+      "false_green": 0.04477611940298507,
+      "ci": [
+        0.0,
+        0.1
+      ],
+      "verdict": "apoyada"
+    },
+    "h16b": {
+      "n_cases": 400,
+      "n_green": 57,
+      "false_green": 0.03508771929824561,
+      "ci": [
+        0.0,
+        0.09090909090909091
+      ],
+      "verdict": "apoyada"
+    },
+    "h16c": {
+      "A": {
+        "n": 167,
+        "ece": NaN,
+        "ece_ci": null,
+        "verdict": "no evaluable"
+      },
+      "B": {
+        "n": 101,
+        "ece": NaN,
+        "ece_ci": null,
+        "verdict": "no evaluable"
+      },
+      "verdict": "no evaluable"
+    },
+    "h16d": {
+      "A": {
+        "n_cases": 200,
+        "n_ref_green_correct": 112,
+        "n_guard_green_correct": 64,
+        "ratio": 0.5714285714285714,
+        "ci": [
+          0.4757161395751226,
+          0.6632724585161166
+        ],
+        "verdict": "no concluyente"
+      },
+      "B": {
+        "n_cases": 400,
+        "n_ref_green_correct": 219,
+        "n_guard_green_correct": 55,
+        "ratio": 0.2511415525114155,
+        "ci": [
+          0.19479617604617605,
+          0.30804407252989296
+        ],
+        "verdict": "no apoyada"
+      },
+      "verdict": "no apoyada"
+    },
+    "h16e": {
+      "A": {
+        "n_cases": 200,
+        "n_green": 124,
+        "false_green": 0.03225806451612903,
+        "ci": [
+          0.007692307692307693,
+          0.06666666666666667
+        ],
+        "verdict": "apoyada"
+      },
+      "B": {
+        "n_cases": 400,
+        "n_green": 81,
+        "false_green": 0.024691358024691357,
+        "ci": [
+          0.0,
+          0.06315789473684211
+        ],
+        "verdict": "apoyada"
+      },
+      "verdict": "apoyada"
+    },
+    "h16f": {
+      "body": {
+        "n_cases": 200,
+        "green_base": 112,
+        "green_guard": 104,
+        "ratio": 0.9285714285714286,
+        "false_green": {
+          "n_cases": 200,
+          "n_green": 104,
+          "false_green": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "verdict": "apoyada"
+        },
+        "verdict": "apoyada"
+      },
+      "slot": {
+        "n_cases": 200,
+        "green_base": 123,
+        "green_guard": 113,
+        "ratio": 0.9186991869918699,
+        "false_green": {
+          "n_cases": 200,
+          "n_green": 113,
+          "false_green": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "verdict": "apoyada"
+        },
+        "verdict": "apoyada"
+      },
+      "verdict": "apoyada"
+    },
+    "descriptive": {
+      "baseline_false_green": {
+        "A|body": {
+          "n_cases": 200,
+          "n_green": 111,
+          "false_green": 0.13513513513513514,
+          "ci": [
+            0.07756962864721485,
+            0.20562192889488382
+          ],
+          "verdict": "no concluyente"
+        },
+        "A|slot": {
+          "n_cases": 200,
+          "n_green": 111,
+          "false_green": 0.009009009009009009,
+          "ci": [
+            0.0,
+            0.02912621359223301
+          ],
+          "verdict": "apoyada"
+        },
+        "B|body": {
+          "n_cases": 400,
+          "n_green": 215,
+          "false_green": 0.07441860465116279,
+          "ci": [
+            0.04205118452510324,
+            0.11363905644118913
+          ],
+          "verdict": "no concluyente"
+        },
+        "B|slot": {
+          "n_cases": 400,
+          "n_green": 213,
+          "false_green": 0.03755868544600939,
+          "ci": [
+            0.014079616588419407,
+            0.0660377358490566
+          ],
+          "verdict": "apoyada"
+        }
+      },
+      "out_of_support": {
+        "A|body": {
+          "n_base_in_domain": 197,
+          "refused_by_guard": 30,
+          "share": 0.15228426395939088
+        },
+        "A|slot": {
+          "n_base_in_domain": 137,
+          "refused_by_guard": 12,
+          "share": 0.08759124087591241
+        },
+        "B|body": {
+          "n_base_in_domain": 384,
+          "refused_by_guard": 283,
+          "share": 0.7369791666666666
+        },
+        "B|slot": {
+          "n_base_in_domain": 234,
+          "refused_by_guard": 153,
+          "share": 0.6538461538461539
+        }
+      },
+      "greens": {
+        "A|body": {
+          "base_on_chain": 111,
+          "guard_on_chain": 67,
+          "base_on_clean": 112
+        },
+        "A|slot": {
+          "base_on_chain": 111,
+          "guard_on_chain": 124,
+          "base_on_clean": 123
+        },
+        "B|body": {
+          "base_on_chain": 215,
+          "guard_on_chain": 57,
+          "base_on_clean": 220
+        },
+        "B|slot": {
+          "base_on_chain": 213,
+          "guard_on_chain": 81,
+          "base_on_clean": 236
+        }
+      }
+    }
+  },
+  "cg": {
+    "h16a": {
+      "n_cases": 200,
+      "n_green": 7,
+      "false_green": 0.0,
+      "ci": null,
+      "verdict": "no evaluable"
+    },
+    "h16b": {
+      "n_cases": 400,
+      "n_green": 5,
+      "false_green": 0.0,
+      "ci": null,
+      "verdict": "no evaluable"
+    },
+    "h16c": {
+      "A": {
+        "n": 167,
+        "ece": NaN,
+        "ece_ci": null,
+        "verdict": "no evaluable"
+      },
+      "B": {
+        "n": 101,
+        "ece": NaN,
+        "ece_ci": null,
+        "verdict": "no evaluable"
+      },
+      "verdict": "no evaluable"
+    },
+    "h16d": {
+      "A": {
+        "n_cases": 200,
+        "n_ref_green_correct": 112,
+        "n_guard_green_correct": 7,
+        "ratio": 0.0625,
+        "ci": [
+          0.019603083952027412,
+          0.11009174311926606
+        ],
+        "verdict": "no apoyada"
+      },
+      "B": {
+        "n_cases": 400,
+        "n_ref_green_correct": 219,
+        "n_guard_green_correct": 5,
+        "ratio": 0.0228310502283105,
+        "ci": [
+          0.0047169811320754715,
+          0.044057736540485726
+        ],
+        "verdict": "no apoyada"
+      },
+      "verdict": "no apoyada"
+    },
+    "h16e": {
+      "A": {
+        "n_cases": 200,
+        "n_green": 106,
+        "false_green": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "verdict": "apoyada"
+      },
+      "B": {
+        "n_cases": 400,
+        "n_green": 73,
+        "false_green": 0.0136986301369863,
+        "ci": [
+          0.0,
+          0.0447803119235284
+        ],
+        "verdict": "apoyada"
+      },
+      "verdict": "apoyada"
+    },
+    "h16f": {
+      "body": {
+        "n_cases": 200,
+        "green_base": 112,
+        "green_guard": 105,
+        "ratio": 0.9375,
+        "false_green": {
+          "n_cases": 200,
+          "n_green": 105,
+          "false_green": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "verdict": "apoyada"
+        },
+        "verdict": "apoyada"
+      },
+      "slot": {
+        "n_cases": 200,
+        "green_base": 123,
+        "green_guard": 117,
+        "ratio": 0.9512195121951219,
+        "false_green": {
+          "n_cases": 200,
+          "n_green": 117,
+          "false_green": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "verdict": "apoyada"
+        },
+        "verdict": "apoyada"
+      },
+      "verdict": "apoyada"
+    },
+    "descriptive": {
+      "baseline_false_green": {
+        "A|body": {
+          "n_cases": 200,
+          "n_green": 111,
+          "false_green": 0.13513513513513514,
+          "ci": [
+            0.07756962864721485,
+            0.20562192889488382
+          ],
+          "verdict": "no concluyente"
+        },
+        "A|slot": {
+          "n_cases": 200,
+          "n_green": 111,
+          "false_green": 0.009009009009009009,
+          "ci": [
+            0.0,
+            0.02912621359223301
+          ],
+          "verdict": "apoyada"
+        },
+        "B|body": {
+          "n_cases": 400,
+          "n_green": 215,
+          "false_green": 0.07441860465116279,
+          "ci": [
+            0.04205118452510324,
+            0.11363905644118913
+          ],
+          "verdict": "no concluyente"
+        },
+        "B|slot": {
+          "n_cases": 400,
+          "n_green": 213,
+          "false_green": 0.03755868544600939,
+          "ci": [
+            0.014079616588419407,
+            0.0660377358490566
+          ],
+          "verdict": "apoyada"
+        }
+      },
+      "out_of_support": {
+        "A|body": {
+          "n_base_in_domain": 197,
+          "refused_by_guard": 30,
+          "share": 0.15228426395939088
+        },
+        "A|slot": {
+          "n_base_in_domain": 137,
+          "refused_by_guard": 12,
+          "share": 0.08759124087591241
+        },
+        "B|body": {
+          "n_base_in_domain": 384,
+          "refused_by_guard": 283,
+          "share": 0.7369791666666666
+        },
+        "B|slot": {
+          "n_base_in_domain": 234,
+          "refused_by_guard": 153,
+          "share": 0.6538461538461539
+        }
+      },
+      "greens": {
+        "A|body": {
+          "base_on_chain": 111,
+          "guard_on_chain": 7,
+          "base_on_clean": 112
+        },
+        "A|slot": {
+          "base_on_chain": 111,
+          "guard_on_chain": 106,
+          "base_on_clean": 123
+        },
+        "B|body": {
+          "base_on_chain": 215,
+          "guard_on_chain": 5,
+          "base_on_clean": 220
+        },
+        "B|slot": {
+          "base_on_chain": 213,
+          "guard_on_chain": 73,
+          "base_on_clean": 236
+        }
+      }
+    }
+  }
+}
