@@ -71,3 +71,31 @@ Todo lo de abajo se fijó al mirar la imagen, **sin correr `geovida real2d`**. L
 * **La medida impresa de referencia** es la CRL que el equipo escribió en la captura (37.4 mm). No se sabe quién la midió ni cómo; es una referencia, no una verdad.
 * **Qué NO se ajusta después:** ROI, escala, segmentador, rejilla de desenfoque, modelo congelado. Si algo falla (el objeto toca el borde, varios componentes grandes, contraste/ruido < 3), se informa como fallo del método.
 * **Limitación que no estaba prevista en §2 y que cambia la lectura:** la captura está pintada con un mapa de color naranja (no es escala de grises) y fue fotografiada de una hoja impresa. H15 simuló una cadena de ese tipo **sin mapa de color**; el efecto del mapa de color no se ha probado en ningún sitio.
+
+## 8. Sensibilidad al mapa de color (exploratoria, posterior al análisis primario), fijada el 12-11-2026 ANTES de aplicar `geovida.colorbar` a la imagen
+
+**Por qué:** el límite (1) de `docs/RESULTADOS_V08.md` §2.4 dice que el mapa de color no se probó en ninguna simulación. La captura trae su propia barra de color; `geovida.colorbar`
+(commit 3afa3a8, probado solo con un mapa de color **inventado**) convierte el color en intensidad con esa barra en vez de la luminancia. Esto es **un análisis de sensibilidad**: el resultado primario (37.57 mm) no cambia, sea lo que sea que salga.
+
+**Qué se hace (fijo):** una sola medida nueva sobre la misma imagen: la ROI en color se convierte a intensidad con la barra, y se corre `real2d.measure_roi` con **la misma** escala, ROI, modelo congelado, segmentador (`smoothed_otsu`) y rejilla de desenfoque.
+Se compara `native.length_mm` con la primaria.
+
+* **Barra** (fijada mirando la imagen, en las coordenadas de §7): x de 5 a 11 y y de 76 a 135 (7 columnas × 60 filas), con `margin_cols = 1`, orientación `auto`, 256 puntos y umbral fuera-del-mapa 0.12. No se ajusta después.
+  Al ubicarla ya vi unos valores de color de la barra (no medidas de longitud): es un conocimiento previo que declaro.
+* **Sensibilidad de procedimiento (descriptiva):** el borde superior e inferior de la caja de la barra desplazados ±2 px, y las columnas ±1; orientación explícita en los dos sentidos.
+* **Reglas de confianza (antes de ver nada):** la linealización se lee solo si (a) la barra pasa la comprobación de monotonía (fracción ≥ 0.9, sin avisos), **y** (b) en la ROI la distancia mediana de los píxeles a la curva de la barra es ≤ 0.06 **y** la fracción fuera del mapa es ≤ 20 %.
+  Si falla (a) o (b) el resultado se informa como **no interpretable** (la diferencia se imprime, pero no se lee).
+* **Regla de lectura (si es interpretable):** |Δ| ≤ 1 px (0.37 mm) → «en esta imagen el mapa de color no mueve la medida más de un píxel»; entre 1 y 3 px → «la mueve de forma apreciable»; > 3 px (1.1 mm) → «la mueve mucho».
+
+**Predicciones escritas de antemano:**
+
+| Predicción | Prob. |
+|---|---|
+| La barra pasa la comprobación de monotonía | 70 % |
+| La ROI cumple (b): distancia mediana ≤ 0.06 y fuera del mapa ≤ 20 % | 45 % |
+| Si es interpretable, |Δ| ≤ 1 px | 65 % |
+| El control de calidad marca algún problema con la imagen linealizada | 10 % |
+| Sigue habiendo un solo componente grande | 80 % |
+
+**Qué no se puede concluir, pase lo que pase:** la barra puede no corresponder al mapa realmente aplicado a la imagen (una foto de una hoja impresa cambia exposición y tono); no se corrige la viñeta;
+es una imagen (n = 1). Que la medida no se mueva no valida el método; que se mueva tampoco lo refuta.
