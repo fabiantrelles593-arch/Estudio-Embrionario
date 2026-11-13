@@ -39,7 +39,7 @@ del dominio de calibración.
 
 También hay un laboratorio interactivo en el navegador (`docs/laboratorio/`), una exposición
 interactiva con demostraciones en vivo y cuestionario (`docs/exposicion/`) y un visor 4D para
-Unity (`unity/`, **sin compilar**: en el entorno de desarrollo no hay Unity).
+Unity, sin compilar, archivado en la rama `archive/unity-viewer` (ADR-003).
 
 ## Resultados, prueba por prueba
 
