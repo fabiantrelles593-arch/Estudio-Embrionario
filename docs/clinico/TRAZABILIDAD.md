@@ -30,6 +30,7 @@
 | REAL2D (resultado) | Primer piloto n = 1 con una ecografía 2D real: medida de la CRL y comparación con la impresa (exploratorio; sin validación) | `docs/PREREGISTRO_REAL2D_PILOTO.md` | `src/geovida/real2d.py`, `scripts/real2d_sensibilidad.py` | `tests/test_real2d.py` | `docs/RESULTADOS_V08.md` (informe, imagen y superposición quedan fuera del repositorio) |
 | TRAJ | Trayectoria de referencia: franja poblacional (INTERGROWTH-21st) a partir de una medida, con incertidumbre propagada; no predice crecimiento ni aspecto | `docs/PREREGISTRO_H17.md` | `src/geovida/trajectory.py`, `src/geovida/cli.py`, `scripts/figure_trajectory.py` | `tests/test_trajectory.py` | `docs/RESULTADOS_V08.md`, `docs/figures/trajectory_example.png` |
 | H17 | ¿Cubre la envolvente de dos escenarios la CRL futura observada? Pendiente de datos seriados | `docs/PREREGISTRO_H17.md` | `src/geovida/trajectory.py` | `tests/test_trajectory.py` | **Pendiente de datos reales seriados** (sin fuente ni licencia verificadas) |
+| INTEG-PDF | Integración honesta de un plan externo (PDF generado con otra IA): verificación de 8 referencias, errores hallados, qué se adoptó y qué no; convención de etiquetas de evidencia | — | `docs/INTEGRACION_PDF_EXTERNO.md` | — | `docs/INTEGRACION_PDF_EXTERNO.md` (3 errores y 1 contradicción del PDF documentados; sin resultados nuevos) |
 | Informe por medida | Procedencia de cada certificado | — | `src/geovida/cli.py`, `src/geovida/provenance.py` | `tests/test_cli.py`, `tests/test_provenance.py` | — |
 
 ## Errores propios

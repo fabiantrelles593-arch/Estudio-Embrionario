@@ -7,7 +7,7 @@
 
 | Puerta | Qué se demuestra | Qué hace falta | Estado |
 |---|---|---|---|
-| **G0** | La canalización mide una imagen real y reporta sus límites | `geovida real2d`, protocolo `docs/PREREGISTRO_REAL2D_PILOTO.md`, una imagen con escala | Código listo; **falta la imagen en la sesión** |
+| **G0** | La canalización mide una imagen real y reporta sus límites | `geovida real2d`, protocolo `docs/PREREGISTRO_REAL2D_PILOTO.md`, una imagen con escala | **Hecha con n = 1** el 12-11-2026 (`docs/RESULTADOS_V08.md`): una imagen, escala supuesta, sin validación. No avanza ninguna otra puerta |
 | **G1** | El certificado no da verdes equivocados en ecografía real (H16R) | Imágenes 2D de primer trimestre anonimizadas, con consentimiento informado y aprobación ética, CRL medida por **dos operadores** | No iniciada |
 | **G2** | Funciona entre equipos y sondas | ≥ 3 equipos, ≥ 2 sondas, calibración ampliada a objetos pequeños y desenfoque grande (ver `docs/REAL2D_METODO.md`) | No iniciada |
 | **G3** | Revisión científica externa | Un panel que hoy **no existe** (`docs/PANEL_DE_REVISION.md`), informe de errores abierto | No iniciada |
