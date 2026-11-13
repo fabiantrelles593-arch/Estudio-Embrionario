@@ -17,5 +17,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+      - name: Instalar Playwright y Chromium (pruebas del prototipo en navegador)
+        run: |
+          pip install "playwright>=1.40"
+          python -m playwright install --with-deps chromium
       - name: Pruebas
         run: pytest
