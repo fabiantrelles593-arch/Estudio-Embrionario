@@ -27,8 +27,8 @@ def paired_table(df: pd.DataFrame) -> pd.DataFrame:
     keys = ["shape", "t_over_h", "profile", "base", "rep"]
     base = df[~df["cleaned"]].set_index(keys)
     clean = df[df["cleaned"]].set_index(keys)
-    j = base[["topology_ok", "err_area"]].join(
-        clean[["topology_ok", "err_area"]], lsuffix="_base", rsuffix="_clean", how="inner")
+    j = base[["topology_ok", "err_area"]].add_suffix("_base").join(
+        clean[["topology_ok", "err_area"]].add_suffix("_clean"), how="inner")
     j = j.reset_index()
     j["tb"] = j["topology_ok_base"].astype(bool)
     j["tc"] = j["topology_ok_clean"].astype(bool)
