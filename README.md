@@ -186,7 +186,7 @@ probados con volúmenes sintéticos; esperan los volúmenes.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                                           # 682 casos (681 pasan, 1 se omite sin Playwright), ~45 s en CI
+pytest                                           # 687 casos, ~50 s en CI (el prototipo en navegador necesita Playwright y Chromium)
 python scripts/run_h6.py --phase test && python scripts/analyze_h6.py     # ~17 min, 2 núcleos
 python scripts/run_h7.py && python scripts/analyze_h7.py                  # ~1 min
 python scripts/run_h8.py && python scripts/analyze_h8.py                  # ~5 min
