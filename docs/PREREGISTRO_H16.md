@@ -114,4 +114,6 @@ Si cae en más de una caja se toma la estimación más conservadora.
 
 ## 10. Desviaciones
 
-*(Se llena después de la confirmación; si no hay ninguna, se dice.)*
+* El ajuste (`--set train`) se hizo con código limpio en 3ce1aea y se congeló en a72c735; las confirmaciones (`conf_a`, `conf_b`) con código limpio en a72c735 (`code_dirty: false` en sus manifiestos). Las reglas de §6 y el análisis no cambiaron; se ejecutó una vez.
+* `scripts/figure_h16.py` y `scripts/real2d_chainguard.py` se escribieron **después** de ver los resultados de confirmación (solo dibujan o miden descriptivamente). El corte por curva de tono y el control con la imagen real son los exploratorios anunciados en §6.
+* Resultados y errores míos de proceso en `docs/RESULTADOS_V10.md`.

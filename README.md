@@ -1,4 +1,4 @@
-# Geometría de la Vida (`geovida`) v0.9
+# Geometría de la Vida (`geovida`) v0.10
 
 **Un instrumento de medida de formas que sabe cuándo no fiarse de sí mismo.**
 
@@ -135,6 +135,15 @@ fracasó), [`PREREGISTRO_REAL2D_PILOTO.md`](docs/PREREGISTRO_REAL2D_PILOTO.md) (
 * **`geovida.agreement`** (Dice, IoU, HD95, ASSD, diferencia relativa, Bland–Altman) y **`geovida.colorbar`** (linealiza un mapa de color con la barra de la propia captura): 30 pruebas, con mutaciones comprobadas.
 * **Sensibilidad al mapa de color en la imagen real** ([`RESULTADOS_V09.md`](docs/RESULTADOS_V09.md)): por la regla fijada de antemano el resultado es **no interpretable** (distancia 0.0642 contra un límite de 0.06).
   Descriptivamente, la longitud no cambió (37.568 mm con luminancia y con la barra) y el área sí, −1.7 %. **n = 1; no valida nada.**
+
+## v0.10 · H16: una guardia que se entera, solo con la imagen, de que el certificado dejó de valer (simulación)
+
+* **Pregunta** ([`PREREGISTRO_H16.md`](docs/PREREGISTRO_H16.md)): H15 mostró que el semáforo «no se entera» de que la imagen pasó por pantalla, impresión y foto. ¿Puede enterarse **usando solo la imagen**, sin cadena declarada ni verdad?
+* **`geovida.chainguard`**: dos índices de la propia imagen, un soporte por régimen y una **recalibración de la probabilidad condicionada a la imagen**; fuera del soporte no hay luz verde. 34 pruebas, con daños deliberados al código comprobados.
+* **Resultado** ([`RESULTADOS_V10.md`](docs/RESULTADOS_V10.md), solo simulación): con cadenas vistas, los falsos verdes de CRL bajan de 13.9 % a 5.6 % y la probabilidad queda calibrada (ECE 0.034), conservando el 64 % de los verdes correctos.
+  Con una cadena **nueva** (otra curva de tono, mapa de color inventado) son 2.9 %, pero **solo conserva el 30 %** de los verdes correctos: es seguridad **por rechazo**, y así estaba escrito de antemano.
+  El primer diseño (sumar varianza) quedó como secundario: casi no deja verdes y su probabilidad no está calibrada. La imagen real n = 1 **cae fuera del soporte**: la guardia se niega a certificarla y el tope amarillo de `geovida.real2d` no cambia.
+* **No es evidencia sobre ninguna ecografía real**; la novedad de la combinación no se verificó en la literatura.
 
 ## Siguiente fase (v0.5, en curso): embriones reales
 

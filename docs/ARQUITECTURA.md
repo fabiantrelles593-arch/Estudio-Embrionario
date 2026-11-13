@@ -42,6 +42,7 @@ flowchart TB
 | Programa A | `h3`…`h12`, `growth`, `traj4d`, `scaleaxis`, `topomargin` | `RESULTADOS_V02`…`V05` | Confirmatorio en simulación |
 | Programa B | `dating`, `atlas`, `biometry`, `h13`, `h14`, `h15` | `RESULTADOS_V06`, `PREREGISTRO_H13/H14/H15` | Confirmatorio en simulación |
 | Datos reales | `realdata` (3D), `real2d` (2D), `trajectory` (franja de referencia) | `GUIA_DATOS_REALES`, `REAL2D_METODO`, `PREREGISTRO_REAL2D_PILOTO`, `PREREGISTRO_H11`, `PREREGISTRO_H12R` | Código listo; **sin imágenes reales medidas** |
+| Guardia de cadena | `chainguard` (índices de la imagen, soporte por régimen, recalibración condicionada a la imagen), `h16`, `printchain` (familias A y B) | `PREREGISTRO_H16`, `RESULTADOS_V10` | Confirmado en simulación; seguro por rechazo con cadenas nuevas; sin imagen real en el soporte |
 | Acuerdo y color | `agreement` (solapamiento, distancia de contorno, Bland–Altman), `colorbar` (linealiza un mapa de color con la barra de la captura) | `INTEGRACION_PDF_EXTERNO`, `RESULTADOS_V09` | Probado con datos sintéticos; sin comparaciones reales |
 | Gobernanza | `labeling`, `provenance` | `ATLAS_ESTADIOS`, `PANEL_DE_REVISION`, `clinico/*`, `ERRATA`, `RUTA_DE_VALIDACION_REAL` | Borrador; el panel no existe |
 | Interfaces | `cli` (`plan`, `datasheet`, `certify`, `real2d`, `trajectory`) | `README`, laboratorio y exposición (v0.4), visor Unity sin compilar | Parcial |
