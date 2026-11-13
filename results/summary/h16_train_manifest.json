@@ -1,0 +1,20 @@
+{
+  "set": "train",
+  "started_utc": "2026-11-13T01:07:19.843670+00:00",
+  "elapsed_s": 112.5,
+  "git_commit": "3ce1aead15661d5eff09d8ace7460e0aff979e6b",
+  "code_dirty": false,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5",
+    "opencv-python-headless": "5.0.0.93"
+  },
+  "rows": 6000,
+  "base_seed": 20261221,
+  "n_in_per_kind": 1500,
+  "h14_frozen_sha256": "676c7c841b8a3d2b85e25cdfa8347fe5659df13179229308f2ed7f736d7aeb97",
+  "h16_frozen_sha256": "e6e0da0a995411ac9564194e22a9bfdee23db4449f52a5d36a7986e5e878fafe"
+}
