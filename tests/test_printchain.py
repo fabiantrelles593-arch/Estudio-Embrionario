@@ -77,3 +77,71 @@ def test_run_case_with_chain_changes_measurement_but_not_truth():
     assert clean["truth_mm"] == dirty["truth_mm"] == 30.0
     assert clean["h_mm"] == dirty["h_mm"]
     assert clean["measured_mm"]["smoothed_otsu"] != dirty["measured_mm"]["smoothed_otsu"]
+
+
+# ---------------------------------------------------------------- familia B (H16): otra familia de cadena, no un subconjunto de A
+
+def test_family_b_sampler_is_deterministic_and_inside_its_own_declared_ranges():
+    a = pc.sample_chain_b(np.random.default_rng([1, 2, 3]))
+    b = pc.sample_chain_b(np.random.default_rng([1, 2, 3]))
+    assert a == b and a["family"] == "B"
+    assert pc.RANGES_B["gamma"][0] <= a["gamma"] <= pc.RANGES_B["gamma"][1]
+    for k in ("blur_sigma_px", "noise_sd"):
+        assert pc.RANGES_B[k][0] <= a[k] <= pc.RANGES_B[k][1]
+    assert pc.RANGES_B["jpeg_quality"][0] <= a["jpeg_quality"] <= pc.RANGES_B["jpeg_quality"][1]
+    assert abs(a["gain_slope"]) <= pc.RANGES_B["gain_slope"][1]
+
+
+def test_family_b_goes_beyond_family_a_on_every_shared_axis():
+    # B es un desplazamiento de familia (más desenfoque, más ruido, JPEG más duro, más gradiente), no un subconjunto de A.
+    assert pc.RANGES_B["blur_sigma_px"][1] > pc.RANGES["blur_sigma_px"][1]
+    assert pc.RANGES_B["noise_sd"][1] > pc.RANGES["noise_sd"][1]
+    assert pc.RANGES_B["jpeg_quality"][0] < pc.RANGES["jpeg_quality"][0]
+    assert pc.RANGES_B["gain_slope"][1] > pc.RANGES["gain_slope"][1]
+
+
+def test_tone_b_is_monotone_with_fixed_endpoints_and_gamma_moves_the_dark_levels():
+    x = np.linspace(0.0, 1.0, 201)
+    for g in (0.5, 1.0, 1.6):
+        t = pc.tone_b(x, g)
+        assert t[0] == pytest.approx(0.0, abs=1e-9) and t[-1] == pytest.approx(1.0, abs=1e-9)
+        assert np.all(np.diff(t) >= -1e-12)
+    assert pc.tone_b(np.array([0.2]), 0.5)[0] > 0.2 > pc.tone_b(np.array([0.2]), 1.6)[0]
+
+
+def test_tone_b_can_darken_which_no_family_a_curve_does():
+    # Con gamma bajo, B se parece a una compresión logarítmica suave; lo que A nunca hace es oscurecer.
+    x = np.linspace(0.05, 0.95, 19)
+    assert np.all(pc.tone_b(x, 1.6) < x)
+    for a in (pc.RANGES["compression_a"][0], 10.0, pc.RANGES["compression_a"][1]):
+        assert np.all(np.log1p(a * x) / np.log1p(a) > x)
+
+
+def test_apply_chain_dispatches_on_family_and_defaults_to_a():
+    img = _img()
+    a = pc.sample_chain(np.random.default_rng(7))
+    assert np.array_equal(pc.apply_chain(img, a), pc.apply_chain(img, {**a, "family": "A"}))
+    b = pc.sample_chain_b(np.random.default_rng(7))
+    out_b = pc.apply_chain(img, b)
+    assert out_b.shape == img.shape and 0.0 <= out_b.min() and out_b.max() <= 1.0
+    assert np.array_equal(out_b, pc.apply_chain(img, b))
+    assert not np.array_equal(out_b, pc.apply_chain(img, a))
+
+
+def test_run_case_with_family_b_changes_measurement_but_not_truth():
+    from geovida import biometry as bio
+    clean = bio.run_case(bio.BODY, 30.0, 100, 2.0, [9, 9, 9])
+    dirty = bio.run_case(bio.BODY, 30.0, 100, 2.0, [9, 9, 9], chain=pc.sample_chain_b(np.random.default_rng(3)))
+    assert clean["truth_mm"] == dirty["truth_mm"] == 30.0
+    assert clean["h_mm"] == dirty["h_mm"]
+    # la longitud medida es múltiplo de píxel: con un segmentador puede coincidir por azar, no con los dos a la vez
+    assert clean["measured_mm"] != dirty["measured_mm"]
+
+
+def test_family_b_moves_the_measurement_in_most_draws():
+    from geovida import biometry as bio
+    clean = bio.run_case(bio.BODY, 30.0, 100, 2.0, [9, 9, 9])["measured_mm"]["smoothed_otsu"]
+    moved = sum(
+        bio.run_case(bio.BODY, 30.0, 100, 2.0, [9, 9, 9], chain=pc.sample_chain_b(np.random.default_rng(k)))
+        ["measured_mm"]["smoothed_otsu"] != clean for k in range(8))
+    assert moved >= 5

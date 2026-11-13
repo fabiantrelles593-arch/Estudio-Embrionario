@@ -24,6 +24,27 @@ RANGES = {
 }
 UPSAMPLE = 3
 
+# H16: familia B, de otro tipo y no un subconjunto de A. La curva de tono es una gamma que pasa por la luminancia de un
+# mapa de color naranja INVENTADO (no es el de ningún equipo) y puede oscurecer (γ > 1), cosa que A nunca hace; además más
+# desenfoque, más ruido, JPEG más duro y más gradiente de ganancia que A. Rangos fijados en ``docs/PREREGISTRO_H16.md``.
+RANGES_B = {
+    "gamma": (0.5, 1.6),              # log-uniforme; y = luminancia(mapa_naranja(x^γ)) normalizada
+    "gain_slope": (0.0, 0.40),
+    "blur_sigma_px": (0.8, 1.6),
+    "noise_sd": (0.03, 0.08),
+    "jpeg_quality": (25, 60),
+}
+_TONE_B_WHITE = 0.299 * 1.0 + 0.587 * 0.85 + 0.114 * 0.7
+
+
+def tone_b(x: np.ndarray, gamma: float) -> np.ndarray:
+    """Curva de tono de la familia B: gamma y luminancia de un mapa de color naranja inventado, normalizada a [0, 1]."""
+    p = np.clip(np.asarray(x, dtype=float), 0.0, 1.0) ** float(gamma)
+    r = np.clip(1.8 * p, 0.0, 1.0) ** 0.9
+    g = 0.85 * p ** 1.7
+    b = 0.7 * p ** 2.4
+    return (0.299 * r + 0.587 * g + 0.114 * b) / _TONE_B_WHITE
+
 
 def sample_chain(rng: np.random.Generator) -> dict:
     lo, hi = RANGES["compression_a"]
@@ -39,15 +60,36 @@ def sample_chain(rng: np.random.Generator) -> dict:
     }
 
 
+def sample_chain_b(rng: np.random.Generator) -> dict:
+    """Cadena de la familia B (H16): otra familia, no un subconjunto de A."""
+    lo, hi = RANGES_B["gamma"]
+    sign = 1.0 if rng.random() < 0.5 else -1.0
+    return {
+        "family": "B",
+        "gamma": float(np.exp(rng.uniform(np.log(lo), np.log(hi)))),
+        "gain_slope": float(sign * rng.uniform(*RANGES_B["gain_slope"])),
+        "blur_sigma_px": float(rng.uniform(*RANGES_B["blur_sigma_px"])),
+        "noise_sd": float(rng.uniform(*RANGES_B["noise_sd"])),
+        "jpeg_quality": int(rng.integers(RANGES_B["jpeg_quality"][0], RANGES_B["jpeg_quality"][1] + 1)),
+        "noise_seed": int(rng.integers(0, 2**31 - 1)),
+        "upsample": UPSAMPLE,
+    }
+
+
 def apply_chain(img: np.ndarray, chain: dict) -> np.ndarray:
-    """Devuelve la imagen transformada, en [0, 1], con la misma forma que ``img``. Determinista dado ``chain``."""
+    """Devuelve la imagen transformada, en [0, 1], con la misma forma que ``img``. Determinista dado ``chain``.
+
+    ``chain["family"]`` = ``"B"`` usa la curva de tono de la familia B; sin esa clave (o ``"A"``), la compresión logarítmica de H15."""
     h, w = img.shape
     lo, hi = np.percentile(img, [1.0, 99.5])
     if not hi > lo:
         hi = lo + 1e-9
     x = np.clip((img - lo) / (hi - lo), 0.0, 1.0)
-    a = float(chain["compression_a"])
-    x = np.log1p(a * x) / np.log1p(a)
+    if chain.get("family", "A") == "B":
+        x = tone_b(x, float(chain["gamma"]))
+    else:
+        a = float(chain["compression_a"])
+        x = np.log1p(a * x) / np.log1p(a)
     up = int(chain.get("upsample", 1))
     if up > 1:
         x = cv2.resize(x, dsize=None, fx=up, fy=up, interpolation=cv2.INTER_LINEAR)
