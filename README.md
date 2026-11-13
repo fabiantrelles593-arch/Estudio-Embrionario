@@ -1,4 +1,4 @@
-# Geometría de la Vida (`geovida`) v0.8
+# Geometría de la Vida (`geovida`) v0.9
 
 **Un instrumento de medida de formas que sabe cuándo no fiarse de sí mismo.**
 
@@ -126,6 +126,15 @@ fracasó), [`PREREGISTRO_REAL2D_PILOTO.md`](docs/PREREGISTRO_REAL2D_PILOTO.md) (
 * **`geovida trajectory`**: franja de la referencia poblacional INTERGROWTH-21st (ecuaciones leídas en el texto abierto y comprobadas contra su Tabla 2) en las semanas siguientes, con el error de medida y
   la incertidumbre de la edad propagados y dos escenarios extremos. **No predice el crecimiento ni el aspecto de ningún feto**, solo calcula entre 58 y 105 días, y sus dos escenarios no están validados:
   **H17** ([`PREREGISTRO_H17.md`](docs/PREREGISTRO_H17.md)) pide datos seriados reales que no tengo.
+
+## v0.9 · Plan externo incorporado con verificación, módulos de acuerdo y de color
+
+* **PDF externo** ([`INTEGRACION_PDF_EXTERNO.md`](docs/INTEGRACION_PDF_EXTERNO.md)): un plan generado con otra IA se incorporó **verificando** cada referencia contra PubMed y las editoriales.
+  Las 8 principales existen; encontré 3 errores del PDF y 1 contradicción interna. Se adoptaron las etiquetas de evidencia, «el individuo es la unidad» y métricas de acuerdo; **no** se adoptaron el `robustness_index`,
+  la homología persistente ni la línea de cartílago nasal de ratón (motivos escritos).
+* **`geovida.agreement`** (Dice, IoU, HD95, ASSD, diferencia relativa, Bland–Altman) y **`geovida.colorbar`** (linealiza un mapa de color con la barra de la propia captura): 30 pruebas, con mutaciones comprobadas.
+* **Sensibilidad al mapa de color en la imagen real** ([`RESULTADOS_V09.md`](docs/RESULTADOS_V09.md)): por la regla fijada de antemano el resultado es **no interpretable** (distancia 0.0642 contra un límite de 0.06).
+  Descriptivamente, la longitud no cambió (37.568 mm con luminancia y con la barra) y el área sí, −1.7 %. **n = 1; no valida nada.**
 
 ## Siguiente fase (v0.5, en curso): embriones reales
 
