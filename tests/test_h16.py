@@ -266,3 +266,13 @@ def test_the_descriptive_refusal_count_follows_the_chosen_guard():
     rc = h16.evaluate_h16(df, df, n_boot=50, seed=1, guard="rc")["descriptive"]["out_of_support"]["A|body"]
     cgd = h16.evaluate_h16(df, df, n_boot=50, seed=1, guard="cg")["descriptive"]["out_of_support"]["A|body"]
     assert rc["refused_by_guard"] == 100 and rc["share"] == pytest.approx(1 / 3) and cgd["refused_by_guard"] == 0
+
+
+def test_gamma_strata_splits_family_b_by_the_tone_curve_and_reports_both_certificates():
+    df = _eval_frame(300)
+    df["chain_gamma"] = np.where(df["idx"] % 3 == 0, 0.5, np.where(df["idx"] % 3 == 1, 1.0, 2.0))
+    t = h16.gamma_strata(df, guard="rc")
+    assert set(t["stratum"]) == {"compresiva (γ < 0.8)", "intermedia (0.8 ≤ γ ≤ 1.25)", "oscurecedora (γ > 1.25)"}
+    row = t[(t["kind"] == bio.BODY) & (t["stratum"] == "compresiva (γ < 0.8)")].iloc[0]
+    assert row["n_cases"] == 100 and row["base_green"] == 100 and row["guard_green"] == 50
+    assert row["base_false_green"] == pytest.approx(0.5) and row["guard_false_green"] == 0.0

@@ -255,3 +255,24 @@ def evaluate_h16(df_a: pd.DataFrame, df_b: pd.DataFrame, n_boot: int = h13.N_BOO
                                                 "base_on_clean": int((_by_variant(df, "clean")[lambda x: x["kind"] == kind]["light"] == "verde").sum())}
     return {"h16a": fg(df_a, bio.BODY), "h16b": fg(df_b, bio.BODY), "h16c": h16c, "h16d": h16d, "h16e": h16e, "h16f": h16f,
             "descriptive": desc}
+
+
+GAMMA_STRATA = (("compresiva (γ < 0.8)", lambda g: g < 0.8),
+                ("intermedia (0.8 ≤ γ ≤ 1.25)", lambda g: (g >= 0.8) & (g <= 1.25)),
+                ("oscurecedora (γ > 1.25)", lambda g: g > 1.25))
+
+
+def gamma_strata(df: pd.DataFrame, guard: str = "rc") -> pd.DataFrame:
+    """EXPLORATORIO (familia B): falsos verdes del semáforo base y de la guardia por tipo de curva de tono (variante con cadena)."""
+    g = _check_guard(guard)
+    d = df[(df["variant"] == "chain") & (df["segmenter"] == PRIMARY) & (df["region"] == "in")]
+    rows = []
+    for kind in bio.KINDS:
+        for name, pick in GAMMA_STRATA:
+            s = d[(d["kind"] == kind) & pick(d["chain_gamma"])]
+            gb, gg = s[s["light"] == "verde"], s[s[f"light_{g}"] == "verde"]
+            rows.append({"kind": kind, "stratum": name, "n_cases": int(len(s)),
+                         "base_green": int(len(gb)), "base_false_green": float((~gb["correct"].astype(bool)).mean()) if len(gb) else math.nan,
+                         "guard_green": int(len(gg)), "guard_false_green": float((~gg["correct"].astype(bool)).mean()) if len(gg) else math.nan,
+                         "refused_by_guard": int((~s[f"in_domain_{g}"].astype(bool)).sum())})
+    return pd.DataFrame(rows)
