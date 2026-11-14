@@ -19,3 +19,7 @@ data/pending_permission/
 results/raw/
 results/summary/*_stdout.json
 results/summary/*_stderr.txt
+# Datos externos (ADR-005): se descargan fuera de Git; solo se versiona su manifiesto
+data/external/
+*.mnc
+*.mnc.gz
