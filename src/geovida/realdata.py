@@ -2,13 +2,13 @@
 
 Qué hace
 --------
-* ``load_volume``: lee un volumen NIfTI (.nii o .nii.gz) y devuelve la imagen, el tamaño del
-  vóxel en milímetros y los metadatos de unidades.
+* ``load_volume``: lee un volumen NIfTI (.nii o .nii.gz) o MINC (.mnc o .mnc.gz, con
+  ``geovida.minc``) y devuelve la imagen, el tamaño del vóxel en milímetros y los metadatos.
 * ``datasheet``: resumen descriptivo de un volumen (forma, vóxel, intensidades, etiquetas). **No
   calcula nada contra una referencia**: sirve para leer la estructura de un conjunto antes de fijar
   los criterios.
-* ``scan``: recorre una carpeta o un .zip con volúmenes NIfTI y devuelve su ficha, sin suponer qué
-  archivo es imagen y cuál es etiqueta.
+* ``scan``: recorre una carpeta o un .zip con volúmenes NIfTI o MINC y devuelve su ficha, sin
+  suponer qué archivo es imagen y cuál es etiqueta.
 * ``compare_case``: aplica el certificado congelado de v0.4 (sin reajustar nada) a una imagen real y
   compara la medida con la referencia dibujada por una persona experta.
 
@@ -31,9 +31,11 @@ import numpy as np
 from .budget import traffic_light
 from .certificate import certify
 from .measure import dice, measure_mask
+from .minc import MINC_SUFFIXES, load_minc
 from .segment import segment
 
 NII_SUFFIXES = (".nii", ".nii.gz")
+VOLUME_SUFFIXES = NII_SUFFIXES + MINC_SUFFIXES
 _UNIT_TO_MM = {"meter": 1000.0, "mm": 1.0, "micron": 1e-3}
 MAX_LABELS = 32
 
@@ -47,7 +49,12 @@ def _nib():
 
 
 def load_volume(path) -> tuple[np.ndarray, tuple[float, float, float], dict]:
-    """Imagen 3D (float32), vóxel en mm y metadatos. Descarta dimensiones de tamaño 1."""
+    """Imagen 3D (float32), vóxel en mm y metadatos. Descarta dimensiones de tamaño 1.
+
+    Los archivos MINC pasan por ``geovida.minc.load_minc``, que además registra la orientación.
+    """
+    if str(path).lower().endswith(MINC_SUFFIXES):
+        return load_minc(path)
     nib = _nib()
     im = nib.load(str(path))
     arr = np.squeeze(np.asarray(im.get_fdata(dtype=np.float32)))
@@ -86,14 +93,15 @@ def datasheet(arr: np.ndarray, spacing, name: str = "") -> dict:
     return out
 
 
-def _iter_nii(root: Path):
+def _iter_volumes(root: Path):
     for p in sorted(root.rglob("*")):
-        if p.is_file() and p.name.lower().endswith(NII_SUFFIXES):
+        if p.is_file() and p.name.lower().endswith(VOLUME_SUFFIXES):
             yield p
 
 
 def scan(source) -> list[dict]:
-    """Ficha de cada volumen NIfTI de una carpeta o un .zip. Sin suponer pares imagen-etiqueta."""
+    """Ficha de cada volumen NIfTI o MINC de una carpeta o un .zip. Sin suponer pares
+    imagen-etiqueta."""
     source = Path(source)
     rows: list[dict] = []
 
@@ -105,20 +113,20 @@ def scan(source) -> list[dict]:
             rows.append({"name": Path(shown).name, "path": shown, "error": f"{type(exc).__name__}: {exc}"})
 
     if source.is_dir():
-        for p in _iter_nii(source):
+        for p in _iter_volumes(source):
             one(p, str(p.relative_to(source)))
     elif zipfile.is_zipfile(source):
         with zipfile.ZipFile(source) as z, tempfile.TemporaryDirectory() as tmp:
             for info in z.infolist():
-                if info.is_dir() or not info.filename.lower().endswith(NII_SUFFIXES):
+                if info.is_dir() or not info.filename.lower().endswith(VOLUME_SUFFIXES):
                     continue
                 target = z.extract(info, tmp)
                 one(Path(target), info.filename)
                 Path(target).unlink()
-    elif source.name.lower().endswith(NII_SUFFIXES):
+    elif source.name.lower().endswith(VOLUME_SUFFIXES):
         one(source, source.name)
     else:
-        raise ValueError(f"{source}: ni carpeta, ni .zip, ni NIfTI")
+        raise ValueError(f"{source}: ni carpeta, ni .zip, ni volumen NIfTI o MINC")
     return rows
 
 
