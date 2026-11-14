@@ -22,8 +22,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "nibabel>=5"]
-real = ["nibabel>=5"]
+dev = ["pytest>=8", "nibabel>=5", "h5py>=3"]
+real = ["nibabel>=5", "h5py>=3"]
 
 [project.scripts]
 geovida = "geovida.cli:main"
