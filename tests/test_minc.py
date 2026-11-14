@@ -192,3 +192,52 @@ def test_label_phantom_volume_through_datasheet(tmp_path):
     sheet = realdata.datasheet(arr, spacing, "lab")
     assert sheet["label_like"] and sheet["labels"]["1"] == int(inside.sum())
     assert sheet["labels_volume_mm3"]["1"] == pytest.approx(BALL_MM3, rel=0.02)
+
+# --- Integración con geovida.realdata y con la línea de órdenes ---
+
+
+def test_realdata_load_volume_dispatches_minc(tmp_path):
+    inside = _ball()
+    _write_minc1(tmp_path / "bola.mnc", (0.1 + 0.8 * inside).astype(np.float32))
+    arr, spacing, meta = realdata.load_volume(tmp_path / "bola.mnc")
+    assert meta["format"] == "MINC1"
+    _check_geometry(arr, spacing, meta, inside)
+
+
+def test_realdata_scan_lists_minc_in_folder_and_zip(tmp_path):
+    import zipfile
+
+    inside = _ball()
+    folder = tmp_path / "descarga"
+    folder.mkdir()
+    _write_minc1(folder / "img.mnc", (0.1 + 0.8 * inside).astype(np.float32))
+    _write_minc2(folder / "seg.mnc", inside.astype(np.float32))
+    (folder / "leeme.txt").write_text("no es un volumen", encoding="utf-8")
+    rows = {r["name"]: r for r in realdata.scan(folder)}
+    assert set(rows) == {"img.mnc", "seg.mnc"}
+    assert rows["img.mnc"]["format"] == "MINC1" and not rows["img.mnc"]["label_like"]
+    assert rows["seg.mnc"]["format"] == "MINC2" and rows["seg.mnc"]["label_like"]
+    assert rows["seg.mnc"]["labels_volume_mm3"]["1"] == pytest.approx(BALL_MM3, rel=0.02)
+    with zipfile.ZipFile(tmp_path / "descarga.zip", "w") as z:
+        z.write(folder / "img.mnc", "e155/img.mnc")
+        z.write(folder / "seg.mnc", "e155/seg.mnc")
+    zrows = realdata.scan(tmp_path / "descarga.zip")
+    assert sorted(r["path"] for r in zrows) == ["e155/img.mnc", "e155/seg.mnc"]
+    assert all("error" not in r for r in zrows)
+
+
+def test_cli_datasheet_reads_minc(tmp_path, capsys):
+    import json
+
+    from geovida.cli import main
+
+    inside = _ball()
+    folder = tmp_path / "descarga"
+    folder.mkdir()
+    _write_minc1(folder / "lab.mnc", inside.astype(np.int16), typecode="h",
+                 valid_range=(0, 1), real_range=(0.0, 1.0))
+    out = tmp_path / "ficha.json"
+    assert main(["datasheet", str(folder), "--out", str(out)]) == 0
+    rows = json.loads(out.read_text(encoding="utf-8"))
+    assert rows[0]["name"] == "lab.mnc" and rows[0]["labels"]["1"] == int(inside.sum())
+    assert "lab.mnc" in capsys.readouterr().out
