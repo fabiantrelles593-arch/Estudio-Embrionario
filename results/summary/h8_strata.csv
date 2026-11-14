@@ -1,0 +1,7 @@
+stratum,n_series,n_defined,frac_undefined,evaluable,median_err_no_red,median_err_all_paired,median_err_all_everything,median_err_green,median_err_vox100,frac_undefined_vox100,median_err_no_red_both,median_err_vox100_both,p90_err_no_red,p90_err_all_paired,frac_no_red_wins,h8a_better,h8b_useful,h8c_cheap
+global|ideal,450,450,0.0,True,0.0105,0.0275,0.0275,0.0049,0.0064,0.0,0.0105,0.0064,0.0294,0.0774,0.8289,True,True,True
+global|realistic,450,450,0.0,True,0.0118,0.0434,0.0434,0.0062,0.0108,0.0,0.0118,0.0108,0.0255,0.1003,0.9489,True,True,True
+otsu|ideal,450,450,0.0,True,0.0086,0.0428,0.0428,0.0109,0.0108,0.0,0.0086,0.0108,0.0354,0.1161,0.9089,True,True,True
+otsu|realistic,450,450,0.0,True,0.0111,0.6416,0.6416,0.0064,0.7219,0.0,0.0111,0.7219,0.0307,0.9662,0.9956,True,True,True
+smoothed_otsu|ideal,450,133,0.7044,True,0.0203,0.1067,0.1784,0.02,0.0743,0.0,0.0203,0.0988,0.0271,0.1826,1.0,True,True,False
+smoothed_otsu|realistic,450,51,0.8867,True,0.0221,0.108,0.2132,,0.1523,0.0,0.0221,0.1072,0.0253,0.114,1.0,True,True,False

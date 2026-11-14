@@ -1,0 +1,195 @@
+<title>Laboratorio Geovida</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Banco de instrumento: a la izquierda el objeto, a la derecha lo que el instrumento dice de él. */
+:root {
+  --bg: #F4F7F5; --surface: #FFFFFF; --sunken: #E9EFEC; --ink: #13201B; --muted: #54655E;
+  --line: #D5DED9; --accent: #0B6E99; --voxel: #2F8FB5;
+  --go: #0A8F68; --wait: #B87B00; --stop: #C4491A; --off: #C9D3CE;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1512; --surface: #151E1A; --sunken: #1B2621; --ink: #E6EEEA; --muted: #9BABA3;
+  --line: #2A3732; --accent: #62B8DC; --voxel: #4FA9CF;
+  --go: #33C39A; --wait: #E3B341; --stop: #F07C4F; --off: #33423C; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1512; --surface: #151E1A; --sunken: #1B2621; --ink: #E6EEEA; --muted: #9BABA3;
+  --line: #2A3732; --accent: #62B8DC; --voxel: #4FA9CF;
+  --go: #33C39A; --wait: #E3B341; --stop: #F07C4F; --off: #33423C; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55 }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 36px }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.15 }
+h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 700; letter-spacing: -0.01em }
+h2 { font-size: 1.3rem; font-weight: 600 }
+h3 { font-size: 1rem; font-weight: 600 }
+p { margin: 0; max-width: 68ch }
+.lede { color: var(--muted); font-size: 1.02rem }
+.eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted) }
+header { display: flex; flex-direction: column; gap: 10px }
+.tags { display: flex; flex-wrap: wrap; gap: 8px }
+.tag { font-family: var(--mono); font-size: 0.72rem; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--muted) }
+section { display: flex; flex-direction: column; gap: 14px }
+.bench { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start }
+@media (max-width: 820px) { .bench { grid-template-columns: minmax(0, 1fr) } }
+.stage { position: relative; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; aspect-ratio: 4 / 3; max-width: 100% }
+.stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab }
+.stage canvas:active { cursor: grabbing }
+.stage .hint, .stage .busy { position: absolute; left: 12px; bottom: 10px; font-family: var(--mono); font-size: 0.7rem; color: var(--muted) }
+.stage .busy { left: auto; right: 12px }
+.panel { display: flex; flex-direction: column; gap: 16px; min-width: 0 }
+.controls { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0 }
+.field label, .field .label { font-size: 0.8rem; color: var(--muted); display: flex; justify-content: space-between; gap: 8px }
+.field output { font-family: var(--mono); color: var(--ink) }
+select, button, input[type="range"] { font: inherit; color: inherit }
+select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100% }
+input[type="range"] { width: 100%; accent-color: var(--accent) }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface) }
+.seg button { flex: 1; border: 0; background: transparent; padding: 7px 6px; cursor: pointer; font-size: 0.85rem; border-left: 1px solid var(--line) }
+.seg button:first-child { border-left: 0 }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); font-weight: 600 }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.88rem }
+.btn:hover, .seg button:hover { border-color: var(--accent) }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px }
+
+.verdict { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px }
+.lamp { display: flex; flex-direction: column; gap: 6px; background: var(--sunken); border-radius: 22px; padding: 8px }
+.lamp i { width: 22px; height: 22px; border-radius: 50%; background: var(--off); display: block; transition: background .2s }
+.lamp[data-light="verde"] i:nth-child(3) { background: var(--go) }
+.lamp[data-light="amarillo"] i:nth-child(2) { background: var(--wait) }
+.lamp[data-light="rojo"] i:nth-child(1) { background: var(--stop) }
+.verdict strong { font-family: var(--display); font-size: 1.15rem; display: block }
+.verdict small { color: var(--muted); font-size: 0.83rem; display: block }
+dl.read { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px 14px; margin: 0; font-size: 0.9rem }
+dl.read dt { color: var(--muted) }
+dl.read dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right }
+.ok { color: var(--go) } .bad { color: var(--stop) } .mid { color: var(--wait) }
+.note { color: var(--muted); font-size: 0.85rem }
+.chart { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px; max-width: 100% }
+.chart canvas { display: block; width: 100%; height: 300px }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.8rem; color: var(--muted) }
+.legend span { display: inline-flex; align-items: center; gap: 6px }
+.sw { width: 18px; height: 3px; border-radius: 2px; display: inline-block }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block }
+.rates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+@media (max-width: 640px) { .rates { grid-template-columns: minmax(0, 1fr) } }
+.rate { border-top: 2px solid var(--line); padding-top: 8px }
+.rate b { font-family: var(--mono); font-size: 1.25rem; font-weight: 500; display: block; font-variant-numeric: tabular-nums }
+.rate span { font-size: 0.82rem; color: var(--muted) }
+.scroll { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top }
+th { font-weight: 500; color: var(--muted); font-size: 0.78rem }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap }
+.chip { font-family: var(--mono); font-size: 0.72rem; border-radius: 6px; padding: 2px 8px; border: 1px solid currentColor; white-space: nowrap; display: inline-block }
+.limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; padding: 0; margin: 0; list-style: none }
+@media (max-width: 640px) { .limits { grid-template-columns: minmax(0, 1fr) } }
+.limits li { border-top: 1px solid var(--line); padding-top: 8px; font-size: 0.9rem }
+footer { color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--line); padding-top: 14px }
+@media (prefers-reduced-motion: reduce) { .lamp i { transition: none } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Geometría de la Vida · geovida</span>
+    <h1>Laboratorio Geovida</h1>
+    <p class="lede">Antes de comparar la forma de dos embriones hay que saber cuánto se equivoca el instrumento que los mide. Aquí el objeto tiene forma conocida, así que el error se puede ver.</p>
+    <div class="tags"><span class="tag">solo datos sintéticos</span><span class="tag">investigación y educación</span><span class="tag">sin uso clínico</span></div>
+  </header>
+
+  <section aria-labelledby="s1">
+    <div><span class="eyebrow">3D · una imagen</span><h2 id="s1">Mide un objeto y mira si el instrumento se fía de sí mismo</h2></div>
+    <div class="bench">
+      <div class="stage">
+        <canvas id="view" aria-label="Vista 3D de los vóxeles que la imagen atribuye al objeto"></canvas>
+        <span class="hint">arrastra para girar · rueda para acercar</span>
+        <span class="busy" id="busy" hidden>calculando…</span>
+      </div>
+      <div class="panel">
+        <div class="controls">
+          <div class="field"><label for="shape">Forma (su volumen y su topología se conocen exactamente)</label>
+            <select id="shape"></select></div>
+          <div class="field"><label for="res"><span>Resolución: vóxeles a través del rasgo más fino</span><output id="resOut">4.0</output></label>
+            <input type="range" id="res" min="1.5" max="12" step="0.5" value="4"></div>
+          <div class="row2">
+            <div class="field"><span class="label">Vóxel alargado en z (anisotropía)</span>
+              <div class="seg" id="aniso" role="group" aria-label="Anisotropía"><button type="button" data-v="1" aria-pressed="true">×1</button><button type="button" data-v="2" aria-pressed="false">×2</button><button type="button" data-v="3" aria-pressed="false">×3</button></div></div>
+            <div class="field"><span class="label">Degradar la imagen (eje de escala)</span>
+              <div class="seg" id="scale" role="group" aria-label="Escala de medición"><button type="button" data-v="0" aria-pressed="true">nativa</button><button type="button" data-v="1" aria-pressed="false">×2</button><button type="button" data-v="2" aria-pressed="false">×4</button></div></div>
+          </div>
+          <button class="btn" id="reroll" type="button">Otra orientación al azar</button>
+        </div>
+        <div class="verdict" aria-live="polite">
+          <div class="lamp" id="lamp" data-light="rojo" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div><strong id="lightText">—</strong><small id="lightSub">—</small></div>
+        </div>
+        <dl class="read">
+          <dt>Volumen medido frente al verdadero</dt><dd id="rVol">—</dd>
+          <dt>Topología medida (componentes, túneles, cavidades)</dt><dd id="rTop">—</dd>
+          <dt>Topología verdadera</dt><dd id="rTopTrue">—</dd>
+          <dt>Profundidad media interior, en vóxeles</dt><dd id="rDepth">—</dd>
+          <dt>Vóxeles del objeto</dt><dd id="rVox">—</dd>
+        </dl>
+        <p class="note">La luz se calcula solo con la máscara y el tamaño del vóxel: el semáforo no conoce la respuesta. Las dos primeras filas la comparan con la verdad, que aquí sí se sabe.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s2">
+    <div><span class="eyebrow">4D · pseudo-tiempo</span><h2 id="s2">El mismo objeto, creciendo con el vóxel fijo</h2></div>
+    <p>Ocho etapas; en cada una el objeto es 1.35 veces más grande. Las primeras quedan por debajo de la resolución y se miden mal. La tasa de crecimiento es la pendiente de la recta: compara la que sale con todas las etapas y la que sale al descartar las que el semáforo marca en rojo.</p>
+    <div class="chart"><canvas id="growth" aria-label="Logaritmo del volumen medido en cada etapa, con la luz del semáforo, y rectas ajustadas"></canvas></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--go)"></i>verde</span><span><i class="dot" style="background:var(--wait)"></i>amarillo</span><span><i class="dot" style="background:var(--stop)"></i>rojo</span>
+      <span><i class="sw" style="background:var(--muted)"></i>crecimiento verdadero</span><span><i class="sw" style="background:var(--stop)"></i>ajuste con todas</span><span><i class="sw" style="background:var(--accent)"></i>ajuste sin rojas</span>
+    </div>
+    <div class="rates">
+      <div class="rate"><b>0.900</b><span>tasa verdadera por etapa (3 · ln 1.35)</span></div>
+      <div class="rate"><b id="rateAll">—</b><span id="rateAllSub">con todas las etapas</span></div>
+      <div class="rate"><b id="rateNoRed">—</b><span id="rateNoRedSub">sin las etapas en rojo</span></div>
+    </div>
+    <p class="note">Aquí la imagen es ideal y la diferencia es pequeña. En el barrido completo (900 series, con ruido y desenfoque), descartar las rojas bajó el error mediano de la tasa de entre 3 y 64 % a entre 1 y 2 %; con el segmentador suavizado, entre 70 y 89 % de las series se quedaron sin etapas suficientes.</p>
+  </section>
+
+  <section aria-labelledby="s3">
+    <div><span class="eyebrow">Eje de escala · lo que el proyecto llamaba «5D»</span><h2 id="s3">La misma imagen, medida otra vez más gruesa</h2></div>
+    <p>La quinta dimensión que se puede defender no está en el embrión: está en la medición. Se degrada la propia imagen ×2 y ×4 y se vuelve a medir. Si el resultado cambia, la medida nativa no había convergido. Si no cambia, puede estar bien o puede haber perdido un rasgo antes de empezar: es una condición necesaria, no suficiente.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Escala</th><th>Vóxel</th><th>Error de volumen</th><th>Topología medida</th><th>¿Coincide con la nativa?</th></tr></thead>
+      <tbody id="scaleRows"></tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="s4">
+    <div><span class="eyebrow">Registro</span><h2 id="s4">Qué se ha puesto a prueba y cómo salió</h2></div>
+    <p>Cada prueba fijó sus criterios y mis predicciones en el repositorio antes de ejecutarse. Los resultados que contradicen lo que esperaba están en la tabla igual que los demás.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Prueba</th><th>Pregunta</th><th>Resultado</th><th>Lo que deja</th></tr></thead>
+      <tbody id="scoreRows"></tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="s5">
+    <div><span class="eyebrow">Límites</span><h2 id="s5">Lo que este laboratorio no afirma</h2></div>
+    <ul class="limits">
+      <li>No mide embriones reales. Todo lo que ves sale de formas matemáticas y de un simulador de imagen.</li>
+      <li>La simulación de esta página es la más simple: volumen parcial, sin desenfoque ni ruido, umbral en la mitad del contraste.</li>
+      <li>«4D» es pseudo-tiempo: cada etapa es un espécimen distinto, no el mismo seguido en el tiempo.</li>
+      <li>El semáforo vale para imágenes parecidas a las de su calibración. Fuera de ellas falla, y por eso lleva una guardia que se niega a certificar.</li>
+      <li>Un rasgo que la imagen ya perdió por completo no deja rastro: ningún semáforo puede avisar de eso.</li>
+      <li>No es una herramienta diagnóstica ni clínica, y nadie externo la ha revisado todavía.</li>
+    </ul>
+  </section>
+
+  <footer>Código, preregistros y datos de resumen: github.com/fabiantrelles593-arch/Estudio-Embrionario, rama geovida/v0.1-desde-cero. El núcleo numérico de esta página se contrastó con el paquete de Python en seis máscaras: volumen, topología, profundidad y probabilidad coinciden.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

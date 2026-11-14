@@ -1,0 +1,17 @@
+{
+  "started_utc": "2026-11-10T02:09:42.299675+00:00",
+  "elapsed_s": 46.7,
+  "git_commit": "4d375b20bc4337080745db7a846c375b0c0664cf",
+  "code_dirty": false,
+  "reps": 100,
+  "conditions": 8400,
+  "rows": 67200,
+  "base_seed": 20261120,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  }
+}

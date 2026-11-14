@@ -1,0 +1,80 @@
+{
+  "selected": "T4",
+  "features": [
+    "tau_dil",
+    "tau_ero",
+    "m_lo",
+    "m_hi",
+    "a1",
+    "a2"
+  ],
+  "h12a": {
+    "verdict": "no apoyada",
+    "breaking": 0,
+    "evaluable": 2,
+    "n": 6,
+    "strata": []
+  },
+  "in_domain_v04_guard_by_segmenter": {
+    "global": 0.11583333333333333,
+    "otsu": 0.04583333333333333,
+    "smoothed_otsu": 0.003125
+  },
+  "h12b": {
+    "verdict": "apoyada",
+    "passed": 9,
+    "checks": 9
+  },
+  "h12c": {
+    "verdict": "apoyada",
+    "evaluable_strata": 2,
+    "n": 6,
+    "failing": [],
+    "not_evaluable": [
+      "global|us_compound",
+      "global|us_raw",
+      "otsu|us_compound",
+      "otsu|us_raw"
+    ]
+  },
+  "h12d": {
+    "verdict": "parcial",
+    "passed": 3,
+    "pairs": 4
+  },
+  "retained_min": 0.0,
+  "h12e": {
+    "verdict": "apoyada",
+    "evaluable_strata": 2,
+    "n": 6,
+    "failing": []
+  },
+  "h12f": {
+    "verdict": "apoyada",
+    "strata_with_greens": 0,
+    "rejected_or_without_greens": 6,
+    "n": 6,
+    "failing": []
+  },
+  "h12g": {
+    "verdict": "apoyada",
+    "breaking": 1,
+    "evaluable": 2,
+    "n": 6,
+    "strata": [
+      "smoothed_otsu|us_coarse"
+    ]
+  },
+  "h12h": {
+    "verdict": "apoyada",
+    "evaluable": 2,
+    "n": 6,
+    "not_better": []
+  },
+  "silent_failure_overall": {
+    "n_failures": 13405,
+    "green": 0.0035807534502051474,
+    "red": 0.9919433047370384
+  },
+  "h9_test_available": true
+}

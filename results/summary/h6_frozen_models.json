@@ -1,0 +1,53 @@
+{
+  "column": "d_over_hgeo",
+  "endpoint": "|err_volume| <= 0.05",
+  "feature": "F2",
+  "models": {
+    "global|ideal": {
+      "intercept": 3.8711207594408537,
+      "n": 6300,
+      "slope": 5.913882833618431
+    },
+    "global|realistic": {
+      "intercept": 3.329914796589346,
+      "n": 6300,
+      "slope": 6.301357579588664
+    },
+    "otsu|ideal": {
+      "intercept": 2.107940440893577,
+      "n": 6300,
+      "slope": 5.651811584827622
+    },
+    "otsu|realistic": {
+      "intercept": 2.1961693755426523,
+      "n": 6300,
+      "slope": 8.700288375012697
+    },
+    "smoothed_otsu|ideal": {
+      "intercept": -3.451501136325328,
+      "n": 6300,
+      "slope": 11.762435089554696
+    },
+    "smoothed_otsu|realistic": {
+      "intercept": -4.075140297872758,
+      "n": 6300,
+      "slope": 12.465451333199491
+    }
+  },
+  "selection": [
+    {
+      "column": "q_hat_over_hgeo",
+      "feature": "F1",
+      "mean_logloss": 0.37735426301230823,
+      "n_folds": 60
+    },
+    {
+      "column": "d_over_hgeo",
+      "feature": "F2",
+      "mean_logloss": 0.24477436031792132,
+      "n_folds": 60
+    }
+  ],
+  "sha256": "c23233801aa82c2e81d2134d9f89bcc08e5b4648c9a1264602353427e253d962",
+  "source": "results/raw/h6cal_sweep.csv.gz"
+}

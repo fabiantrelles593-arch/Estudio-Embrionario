@@ -1,0 +1,7 @@
+stratum,n,t_ok,v_ok,in_domain_topology,in_domain_volume,n_green_topology,false_green_topology,n_green_topology_baseline,false_green_topology_baseline,n_green_topology_guard,false_green_topology_guard,n_green_volume,false_green_volume,n_green_volume_guard,false_green_volume_guard
+global|us_atten,720,0.0556,0.0,0.0,0.0,1,0.0,0,,0,,0,,0,
+global|us_coarse,720,0.0,0.0194,0.0,0.0,0,,0,,0,,0,,0,
+otsu|us_atten,720,0.0,0.0667,0.0,0.0,0,,0,,0,,0,,0,
+otsu|us_coarse,720,0.0,0.0778,0.0,0.0,0,,0,,0,,0,,0,
+smoothed_otsu|us_atten,720,0.0083,0.3194,0.1111,0.0,5,0.0,39,0.9744,3,0.0,151,0.0066,0,
+smoothed_otsu|us_coarse,720,0.0,0.2375,0.0,0.0,0,,26,1.0,0,,134,0.1119,0,

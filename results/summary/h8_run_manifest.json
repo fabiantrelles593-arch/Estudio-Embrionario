@@ -1,0 +1,18 @@
+{
+  "started_utc": "2026-11-10T02:15:40.739218+00:00",
+  "elapsed_s": 285.3,
+  "git_commit": "830e7e3faad13481caa3ec216d83f18622cccaf3",
+  "code_dirty": false,
+  "reps": 30,
+  "series": 900,
+  "rows": 21600,
+  "base_seed": 20261119,
+  "python": "3.13.18",
+  "frozen_models": "results/summary/h6_frozen_models.json (copiados en budget.FROZEN_H6)",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  }
+}

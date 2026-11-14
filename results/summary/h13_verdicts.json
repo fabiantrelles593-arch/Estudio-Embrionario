@@ -1,0 +1,136 @@
+{
+  "h13a": {
+    "n_cases": 1500,
+    "n_green": 755,
+    "false_green": 0.005298013245033113,
+    "ci": [
+      0.0012754695827375535,
+      0.011020426825783289
+    ],
+    "verdict": "apoyada"
+  },
+  "h13b": {
+    "n_cases": 1500,
+    "n_green": 995,
+    "false_green": 0.018090452261306532,
+    "ci": [
+      0.009940111071406714,
+      0.026892430278884463
+    ],
+    "verdict": "apoyada"
+  },
+  "h13c": {
+    "body": {
+      "n": 1487,
+      "ece": 0.08145684872507916,
+      "ece_ci": [
+        0.06571249475829949,
+        0.09771483292019073
+      ],
+      "verdict": "apoyada"
+    },
+    "slot": {
+      "n": 1252,
+      "ece": 0.03559119685943308,
+      "ece_ci": [
+        0.02615520331941696,
+        0.048869982550553054
+      ],
+      "verdict": "apoyada"
+    },
+    "verdict": "apoyada"
+  },
+  "h13d": {
+    "body": {
+      "n_out": 400,
+      "leak_n_green": 0,
+      "leak_rate": 0.0,
+      "leak_ci": [
+        0.0,
+        0.0
+      ],
+      "leak_false_green": NaN,
+      "clamped_n_green": 187,
+      "clamped_false_green": 0.0106951871657754,
+      "verdict": "apoyada"
+    },
+    "slot": {
+      "n_out": 400,
+      "leak_n_green": 4,
+      "leak_rate": 0.01,
+      "leak_ci": [
+        0.0025,
+        0.02
+      ],
+      "leak_false_green": 0.25,
+      "clamped_n_green": 293,
+      "clamped_false_green": 0.11604095563139932,
+      "verdict": "apoyada"
+    },
+    "verdict": "apoyada"
+  },
+  "h13e": {
+    "human_sd_intra_mm": 0.2474873734152916,
+    "human_sd_inter_mm": 0.3959797974644666,
+    "all": {
+      "n": 1252,
+      "median_abs_error_mm": 0.07152381343012326,
+      "p95_abs_error_mm": 1.214083195686367,
+      "sd_mm": 0.557347859599164,
+      "share_within_intra": 0.7747603833865815,
+      "share_within_inter": 0.8346645367412141
+    },
+    "green": {
+      "n": 995,
+      "median_abs_error_mm": 0.058162711724545346,
+      "p95_abs_error_mm": 1.3245271571196993,
+      "sd_mm": 0.573287038008898,
+      "share_within_intra": 0.8402010050251256,
+      "share_within_inter": 0.8904522613065327
+    }
+  },
+  "h13f": {
+    "n": 1487,
+    "median": 0.008991454981165,
+    "p90": 0.2994101907434424,
+    "share_over_half": 0.03765971755211836
+  },
+  "secondary_otsu": {
+    "body": {
+      "n_cases": 1500,
+      "n_green": 108,
+      "false_green": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "verdict": "apoyada"
+    },
+    "slot": {
+      "n_cases": 1500,
+      "n_green": 155,
+      "false_green": 0.3032258064516129,
+      "ci": [
+        0.2316982162358937,
+        0.3773689727463312
+      ],
+      "verdict": "no apoyada"
+    }
+  },
+  "lights_in_box": {
+    "body": {
+      "verde": 755,
+      "amarillo": 450,
+      "rojo": 295
+    },
+    "slot": {
+      "verde": 995,
+      "amarillo": 461,
+      "rojo": 44
+    }
+  },
+  "no_certificate_in_box": {
+    "body": 13,
+    "slot": 248
+  }
+}
