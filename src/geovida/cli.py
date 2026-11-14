@@ -2,7 +2,7 @@
 
   geovida plan                      tabla de resolución mínima para luz verde de volumen
   geovida datasheet CARPETA_O_ZIP [--out ficha.json] [--hide-names]
-                                    ficha descriptiva de volúmenes NIfTI (no compara con nada)
+                                    ficha descriptiva de volúmenes NIfTI o MINC (no compara con nada)
   geovida certify IMAGEN.npy --spacing 1 1 2 --segmenter otsu --profile realistic
                                     certificado de una imagen 3D (JSON)
   geovida certify VOLUMEN.nii.gz --segmenter smoothed_otsu --profile us_compound
@@ -45,7 +45,7 @@ LIGHT_MARK = {"verde": "[VERDE]", "amarillo": "[AMARILLO]", "rojo": "[ROJO]"}
 def _load(path: Path):
     """Imagen y, si el formato lo trae, el vóxel en mm (NIfTI); si no, ``None``."""
     name = path.name.lower()
-    if name.endswith((".nii", ".nii.gz")):
+    if name.endswith((".nii", ".nii.gz", ".mnc", ".mnc.gz")):
         from .realdata import load_volume
         arr, spacing, _meta = load_volume(path)
         return arr, spacing
@@ -54,7 +54,7 @@ def _load(path: Path):
     if path.suffix in (".tif", ".tiff"):
         from skimage import io
         return np.asarray(io.imread(path)), None
-    raise SystemExit(f"formato no admitido: {path.suffix} (use .npy, .tif o .nii/.nii.gz)")
+    raise SystemExit(f"formato no admitido: {path.suffix} (use .npy, .tif, .nii/.nii.gz o .mnc/.mnc.gz)")
 
 
 def _sha256(path: Path) -> str:
@@ -276,8 +276,8 @@ def main(argv=None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("plan", help="tabla de resolución mínima").set_defaults(fn=_plan)
-    d = sub.add_parser("datasheet", help="ficha descriptiva de volúmenes NIfTI")
-    d.add_argument("source", help="carpeta, .zip o un archivo .nii/.nii.gz")
+    d = sub.add_parser("datasheet", help="ficha descriptiva de volúmenes NIfTI o MINC")
+    d.add_argument("source", help="carpeta, .zip o un archivo .nii/.nii.gz/.mnc")
     d.add_argument("--out", default="ficha_volumenes.json")
     d.add_argument("--hide-names", action="store_true",
                    help="sustituir los nombres de archivo por vol_001, vol_002… (privacidad)")
@@ -285,7 +285,7 @@ def main(argv=None) -> int:
     c = sub.add_parser("certify", help="certificado de una imagen 3D")
     c.add_argument("image")
     c.add_argument("--spacing", type=float, nargs=3, default=None, metavar=("HX", "HY", "HZ"),
-                   help="vóxel en mm; obligatorio salvo en NIfTI (sale de la cabecera)")
+                   help="vóxel en mm; obligatorio salvo en NIfTI y MINC (sale de la cabecera)")
     c.add_argument("--segmenter", required=True, choices=("global", "otsu", "smoothed_otsu"))
     c.add_argument("--profile", required=True,
                    help="perfil de imagen declarado: ideal, realistic (paquete) o los de la "
