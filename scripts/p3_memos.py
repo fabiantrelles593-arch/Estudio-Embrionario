@@ -140,6 +140,7 @@ def sliding_mean_logits(vol: np.ndarray, predictor, n_classes: int, out: np.ndar
     out[:, base:base + roi] = (acc / np.maximum(cnt, 1e-6)).astype(out.dtype)
     return n_win
 
+
 def upsample_argmax(logits: np.ndarray, factor: int, slab: int = 4) -> np.ndarray:
     """Amplía logits (C, Z, Y, X) por `factor` (trilineal, align_corners=False) y aplica argmax.
 
