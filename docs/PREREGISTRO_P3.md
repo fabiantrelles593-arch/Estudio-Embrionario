@@ -1,4 +1,4 @@
-# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1–D3**)
+# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1–D4**)
 
 > **Estado:** aprobado por el autor el 14 nov 2026 (Fase 2). Falta, idealmente, la revisión de un asesor antes de descargar datos. El análisis de §5 está en `src/geovida/p3.py`, probado solo con fantomas.
 > Se escribe **antes de descargar ningún archivo de MusMorph**: no hay resultados. Solo investigación y educación; datos animales publicados, sin datos humanos.
@@ -158,4 +158,16 @@ Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b**, y 
   - Se informan los vectores de traslación por espécimen como hallazgo sobre los datos.
 - **Qué no afecta.** τ y el certificado solo usan la máscara y el vóxel (`geovida.measure.measure_mask`, `geovida.budget.adequacy`). El volumen, el área y b0 no cambian con una traslación entera, así que H-P3a y H-P3b no dependen del desfase.
 - **Límite declarado.** La traslación se estima con la propia máscara de MEMOS, así que (b) es el acuerdo tras el mejor alineamiento por traslación, optimista por construcción. No se corrigen posibles rotaciones. Como ya dice H-P3c, no es una validación.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
+
+### D4 (15 nov 2026) — Concreciones antes de analizar el piloto
+
+Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b en ningún espécimen**.
+
+- **Atlas de consenso para los grupos (§5.6) [HV].** `IMPC_E15.5_Body_Atlas_Segs.mnc`, del conjunto de FaceBase 6-2EPY de MusMorph («Project-wide metadata, atlases, and landmarks»). MD5 correcto; SHA-256 `e869ab5a…18bc`.
+  - Tiene la misma rejilla que los especímenes (723 × 567 × 486, 0,027 mm) y etiquetas enteras, sin ningún vóxel interpolado. Esto confirma la causa de D1: la mezcla aparece al propagar el atlas, no en el atlas.
+  - El conjunto no declara licencia [PV]. Se usa solo en local y no se redistribuye. En el repositorio solo entra la tabla de grupos derivada.
+- **Unidades de §5.6.** Las 48 estructuras forman 36 unidades: se promedian 12 pares bilaterales homólogos (`geovida.p3_data.BILATERAL_PAIRS`; la prueba comprueba que cada par une un «left» con un «right»). No se emparejan los ventrículos cardíacos (18/19) ni los lóbulos de pulmón o de hígado.
+- **Proyección de la regla de ampliación (§4).** Semianchura proyectada a 60 = semianchura del IC 95 % de Δ en el piloto × √(n del piloto / 60) (`scripts/p3_analyze.py`). Si no se puede calcular, el confirmatorio se amplía a 120.
+- **Seguimiento de D3 [HV, 4 especímenes].** Las mejores traslaciones son (16, 6, −4), (−1, 0, 0), (1, −4, 0) y (8, 17, −2) vóxeles: el desfase **varía por espécimen**. En `0429`, tras trasladar, el Dice de la unión solo llega a 0,72, así que queda un desajuste que la traslación no explica [PV]. Se informa en H-P3c y no afecta a τ.
 - **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
