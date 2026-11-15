@@ -409,6 +409,6 @@ def run_sweep_2d(conditions: list[Condition2D], n_jobs: int = 1,
     if n_jobs <= 1:
         chunks = [_worker(j) for j in jobs]
     else:
-        with mp.get_context("fork").Pool(n_jobs) as pool:
+        with mp.get_context("fork" if "fork" in mp.get_all_start_methods() else "spawn").Pool(n_jobs) as pool:
             chunks = pool.map(_worker, jobs, chunksize=8)
     return pd.DataFrame([r for chunk in chunks for r in chunk])
