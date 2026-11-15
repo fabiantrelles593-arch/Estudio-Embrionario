@@ -139,6 +139,52 @@ def test_units_merge_left_and_right_labels(phantom_table):
     assert list(g["unit"]) == ["par"]
 
 
+def _two_structure_table(seed=11, n=12):
+    """Estructura 1: sin variación técnica. Estructura 2: efecto grande del segmentador y de la resolución."""
+    rng = np.random.default_rng(seed)
+    rows = []
+    for i in range(n):
+        bio = rng.normal(0, 0.3)
+        for seg, ds in (("A", 0.0), ("B", 0.4)):
+            for k, dk in ((1, 0.0), (2, -0.2), (4, -0.5)):
+                for s, y in ((1, 2.0 + bio + rng.normal(0, 0.005)),
+                             (2, 1.0 + 0.2 * bio + ds + dk + rng.normal(0, 0.05))):
+                    rows.append({"specimen": f"s{i}", "structure": s, "segmenter": seg, "factor": k,
+                                 "log_volume": y, "volume": math.exp(y), "p_cert": math.nan})
+    return pd.DataFrame(rows)
+
+
+def test_mixed_model_agrees_with_tau_on_known_case():
+    df = _two_structure_table()
+    mm = p3.mixed_technical_fraction(df).set_index("structure")
+    tau = p3.technical_fraction(df).set_index("structure")
+    assert mm.loc[1, "tau_mixed"] < 0.05 and mm.loc[2, "tau_mixed"] > 0.8
+    assert mm.loc[2, "tau_mixed"] > mm.loc[1, "tau_mixed"]
+    assert (tau.loc[2, "tau"] > tau.loc[1, "tau"]) and mm["n_specimens"].eq(12).all()
+
+
+def test_order_agreement_threshold():
+    a = pd.DataFrame({"structure": [1, 2, 3, 4], "tau": [0.1, 0.2, 0.3, 0.4]})
+    same = p3.order_agreement(a, a)
+    assert same["rho"] == pytest.approx(1.0) and same["agree"]
+    rev = p3.order_agreement(a, a.assign(tau=a["tau"][::-1].to_numpy()))
+    assert rev["rho"] == pytest.approx(-1.0) and not rev["agree"]
+
+
+def test_agreement_rows_identity_and_translation():
+    lab = np.zeros((40, 40, 40), np.int16)
+    lab[_ball(lab.shape, (20, 20, 20), 8)] = 3
+    lab[5:12, 5:30, 18:22] = 7
+    same = {r["structure"]: r for r in p3.agreement_rows("e", lab, lab, (0.027,) * 3, [3, 7, 9])}
+    assert same[3]["dice"] == pytest.approx(1.0) and same[3]["hd95"] == pytest.approx(0.0)
+    assert same[7]["vol_diff_rel"] == pytest.approx(0.0) and math.isnan(same[9]["dice"])
+    moved = np.roll(lab, (-3, 2, 0), (0, 1, 2))  # A desfasado: trasladarlo (3, -2, 0) lo devuelve a B
+    raw = {r["structure"]: r for r in p3.agreement_rows("e", moved, lab, (0.027,) * 3, [3])}
+    fixed = {r["structure"]: r for r in p3.agreement_rows("e", moved, lab, (0.027,) * 3, [3], (3, -2, 0))}
+    assert raw[3]["dice"] < 0.9 and fixed[3]["dice"] == pytest.approx(1.0)
+    assert fixed[3]["translation"] == [3, -2, 0]
+
+
 def test_label_variation_detects_atlas_space(phantom_table):
     df, _ = phantom_table
     assert p3.label_variation(df, "A")["passed"]
