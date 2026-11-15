@@ -29,7 +29,7 @@ import pandas as pd
 from scipy.stats import rankdata
 
 from .budget import feature_value, p_volume_ok
-from .measure import measure_mask
+from .measure import _mean_depth, measure_mask
 from .scaleaxis import block_mean
 
 FACTORS = (1, 2, 4)
@@ -198,7 +198,11 @@ def groups_from_atlas(atlas, spacing, labels: Iterable[int], units: Mapping[int,
         m = lab == int(s)
         if not m.any():
             continue
-        meas = measure_mask(m[_aligned_box(m)], sp)
+        sub = m[_aligned_box(m)]
+        del m
+        # Solo hacen falta volumen y d_mean: se evitan área y topología (memoria en atlas grandes).
+        meas = {"volume": float(sub.sum() * np.prod(sp)), "d_mean": _mean_depth(sub, sp)}
+        del sub
         per.setdefault(units.get(int(s), str(int(s))), []).append((feature_value(meas, sp), meas["volume"]))
     rows = [{"unit": u, "d_over_hgeo": float(np.mean([d for d, _ in v])),
              "log_volume": float(np.log(np.mean([vol for _, vol in v])))} for u, v in per.items()]
