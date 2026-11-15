@@ -125,6 +125,7 @@ Registrada **antes de calcular τ, `p` o cualquier medida de las hipótesis**. S
 - **Sensibilidad (fijada ahora).** Todo §5 se repite con `rule="exact"` (los vóxeles mezclados pasan a fondo). Se informan ambas. Si el orden de las estructuras por τ discrepa (ρ de Spearman < 0,7), H-P3a y H-P3b solo se interpretan cuando las dos reglas dan el mismo veredicto.
 - **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo, ni las semillas. El segmentador A pasa a ser «atlas propagado + recuperación `nearest`».
 - **Límite declarado.** La regla reconstruye una aproximación del remuestreo por vecino más cercano que MusMorph no hizo; no recupera la segmentación «verdadera». Los vóxeles con tres o más candidatos se asignan de forma aproximada.
+
 ### D2 (15 nov 2026) — MEMOS se ejecuta sin 3D Slicer, a la escala con la que se entrenó
 
 Registrada **antes de calcular τ, `p` o cualquier medida de las hipótesis**, y antes de comparar MEMOS con el atlas en ningún espécimen.
