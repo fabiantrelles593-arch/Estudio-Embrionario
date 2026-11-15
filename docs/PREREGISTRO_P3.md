@@ -1,4 +1,4 @@
-# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviación D1**)
+# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1 y D2**)
 
 > **Estado:** aprobado por el autor el 14 nov 2026 (Fase 2). Falta, idealmente, la revisión de un asesor antes de descargar datos. El análisis de §5 está en `src/geovida/p3.py`, probado solo con fantomas.
 > Se escribe **antes de descargar ningún archivo de MusMorph**: no hay resultados. Solo investigación y educación; datos animales publicados, sin datos humanos.
@@ -21,7 +21,7 @@ La tercera pregunta es la prueba de MORPHO-TRACE con datos reales: si el certifi
 | Población | Controles silvestres C57BL/6N, micro-TC con yodo, escáner Skyscan, cuerpo completo | 358 en los metadatos de MusMorph (mar 2024): 144 hembras, 165 machos, 49 sin sexo [HV] |
 | Unidad experimental | **El espécimen** | — |
 | Segmentador A | Segmentaciones de MusMorph: atlas propagado por registro no lineal al espacio inicializado (rígido) de cada espécimen | Propagación [HV, script `Processing/Label_Propagation.py`]; existencia de los 1344 E15.5 en FaceBase [HV]; remuestreadas con interpolación trilineal: ver la desviación D1 (§11) |
-| Segmentador B | MEMOS (UNETR, 50 estructuras del atlas KOMP2), ejecutado sobre el mismo volumen | Licencia BSD-2-Clause [HV]; requiere 3D Slicer, ejecución local [PROP] |
+| Segmentador B | MEMOS (UNETR, 50 estructuras del atlas KOMP2), ejecutado sobre el mismo volumen | Licencia BSD-2-Clause [HV]; se ejecuta sin 3D Slicer, en CPU, a la escala de su entrenamiento: ver la desviación D2 (§11) |
 | Estructuras | Etiquetas del atlas KOMP2 presentes en ambos segmentadores | KOMP2 tiene 50 etiquetas [HV, `KOMP2.ctbl`]; MusMorph declara 48 [HV]; cuáles faltan [PV] |
 | Manifiesto | Todos los archivos descargados se registran con `python -m geovida.manifest build` antes de analizarlos | Implementado [HV] |
 
@@ -103,7 +103,7 @@ Para cada espécimen *i*, estructura *s* y condición técnica *c* = (resolució
 - Revisión de un asesor (decisión 9 de la auditoría). El autor aprobó el diseño el 14 nov 2026.
 - Cuenta de FaceBase creada por el autor (el asistente no crea cuentas).
 - Lista exacta de las 48 etiquetas de MusMorph E15.5 y su correspondencia con KOMP2.
-- Saber si MEMOS puede ejecutarse en el equipo del autor (3D Slicer; CPU o GPU).
+- ~~Saber si MEMOS puede ejecutarse en el equipo del autor (3D Slicer; CPU o GPU).~~ Sí, en CPU y sin 3D Slicer, unos 17 minutos por espécimen con 4 núcleos (desviación D2).
 - ~~Implementar y probar con fantomas, antes de descargar, el análisis de §5.~~ Hecho: `src/geovida/p3.py` y `tests/test_p3.py` (14 pruebas en verde en la CI).
 
 ## 11. Desviaciones
@@ -125,3 +125,19 @@ Registrada **antes de calcular τ, `p` o cualquier medida de las hipótesis**. S
 - **Sensibilidad (fijada ahora).** Todo §5 se repite con `rule="exact"` (los vóxeles mezclados pasan a fondo). Se informan ambas. Si el orden de las estructuras por τ discrepa (ρ de Spearman < 0,7), H-P3a y H-P3b solo se interpretan cuando las dos reglas dan el mismo veredicto.
 - **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo, ni las semillas. El segmentador A pasa a ser «atlas propagado + recuperación `nearest`».
 - **Límite declarado.** La regla reconstruye una aproximación del remuestreo por vecino más cercano que MusMorph no hizo; no recupera la segmentación «verdadera». Los vóxeles con tres o más candidatos se asignan de forma aproximada.
+### D2 (15 nov 2026) — MEMOS se ejecuta sin 3D Slicer, a la escala con la que se entrenó
+
+Registrada **antes de calcular τ, `p` o cualquier medida de las hipótesis**, y antes de comparar MEMOS con el atlas en ningún espécimen.
+
+- **Hallazgo [HV, Rolfe et al. 2023, doi:10.1242/bio.059698, Métodos].** MEMOS se entrenó con la versión de baja resolución de los escáneres de IMPC, de unos 250 × 250 × 400 vóxeles. El script de inferencia de SlicerMEMOS no remuestrea: pone el espaciado a 1 y aplica la red a la rejilla de entrada.
+- **Escala [HV].** En el volumen de ejemplo de SlicerMEMOS (`IMPC_sample_data.nrrd`), el cuerpo, umbralizado con Otsu, ocupa 1,49 millones de vóxeles. En `IMPC_E15.5_0040` de MusMorph ocupa 10,4 millones. La razón de volumen es 7,0, es decir, un factor lineal de 1,91. Los ejes coinciden en orden (S, A, R ↔ eje 0, 1, 2 del arreglo). Por tanto, MusMorph tiene unas dos veces la resolución con la que se entrenó MEMOS.
+- **Regla fijada ahora (`scripts/p3_memos.py`):**
+  - La imagen nativa se reduce por promedio de bloques de 2, a ≈ 0,054 mm.
+  - La intensidad se reescala como en SlicerMEMOS: mínimo y máximo a 0–255, y después `ScaleIntensityRange(-175, 250, 0, 1)`.
+  - La red es la misma: UNETR, 51 salidas, 128³, con los pesos publicados. Se aplica con ventana deslizante de 128³, solapamiento 0,8 y promedio constante.
+  - Solo se procesa la caja del cuerpo (Otsu, más 16 vóxeles de margen) y se acumula por franjas, para caber en 4 GB de RAM. Las pruebas comprueban que el resultado es idéntico al cálculo directo.
+  - Los logits medios se amplían a la rejilla nativa (0,027 mm) con interpolación trilineal, y **después** se toma el argmax. Así se obtiene una máscara nativa sin bordes en escalera. Si se ampliaran las etiquetas por vecino más cercano, la variación técnica de las estructuras finas se inflaría, a favor de H-P3a.
+- **Sin 3D Slicer.** El cálculo es el mismo que hace el módulo (configuración e hiperparámetros publicados en SlicerMEMOS, BSD-2-Clause), con código propio, MONAI 1.6 y PyTorch en CPU. Los pesos tienen licencia no declarada: se usan localmente y no se redistribuyen.
+- **Comprobación 3.3 [EI].** Ni el artículo, ni el repositorio de MEMOS, ni los metadatos de MusMorph identifican los 91 escáneres de entrenamiento. MusMorph renumera los especímenes sin conservar el identificador del portal IMPC. Por tanto, según §3.3, no se excluye a nadie y se declara la limitación: el acuerdo atlas–MEMOS puede estar sobreestimado en los especímenes que coincidan.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo. El segmentador B pasa a ser «MEMOS a ×2, logits ampliados de forma trilineal a la rejilla nativa».
+- **Límite declarado.** La máscara nativa de MEMOS se infiere a la mitad de resolución: su detalle fino es interpolado, no observado. Con el factor ×2 de §5.1, ambos segmentadores parten de máscaras nativas, pero la de MEMOS tiene menos información independiente a ×1. El exploratorio «MEMOS ejecutado otra vez sobre la imagen degradada ×2» pasa a ser a ×4 sobre la nativa.
