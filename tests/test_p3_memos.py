@@ -108,6 +108,40 @@ def test_best_translation_recovers_shift():
         assert d == pytest.approx(1.0)
 
 
+def _labeled_body(shape=(72, 28, 28)):
+    """Cuerpo alargado en el eje 0 con etiquetas distintas en bloques pequeños (estructura interna)."""
+    rng = np.random.default_rng(5)
+    lab = np.zeros(shape, np.uint8)
+    blocks = rng.integers(1, 40, size=(shape[0] // 4, 4, 4))
+    lab[8:-8, 8:-8, 8:-8] = np.kron(blocks, np.ones((4, 3, 3), np.uint8))[: shape[0] - 16, :12, :12]
+    return lab
+
+
+def test_local_translations_rigid_shift_has_no_spread():
+    atlas = _labeled_body()
+    t = (2, -3, 1)
+    memos = np.roll(atlas, t, (0, 1, 2))  # el atlas desplazado t coincide con MEMOS
+    r = pm.local_translations(atlas, memos, center=(0, 0, 0), rad=6)
+    assert r["axis"] == 0
+    assert [p["translation_vox"] for p in r["parts"]] == [list(t)] * 3
+    assert r["spread_vox"] == 0
+    assert all(p["agreement"] == pytest.approx(1.0) for p in r["parts"])
+
+
+def test_local_translations_detect_non_rigid_misfit():
+    atlas = _labeled_body()
+    memos = np.zeros_like(atlas)
+    edges = np.linspace(8, 64, 4).astype(int)
+    for k, dy in enumerate((-4, 0, 4)):  # cada tercio desplazado distinto: no hay traslación única
+        part = np.zeros_like(atlas)
+        part[edges[k]:edges[k + 1]] = atlas[edges[k]:edges[k + 1]]
+        memos = np.maximum(memos, np.roll(part, (0, dy, 0), (0, 1, 2)))
+    r = pm.local_translations(atlas, memos, center=(0, 0, 0), rad=8)
+    assert [p["translation_vox"][1] for p in r["parts"]] == [-4, 0, 4]
+    assert r["spread_vox"] == 8
+    assert pm.label_agreement(atlas, memos, (0, 0, 0)) < 0.9
+
+
 def test_dice_table_best_match():
     atlas = np.zeros((10, 10, 10), np.int16)
     memos = np.zeros_like(atlas, dtype=np.uint8)
