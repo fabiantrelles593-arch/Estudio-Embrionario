@@ -99,7 +99,7 @@ def _map(fn, items, n_jobs, initializer=None, initargs=()):
         if initializer:
             initializer(*initargs)
         return [fn(x) for x in items]
-    with mp.get_context("fork").Pool(n_jobs, initializer=initializer, initargs=initargs) as pool:
+    with mp.get_context("fork" if "fork" in mp.get_all_start_methods() else "spawn").Pool(n_jobs, initializer=initializer, initargs=initargs) as pool:
         return pool.map(fn, items, chunksize=8)
 
 
