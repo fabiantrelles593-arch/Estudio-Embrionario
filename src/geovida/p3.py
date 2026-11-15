@@ -12,6 +12,9 @@ Qué hace
 * ``evaluate``: H-P3a (Δ de medianas de τ entre grupos) y H-P3b (el certificado frente al tamaño), con
   intervalos por remuestreo de especímenes y veredictos según los criterios preregistrados.
 * ``label_variation``: comprobación previa de que las segmentaciones no están todas en el espacio del atlas.
+* ``mixed_technical_fraction`` y ``order_agreement``: sensibilidad de §5.4 (modelo mixto) y comparación de
+  órdenes de estructuras (también para la regla ``exact`` de D1).
+* ``agreement_rows``: acuerdo entre segmentadores a resolución nativa (§5.8; con o sin la traslación de D3).
 
 Qué NO hace
 -----------
@@ -340,3 +343,83 @@ def label_variation(df: pd.DataFrame, segmenter: str, min_fraction: float = 0.9)
         lambda v: float(v.std(ddof=1) / v.mean()) if len(v) > 1 and v.mean() > 0 else 0.0)
     frac = float((cv > 0).mean()) if len(cv) else 0.0
     return {"fraction_varying": frac, "passed": bool(frac >= min_fraction), "n_structures": int(len(cv))}
+
+
+# --------------------------------------------------------------------------- sensibilidad (§5.4)
+
+ORDER_AGREEMENT_MIN = 0.7  # §5.4 y D1: ρ de Spearman mínimo entre dos órdenes de estructuras por τ
+
+
+def mixed_technical_fraction(df: pd.DataFrame, value: str = "log_volume") -> pd.DataFrame:
+    """§5.4: modelo mixto ``y ~ C(k) * C(segmentador) + (1 | espécimen)`` por estructura (statsmodels MixedLM, REML).
+
+    Fracción técnica del modelo = (varianza entre condiciones de las predicciones fijas + varianza residual) /
+    (eso + varianza del intercepto del espécimen). Usa los mismos especímenes que τ (condiciones completas).
+    Es la contrapartida de τ con un modelo; solo se compara su **orden** de estructuras con el de τ.
+    """
+    import warnings
+
+    import statsmodels.formula.api as smf
+
+    _, conds, mats = _matrices(df, value)
+    out = []
+    for s in sorted(mats):
+        m = mats[s][~np.isnan(mats[s]).any(axis=1)]
+        n = int(m.shape[0])
+        row = {"structure": s, "tau_mixed": math.nan, "var_fixed": math.nan, "var_resid": math.nan,
+               "var_specimen": math.nan, "converged": False, "n_specimens": n}
+        if n >= 3 and len(conds) >= 2:
+            long = pd.DataFrame({"y": m.ravel(), "spec": np.repeat(np.arange(n), len(conds)),
+                                 "seg": [str(c[0]) for c in conds] * n, "k": [int(c[1]) for c in conds] * n})
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    fit = smf.mixedlm("y ~ C(k) * C(seg)", long, groups=long["spec"]).fit(reml=True)
+                pred = fit.model.exog[: len(conds)] @ np.asarray(fit.fe_params)
+                vf, vr = float(np.var(pred, ddof=1)), float(fit.scale)
+                vs = float(np.asarray(fit.cov_re)[0, 0])
+                tot = vf + vr + vs
+                row.update(tau_mixed=(vf + vr) / tot if tot > 0 else math.nan, var_fixed=vf, var_resid=vr,
+                           var_specimen=vs, converged=bool(fit.converged))
+            except (ValueError, np.linalg.LinAlgError):
+                pass
+        out.append(row)
+    return pd.DataFrame(out)
+
+
+def order_agreement(a: pd.DataFrame, b: pd.DataFrame, col_a: str = "tau", col_b: str = "tau") -> dict:
+    """ρ de Spearman entre dos columnas de τ por estructura (unidas por ``structure``) y si alcanza 0,7."""
+    m = a[["structure", col_a]].merge(b[["structure", col_b]], on="structure", suffixes=("_a", "_b"))
+    x = m.iloc[:, 1].to_numpy(dtype=float)
+    y = m.iloc[:, 2].to_numpy(dtype=float)
+    ok = np.isfinite(x) & np.isfinite(y)
+    rho = spearman(x[ok], y[ok]) if ok.sum() >= 3 else math.nan
+    return {"rho": rho, "n_structures": int(ok.sum()),
+            "agree": bool(math.isfinite(rho) and rho >= ORDER_AGREEMENT_MIN)}
+
+
+# --------------------------------------------------------------------------- acuerdo entre segmentadores (§5.8)
+
+def agreement_rows(specimen, ref_labels: np.ndarray, test_labels: np.ndarray, spacing, labels: Iterable[int],
+                   translation=(0, 0, 0)) -> list[dict]:
+    """§5.8 a resolución nativa: acuerdo de B (``test_labels``) con A (``ref_labels``) por estructura.
+
+    ``translation`` es la traslación entera aplicada a A antes de comparar (D3, forma b); (0, 0, 0) es la forma a.
+    El llamador debe dejar margen alrededor de las máscaras: ``np.roll`` recicla los bordes.
+    """
+    from .agreement import compare_masks
+
+    t = tuple(int(v) for v in translation)
+    ref = np.roll(ref_labels, t, (0, 1, 2)) if any(t) else ref_labels
+    rows = []
+    for s in (int(v) for v in labels):
+        a, b = ref == s, test_labels == s
+        box = _aligned_box(a | b, block=1, margin=2)
+        row = {"specimen": str(specimen), "structure": s, "translation": list(t)}
+        if box is None:
+            row.update(dice=math.nan, hd95=math.nan, assd=math.nan, vol_diff_rel=math.nan)
+        else:
+            r = compare_masks(b[box], a[box], spacing=spacing)
+            row.update(dice=r["dice"], hd95=r["hd95_pooled"], assd=r["assd"], vol_diff_rel=r["size_diff_rel"])
+        rows.append(row)
+    return rows
