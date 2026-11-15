@@ -13,7 +13,10 @@ CODE_PATHS = ("src", "scripts", "pyproject.toml")
 
 
 def _run(repo: Path, *args: str) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True)
+    try:
+        return subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True)
+    except FileNotFoundError:  # git no está instalado: procedencia desconocida, no un fallo
+        return subprocess.CompletedProcess(["git", *args], 127, "", "git no encontrado")
 
 
 def git_state(repo: str | Path = ".", code_paths: tuple[str, ...] = CODE_PATHS) -> dict:
