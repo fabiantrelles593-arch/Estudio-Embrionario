@@ -11,6 +11,7 @@
 | Metadatos | `MusMorph_Metadata_Mar2024.csv` del repositorio de MusMorph (SHA-256 `9f5aa3de…98ed`) | — |
 | Muestreo | `python scripts/p3_pilot.py select` (semilla 20261114) | 309 elegibles; piloto 20 (10 hembras, 10 machos); confirmatorio 60 (30 + 30), disjunto del piloto [HV] |
 | Descarga | Catálogo ERMrest de FaceBase, registro 3-JZA6. Se hizo con un script de PowerShell equivalente; después se versionó la misma lógica como `python scripts/p3_pilot.py download` | 40 archivos (imagen y segmentación de cada espécimen), 1,83 GB; **los 40 con el MD5 del catálogo** [HV]. FaceBase los sirve sin autenticación |
+| Manifiesto | `python -m geovida.manifest build` y `verify` | `results/p3/manifiesto_piloto.csv`: SHA-256 de los 40 archivos; `verify`: 40 correctos, 0 con diferencias [HV] |
 | Comprobaciones | `python scripts/p3_pilot.py check` (regla `nearest`) | 3.1 y 3.2 **pasan** (§3) |
 
 Entorno: Windows 11, Python 3.13.17, 4 CPU y 3,9 GB de RAM. Con esta memoria, la comprobación de los 20 especímenes tardó 43 minutos (≈ 2,1 min por espécimen) [HV]. Ese dato sirve para dimensionar el confirmatorio, según la regla de E4 de `docs/ERRATA.md`. Después se aceleró la búsqueda a 2 vóxeles (misma salida, ~3 veces más rápida en esa parte).
