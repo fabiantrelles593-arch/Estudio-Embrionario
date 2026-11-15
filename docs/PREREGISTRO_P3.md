@@ -1,4 +1,4 @@
-# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1–D4**)
+# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1–D5**)
 
 > **Estado:** aprobado por el autor el 14 nov 2026 (Fase 2). Falta, idealmente, la revisión de un asesor antes de descargar datos. El análisis de §5 está en `src/geovida/p3.py`, probado solo con fantomas.
 > Se escribe **antes de descargar ningún archivo de MusMorph**: no hay resultados. Solo investigación y educación; datos animales publicados, sin datos humanos.
@@ -170,4 +170,21 @@ Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b en ni
 - **Unidades de §5.6.** Las 48 estructuras forman 36 unidades: se promedian 12 pares bilaterales homólogos (`geovida.p3_data.BILATERAL_PAIRS`; la prueba comprueba que cada par une un «left» con un «right»). No se emparejan los ventrículos cardíacos (18/19) ni los lóbulos de pulmón o de hígado.
 - **Proyección de la regla de ampliación (§4).** Semianchura proyectada a 60 = semianchura del IC 95 % de Δ en el piloto × √(n del piloto / 60) (`scripts/p3_analyze.py`). Si no se puede calcular, el confirmatorio se amplía a 120.
 - **Seguimiento de D3 [HV, 4 especímenes].** Las mejores traslaciones son (16, 6, −4), (−1, 0, 0), (1, −4, 0) y (8, 17, −2) vóxeles: el desfase **varía por espécimen**. En `0429`, tras trasladar, el Dice de la unión solo llega a 0,72, así que queda un desajuste que la traslación no explica [PV]. Se informa en H-P3c y no afecta a τ.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
+
+### D5 (15 nov 2026) — En algún espécimen el desfase no es una traslación rígida
+
+Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b**, y antes de aplicar la comprobación a los otros especímenes del piloto. Solo se miraron `0429` y, como control, `0218`.
+
+- **Hallazgo [HV, 2 especímenes].** Se buscó por separado la mejor traslación del atlas en cada tercio del eje más largo del cuerpo (`local_translations` en `scripts/p3_memos.py`), midiendo la fracción de vóxeles del atlas cuya etiqueta coincide con la de MEMOS.
+  - En `0429`, la traslación en el segundo eje cambia de forma lineal a lo largo del cuerpo: −29, −19 y −8 vóxeles. Eso equivale a un giro de unos 4°, no a una traslación. Con la traslación global coincide el 53 % de los vóxeles. Con la mejor traslación de cada tercio, entre el 62 % y el 69 %.
+  - En `0218`, las tres traslaciones difieren como mucho en 1 vóxel de la global, y coincide el 83 % de los vóxeles.
+- **Causa [HIP].** Un registro del atlas al espécimen con un error de rotación, o una diferencia de orientación entre la imagen y la segmentación publicadas. Con estos datos no se puede decidir cuál de las dos máscaras está mal colocada respecto a la anatomía [PV].
+- **Regla fijada ahora.**
+  - Para cada espécimen se calcula la **dispersión**: la mayor diferencia, por eje, entre las traslaciones de los tres tercios (`p3_memos.py rigidity`).
+  - Un espécimen con dispersión **> 4 vóxeles** (0,108 mm, el doble del refinamiento de ±2 de D3) se marca como «desajuste no rígido».
+  - H-P3c se informa con todos los especímenes (principal, como en D3) y, como sensibilidad, sin los marcados. Se informa cuántos hay.
+  - Se aplica igual en el confirmatorio.
+- **Qué no afecta.** τ y el certificado: el volumen, el área y b0 de cada máscara no dependen de dónde esté colocada. H-P3a y H-P3b no cambian.
+- **Límite declarado.** Tres tercios solo detectan un giro o una deformación a gran escala. Una deformación local no se ve, y el umbral de 4 vóxeles es una convención, no un valor validado.
 - **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
