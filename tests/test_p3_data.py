@@ -122,3 +122,108 @@ def test_pilot_script_select_then_check(tmp_path, capsys):
     assert json.loads(out.read_text(encoding="utf-8"))["check_3_2_passed"]
     assert out.with_suffix(".volumes.csv").exists()
     assert "pasa" in capsys.readouterr().out
+
+# --- Recuperación de etiquetas interpoladas (desviación D1) -------------------------------------------
+# Números de la sonda de 15-11-2026 (5 semillas): con 8 esferas de etiquetas no contiguas, giradas ±12° y
+# remuestreadas con interpolación trilineal, la regla «nearest» coincide con el remuestreo por vecino más
+# cercano en 95.4-96.2 % de los vóxeles, «exact» en 74.5-77.1 % y el redondeo simple en 57.4-61.4 % (y crea
+# 32 etiquetas que no existen). Una placa de 2 vóxeles conserva con «nearest» el 98 % de su volumen (−1.4 a
+# −1.9 %) y con «exact» pierde ~54 %.
+
+from scipy import ndimage  # noqa: E402
+from scipy.spatial.transform import Rotation  # noqa: E402
+
+
+def _warp(lab, order, seed):
+    rng = np.random.default_rng(seed)
+    R = Rotation.from_euler("xyz", rng.uniform(-12, 12, 3), degrees=True).as_matrix()
+    c = (np.array(lab.shape) - 1) / 2
+    off = c - R @ c + rng.uniform(-0.5, 0.5, 3)
+    return ndimage.affine_transform(lab.astype(np.float32), R, offset=off, order=order, mode="constant")
+
+
+def _spheres(seed, n=48):
+    rng = np.random.default_rng(seed)
+    z, y, x = np.mgrid[:n, :n, :n]
+    lab = np.zeros((n, n, n), np.int16)
+    for L in range(1, 9):
+        c = rng.uniform(10, n - 10, 3)
+        lab[(z - c[0]) ** 2 + (y - c[1]) ** 2 + (x - c[2]) ** 2 < rng.uniform(3, 9) ** 2] = L * 5
+    return lab
+
+
+def test_recover_labels_keeps_exact_values_and_drops_unknown_integers():
+    a = np.zeros((5, 5, 5), np.float32)
+    a[1:4, 1:4, 1:4] = 7.0
+    a[0, 0, 0] = 60.0  # entero que no es una etiqueta declarada: coincidencia de la interpolación
+    lab, info = p3_data.recover_labels(a, allowed=[7], rule="exact")
+    assert set(np.unique(lab)) == {0, 7} and info["n_labelled_exact"] == 27
+    with pytest.raises(ValueError):
+        p3_data.recover_labels(a, rule="redondeo")
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+def test_nearest_rule_matches_nearest_neighbour_resampling(seed):
+    lab = _spheres(seed)
+    tri, nn = _warp(lab, 1, seed), np.rint(_warp(lab, 0, seed)).astype(int)
+    allowed = sorted(set(np.unique(lab).tolist()) - {0})
+    fg = (nn > 0) | (tri > 1e-3)
+    near, info = p3_data.recover_labels(tri, allowed, "nearest")
+    exact, _ = p3_data.recover_labels(tri, allowed, "exact")
+    assert (near[fg] == nn[fg]).mean() > 0.94
+    assert (exact[fg] == nn[fg]).mean() < 0.80
+    assert set(np.unique(near).tolist()) <= set(allowed) | {0}
+    assert len(set(np.unique(np.rint(tri)).astype(int).tolist()) - set(allowed) - {0}) > 10
+    assert 0.3 < info["frac_mixed"] < 0.6
+
+
+def test_thin_plate_keeps_its_volume_with_nearest_but_not_with_exact():
+    lab = np.zeros((40, 40, 40), np.int16)
+    lab[19:21, 8:32, 8:32] = 30
+    lab[8:16, 8:16, 8:16] = 7
+    for seed in range(3):
+        tri, nn = _warp(lab, 1, seed), np.rint(_warp(lab, 0, seed)).astype(int)
+        ref = (nn == 30).sum()
+        near = (p3_data.recover_labels(tri, [7, 30], "nearest")[0] == 30).sum()
+        exact = (p3_data.recover_labels(tri, [7, 30], "exact")[0] == 30).sum()
+        assert abs(near / ref - 1) < 0.03
+        assert exact / ref < 0.6
+
+
+def test_mixed_voxels_without_exact_neighbour_look_two_voxels_away():
+    a = np.zeros((9, 9, 9), np.float32)
+    a[1:8, 1:8, 1:8] = 15.0
+    a[3:6, 3:6, 3:6] = 14.6  # el centro no tiene ningún vecino exacto a 1 vóxel
+    lab, info = p3_data.recover_labels(a, allowed=[15], rule="nearest")
+    assert info["n_mixed_radius2"] == 1 and info["n_mixed_orphan"] == 0
+    assert (lab[1:8, 1:8, 1:8] == 15).all()
+
+
+def test_catalog_urls_batch_and_quote_file_names():
+    urls = _script().catalog_urls([f"IMPC_E15.5_{k:04d}.mnc" for k in range(85)], chunk=40)
+    assert len(urls) == 3 and urls[0].count("filename=") == 40 and urls[2].count("filename=") == 5
+    assert all(u.startswith("https://www.facebase.org/ermrest/catalog/1/attribute/isa:file/dataset=3-JZA6/")
+               and u.endswith("/filename,url,byte_count,md5") for u in urls)
+
+
+def test_download_checks_md5_and_skips_files_already_correct(tmp_path, monkeypatch):
+    import hashlib
+    import io
+
+    script = _script()
+    good = b"segmentacion"
+    md5 = hashlib.md5(good).hexdigest()
+    (tmp_path / "A_Segs.mnc").write_bytes(good)  # ya descargado y correcto: no se vuelve a pedir
+    rows = [{"filename": n, "url": f"/hatrac/{n}", "byte_count": len(good), "md5": md5}
+            for n in ("A_Segs.mnc", "B_Segs.mnc")]
+    calls = []
+
+    def fake_urlopen(url, timeout=0):
+        calls.append(url)
+        return io.BytesIO(json.dumps(rows).encode() if "ermrest" in url else good)
+
+    monkeypatch.setattr(script.urllib.request, "urlopen", fake_urlopen)
+    log = script.download(["A_Segs.mnc", "B_Segs.mnc", "C_Segs.mnc"], tmp_path)
+    assert [r["md5_ok"] for r in log] == [True, True, False]  # C no está en el catálogo
+    assert sum("hatrac" in c for c in calls) == 1 and (tmp_path / "B_Segs.mnc").read_bytes() == good
+    assert (tmp_path / "_descarga_md5.csv").exists()
