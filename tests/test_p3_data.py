@@ -123,6 +123,7 @@ def test_pilot_script_select_then_check(tmp_path, capsys):
     assert out.with_suffix(".volumes.csv").exists()
     assert "pasa" in capsys.readouterr().out
 
+
 # --- Recuperación de etiquetas interpoladas (desviación D1) -------------------------------------------
 # Números de la sonda de 15-11-2026 (5 semillas): con 8 esferas de etiquetas no contiguas, giradas ±12° y
 # remuestreadas con interpolación trilineal, la regla «nearest» coincide con el remuestreo por vecino más
