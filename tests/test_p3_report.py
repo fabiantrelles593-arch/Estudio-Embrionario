@@ -30,6 +30,19 @@ def test_compare_rows_ignore_structures_absent_from_atlas():
     assert math.isclose(row["dice_median_raw"], 0.3) and math.isclose(row["dice_median_shifted"], 0.7)
 
 
+def test_non_rigid_specimens_are_flagged_and_excluded_in_sensitivity():
+    def spec(d):
+        return {"translation_vox": [0, 0, 0], "dice_union_raw": d, "dice_union_shifted": d,
+                "raw": {"1": {"dice": d, "vox_atlas": 10}}, "shifted": {"1": {"dice": d, "vox_atlas": 10}}}
+    cmp = {"a": spec(0.8), "b": spec(0.7), "c": spec(0.2)}
+    rows = rep.compare_rows(cmp, {"a": {"spread_vox": 1}, "b": {"spread_vox": 4}, "c": {"spread_vox": 21}})
+    assert list(rows["non_rigid"]) == [False, False, True]  # el umbral es > 4
+    text = rep.render({"n": 3, "n_ok": 3, "failed": [], "passed": True}, rows, None, None)
+    assert "21 (no rígido)" in text
+    assert "sin los 1 marcados como no rígidos: **0,75** (n = 2)" in text
+    assert not rep.compare_rows(cmp)["non_rigid"].any()
+
+
 def test_render_includes_decision_and_marks_pilot_as_not_a_result():
     pre = {"n": 20, "n_ok": 19, "failed": ["s3"], "passed": True}
     analysis = {"n_specimens": 19, "n_boot": 2000, "delta": 0.1, "delta_ci": [0.0, 0.2], "rho": -0.4,
