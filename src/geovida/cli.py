@@ -174,7 +174,7 @@ def _certify(args) -> int:
         raise SystemExit(f"{exc.args[0]}. Para el perfil {args.profile!r} indique --frozen "
                          "con la calibración correspondiente.") from None
     if args.json:
-        Path(args.json).write_text(json.dumps(cert, indent=2, ensure_ascii=False))
+        Path(args.json).write_text(json.dumps(cert, indent=2, ensure_ascii=False), encoding="utf-8")
     if args.report:
         rep = {"notice": NOTICE, "provenance": _provenance(args, path, calib, frozen),
                "certificate": cert}
@@ -257,8 +257,8 @@ def _trajectory(args) -> int:
         return 2
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "trayectoria.json").write_text(json.dumps(p, indent=2, ensure_ascii=False))
-    (out / "trayectoria.md").write_text(tj.report_markdown(p))
+    (out / "trayectoria.json").write_text(json.dumps(p, indent=2, ensure_ascii=False), encoding="utf-8")
+    (out / "trayectoria.md").write_text(tj.report_markdown(p), encoding="utf-8")
     ga = p["ga_now"]
     print(f"edad ahora ({ga['source']}): {ga['median_days']:.1f} d ({ga['weeks_days'][0]}+{ga['weeks_days'][1]})")
     for r in p["rows"]:
