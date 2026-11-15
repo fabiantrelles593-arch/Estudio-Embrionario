@@ -48,10 +48,14 @@ def expansion_decision(lo: float, hi: float, n_pilot: int) -> int:
     return N_CONFIRM_EXPANDED if not math.isfinite(hw) or hw > EXPANSION_HALF_WIDTH else N_CONFIRM
 
 
-def _specimen_maps(sid: str, data: Path, memos: Path, rule: str = "nearest", pad: int = 0):
-    """Mapas del atlas (recuperación ``rule``, D1) y de MEMOS en una misma caja nativa (más ``pad``), con el vóxel."""
+def _specimen_maps(sid: str, data: Path, memos: Path, rule: str = "nearest", pad: int = 0,
+                   memos_as_b: Path | None = None):
+    """Mapas del atlas (recuperación ``rule``, D1) y de MEMOS en una misma caja nativa (más ``pad``), con el vóxel.
+
+    Con ``memos_as_b``, B se toma de esa carpeta (p. ej. MEMOS sobre la imagen a ×4, exploratorio de D2).
+    """
     atlas, abox, spacing, _, _ = p3_data.load_labels(data / f"{sid}_Segs.mnc", p3_data.MUSMORPH_LABELS, rule)
-    z = np.load(memos / f"{sid}_memos.npz")
+    z = np.load((memos_as_b or memos) / f"{sid}_memos.npz")
     lab, box = z["labels"], z["box"]
     ab = np.array([[s.start, s.stop] for s in abox])
     lo = np.minimum(box[:, 0], ab[:, 0]) - pad
@@ -97,6 +101,17 @@ def exploratory_taus(df: pd.DataFrame, value: str = "log_volume") -> pd.DataFram
     t = p3.technical_fraction(df[df["factor"] == 1], value)
     out.append(t.assign(variant="segmenter_only_k1"))
     return pd.concat(out, ignore_index=True)
+
+
+def sex_taus(df: pd.DataFrame, sex_of: dict, value: str = "log_volume") -> pd.DataFrame:
+    """Exploratorio (§6): τ por separado en hembras y en machos (``sex_of``: espécimen → "F"/"M")."""
+    out = []
+    spec = df["specimen"].astype(str)
+    for sex in ("F", "M"):
+        sub = df[spec.map(sex_of).eq(sex)]
+        if sub["specimen"].nunique() >= 2:
+            out.append(p3.technical_fraction(sub, value).assign(variant=f"sex_{sex}"))
+    return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
 
 
 def d1_verdicts(main: dict, exact: dict, order: dict) -> dict:
@@ -149,6 +164,26 @@ def cmd_confirm(a) -> int:
     mixed.to_csv(out.with_suffix(".mixed.csv"), index=False)
     order_mixed = p3.order_agreement(taus["log_volume"], mixed, "tau", "tau_mixed")
     exploratory_taus(df).to_csv(out.with_suffix(".exploratory.csv"), index=False)
+    if a.metadata:
+        meta = pd.read_csv(a.metadata)
+        sex_of = dict(zip(meta["Biosample"].astype(str), meta["Sex"].astype(str)))
+        sex_taus(df, sex_of).to_csv(out.with_suffix(".sex.csv"), index=False)
+    x4 = None
+    if a.memos_x4:
+        mx4 = Path(a.memos_x4)
+        ids4 = [s for s in ids if (mx4 / f"{s}_memos.npz").exists()]
+
+        def items_x4():
+            for sid in ids4:
+                maps, spacing = _specimen_maps(sid, data, memos, "nearest", memos_as_b=mx4)
+                print(f"  x4 {sid}", flush=True)
+                yield sid, maps, spacing
+
+        df4 = p3.condition_table(items_x4(), p3_data.P3_STRUCTURES, cert_segmenter="A")
+        df4.to_csv(out.with_suffix(".conditions_x4.csv"), index=False)
+        tau4 = p3.technical_fraction(df4)
+        tau4.to_csv(out.with_suffix(".tau_x4.csv"), index=False)
+        x4 = {"n_specimens": len(ids4), "order_tau_vs_x4": p3.order_agreement(taus["log_volume"], tau4)}
 
     t1 = time.time()
     df_exact = p3.condition_table(items("exact", False), p3_data.P3_STRUCTURES, cert_segmenter="A")
@@ -164,6 +199,7 @@ def cmd_confirm(a) -> int:
                "primary": strip(res), "exact_D1": strip(res_exact), "order_tau_vs_exact_D1": order_d1,
                "verdicts_after_D1": d1_verdicts(res, res_exact, order_d1),
                "order_tau_vs_mixed": order_mixed, "mixed_converged": int(mixed["converged"].sum()),
+               "exploratory_sex": bool(a.metadata), "exploratory_x4": x4,
                "seconds_main": round(t_main, 1), "seconds_exact": round(t_exact, 1)}
     out.write_text(json.dumps(summary, indent=1, ensure_ascii=False, default=float), encoding="utf-8")
     print(json.dumps(summary, indent=1, ensure_ascii=False, default=float))
@@ -191,6 +227,8 @@ def main(argv=None) -> int:
     c.add_argument("--out", required=True)
     c.add_argument("--n-boot", type=int, default=p3.N_BOOT)
     c.add_argument("--non-rigid-spread", type=int, default=4)
+    c.add_argument("--metadata", help="CSV de MusMorph, para el exploratorio por sexo")
+    c.add_argument("--memos-x4", help="carpeta de MEMOS sobre la imagen a ×4 (exploratorio de D2)")
     a = ap.parse_args(argv)
     if a.cmd == "confirm":
         return cmd_confirm(a)
