@@ -1,4 +1,4 @@
-# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; pendiente de datos**)
+# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviación D1**)
 
 > **Estado:** aprobado por el autor el 14 nov 2026 (Fase 2). Falta, idealmente, la revisión de un asesor antes de descargar datos. El análisis de §5 está en `src/geovida/p3.py`, probado solo con fantomas.
 > Se escribe **antes de descargar ningún archivo de MusMorph**: no hay resultados. Solo investigación y educación; datos animales publicados, sin datos humanos.
@@ -20,7 +20,7 @@ La tercera pregunta es la prueba de MORPHO-TRACE con datos reales: si el certifi
 | Fuente | MusMorph, subconjunto IMPC E15.5, FaceBase 10.25550/3-HXMC | Licencia CC BY 4.0 [HV] |
 | Población | Controles silvestres C57BL/6N, micro-TC con yodo, escáner Skyscan, cuerpo completo | 358 en los metadatos de MusMorph (mar 2024): 144 hembras, 165 machos, 49 sin sexo [HV] |
 | Unidad experimental | **El espécimen** | — |
-| Segmentador A | Segmentaciones de MusMorph: atlas propagado por registro no lineal al espacio inicializado (rígido) de cada espécimen | Propagación [HV, script `Processing/Label_Propagation.py`]; existencia por espécimen en E15.5 [PV] |
+| Segmentador A | Segmentaciones de MusMorph: atlas propagado por registro no lineal al espacio inicializado (rígido) de cada espécimen | Propagación [HV, script `Processing/Label_Propagation.py`]; existencia de los 1344 E15.5 en FaceBase [HV]; remuestreadas con interpolación trilineal: ver la desviación D1 (§11) |
 | Segmentador B | MEMOS (UNETR, 50 estructuras del atlas KOMP2), ejecutado sobre el mismo volumen | Licencia BSD-2-Clause [HV]; requiere 3D Slicer, ejecución local [PROP] |
 | Estructuras | Etiquetas del atlas KOMP2 presentes en ambos segmentadores | KOMP2 tiene 50 etiquetas [HV, `KOMP2.ctbl`]; MusMorph declara 48 [HV]; cuáles faltan [PV] |
 | Manifiesto | Todos los archivos descargados se registran con `python -m geovida.manifest build` antes de analizarlos | Implementado [HV] |
@@ -108,4 +108,20 @@ Para cada espécimen *i*, estructura *s* y condición técnica *c* = (resolució
 
 ## 11. Desviaciones
 
-(Ninguna: no hay datos.)
+### D1 (15 nov 2026) — Las segmentaciones de MusMorph están interpoladas
+
+Registrada **antes de calcular τ, `p` o cualquier medida de las hipótesis**. Solo se miró el formato de las 20 segmentaciones del piloto (`results/p3/diagnostico_segs.json`, fuera de git).
+
+- **Hallazgo [HV].** Los `<ID>_Segs.mnc` son MINC2 en coma flotante, no mapas de etiquetas: en el piloto, entre el 28 % y el 32 % de los vóxeles con valor > 0 tienen un valor no entero. Es una mezcla de números de etiqueta en los bordes. Ejemplo: entre la etiqueta 10 y la 40, un vóxel puede valer 25, que es otra etiqueta.
+- **Causa [HV].** `Processing/Label_Propagation.py` de MusMorph remuestrea el atlas de etiquetas con `mincresample -like … -transform …` sin `-nearest_neighbour` ni `-labels`, así que usa la interpolación trilineal por defecto.
+- **Etiquetas válidas [HV].** Las etiquetas 1 a 48, más la 102 y la 103, tienen vóxeles exactos en los 20 especímenes (la 102, al menos 1072, y la 103, al menos 490). Los demás enteros > 48 aparecen en 1 o 2 vóxeles: son coincidencias de la interpolación y se descartan. Son 50 etiquetas, como en KOMP2. [HIP] La 102 y la 103 de MusMorph corresponden a la 49 y la 50 de KOMP2 (ventrículos izquierdo y derecho) [PV, se comprueba al cruzar con MEMOS].
+- **Rejilla [HV, 2 especímenes].** La imagen y la segmentación comparten la misma rejilla (723 × 567 × 486 vóxeles, 0,027 mm, ejes alineados), así que la correspondencia vóxel a vóxel es directa.
+- **Regla principal, fijada ahora (`geovida.p3_data.recover_labels`, `rule="nearest"`):**
+  - Un vóxel con valor entero de una etiqueta válida conserva esa etiqueta, y 0 es fondo.
+  - Un vóxel mezclado toma, entre el fondo y las etiquetas exactas de su vecindario de 26, la de valor más cercano. Con dos candidatos equivale a asignarlo a la que pesa ≥ 0,5 en la mezcla, el mismo umbral que §5.1.
+  - Si no tiene ningún vecino exacto, se busca a 2 vóxeles.
+  - Se cuentan los vóxeles con tres o más candidatos (asignación aproximada) y los que quedan sin candidato. En el piloto, de los vóxeles mezclados, el 68 % tiene un solo candidato a 1 vóxel, el 26 % dos, el 0,7 % tres o más y el 4,7 % ninguno (pasan a la búsqueda a 2 vóxeles).
+- **Por qué esta regla [HV, sonda sintética en `tests/test_p3_data.py`].** En esferas giradas y remuestreadas, coincide con el remuestreo por vecino más cercano en el 95–96 % de los vóxeles. Solo con los enteros exactos la coincidencia es del 74–77 %, y con el redondeo simple del 57–61 %, que además crea etiquetas inexistentes. En una placa de 2 vóxeles, `nearest` conserva el 98 % del volumen y `exact` pierde alrededor del 54 %.
+- **Sensibilidad (fijada ahora).** Todo §5 se repite con `rule="exact"` (los vóxeles mezclados pasan a fondo). Se informan ambas. Si el orden de las estructuras por τ discrepa (ρ de Spearman < 0,7), H-P3a y H-P3b solo se interpretan cuando las dos reglas dan el mismo veredicto.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo, ni las semillas. El segmentador A pasa a ser «atlas propagado + recuperación `nearest`».
+- **Límite declarado.** La regla reconstruye una aproximación del remuestreo por vecino más cercano que MusMorph no hizo; no recupera la segmentación «verdadera». Los vóxeles con tres o más candidatos se asignan de forma aproximada.
