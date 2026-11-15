@@ -1,6 +1,6 @@
-# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **BORRADOR, pendiente de aprobación y de datos**)
+# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; pendiente de datos**)
 
-> **Estado:** borrador de Fase 2, 14 nov 2026. Requiere la aprobación del autor y, idealmente, la revisión de un asesor antes de descargar datos.
+> **Estado:** aprobado por el autor el 14 nov 2026 (Fase 2). Falta, idealmente, la revisión de un asesor antes de descargar datos. El análisis de §5 está en `src/geovida/p3.py`, probado solo con fantomas.
 > Se escribe **antes de descargar ningún archivo de MusMorph**: no hay resultados. Solo investigación y educación; datos animales publicados, sin datos humanos.
 > Base: ADR-005, `docs/estado_del_arte/FICHAS_REFERENTES.md` y `docs/estado_del_arte/MATRIZ_CAPACIDADES.md`.
 > Etiquetas: [HV] verificado · [EI] evidencia indirecta · [HIP] hipótesis · [PROP] propuesta · [PV] pendiente de validación.
@@ -100,11 +100,11 @@ Para cada espécimen *i*, estructura *s* y condición técnica *c* = (resolució
 
 ## 10. Pendiente antes de aprobar
 
-- Aprobación del autor; revisión de un asesor (decisión 9 de la auditoría).
+- Revisión de un asesor (decisión 9 de la auditoría). El autor aprobó el diseño el 14 nov 2026.
 - Cuenta de FaceBase creada por el autor (el asistente no crea cuentas).
 - Lista exacta de las 48 etiquetas de MusMorph E15.5 y su correspondencia con KOMP2.
 - Saber si MEMOS puede ejecutarse en el equipo del autor (3D Slicer; CPU o GPU).
-- Implementar y probar con fantomas, **antes de descargar**, el análisis de §5: degradación de máscaras, τ, remuestreo y grupos.
+- ~~Implementar y probar con fantomas, antes de descargar, el análisis de §5.~~ Hecho: `src/geovida/p3.py` y `tests/test_p3.py` (14 pruebas en verde en la CI).
 
 ## 11. Desviaciones
 
