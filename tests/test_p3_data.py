@@ -12,6 +12,18 @@ from nibabel.externals.netcdf import netcdf_file  # noqa: E402
 
 from geovida import p3_data  # noqa: E402
 
+
+def test_p3_units_pairs_are_left_right():
+    names = p3_data.KOMP2_NAMES
+    assert sorted(names) == list(p3_data.P3_STRUCTURES)
+    for a, b in p3_data.BILATERAL_PAIRS:
+        sides = {names[a].split("_")[0], names[b].split("_")[0]}
+        assert sides == {"left", "right"}, (a, b)
+    units = p3_data.p3_units()
+    assert set(units) == set(p3_data.P3_STRUCTURES)
+    assert len(set(units.values())) == 48 - len(p3_data.BILATERAL_PAIRS) == 36
+    assert units[18] != units[19]  # los ventrículos cardíacos no se emparejan
+
 ROOT = Path(__file__).resolve().parents[1]
 DIMS = ("zspace", "yspace", "xspace")
 
