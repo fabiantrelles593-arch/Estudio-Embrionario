@@ -30,6 +30,7 @@ Solo investigación; no es una herramienta clínica.
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import math
 import sys
@@ -207,7 +208,11 @@ def segment_volume(img: np.ndarray, predictor, factor: int, workdir: Path, log=p
     mm.flush()
     lab = upsample_argmax(mm, factor)
     del mm
-    (workdir / "logits.npy").unlink(missing_ok=True)
+    gc.collect()
+    try:  # en Windows el mapeo puede seguir abierto un momento: no perder el resultado por la limpieza
+        (workdir / "logits.npy").unlink(missing_ok=True)
+    except OSError:
+        pass
     full_box = tuple(slice(s.start * factor, s.start * factor + lab.shape[i]) for i, s in enumerate(box))
     info = {"factor": factor, "box_native": [[s.start, s.stop] for s in full_box],
             "grid_input": list(vol.shape), "windows": n, "seconds_inference": round(t_inf, 1),
@@ -217,10 +222,11 @@ def segment_volume(img: np.ndarray, predictor, factor: int, workdir: Path, log=p
 
 def dice_table(memos: np.ndarray, atlas: np.ndarray) -> dict:
     """Para cada etiqueta del atlas: etiqueta MEMOS de mayor solapamiento y Dice con ella."""
-    a = atlas.ravel().astype(np.int64)
-    m = memos.ravel().astype(np.int64)
-    keep = (a > 0) | (m > 0)
-    a, m = a[keep], m[keep]
+    # filtrar antes de convertir: solo los vóxeles con etiqueta en alguno de los dos (ahorra memoria)
+    keep = (atlas > 0) | (memos > 0)
+    a = atlas[keep].astype(np.int64)
+    m = memos[keep].astype(np.int64)
+    del keep
     la, ia = np.unique(a, return_inverse=True)
     lm, im = np.unique(m, return_inverse=True)
     conf = np.zeros((len(la), len(lm)), np.int64)
@@ -293,7 +299,7 @@ def cmd_run(a):
         try:
             img, spacing, meta = load_minc(Path(a.data) / f"{sid}.mnc")
             shape = img.shape
-            with tempfile.TemporaryDirectory(dir=out) as wd:
+            with tempfile.TemporaryDirectory(dir=out, ignore_cleanup_errors=True) as wd:
                 lab, box, info = segment_volume(img, predictor, a.factor, Path(wd))
             del img
             np.savez_compressed(dest, labels=lab, box=np.array([[s.start, s.stop] for s in box]),
