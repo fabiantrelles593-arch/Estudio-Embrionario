@@ -36,6 +36,35 @@ MIN_VARYING = 0.90
 # Etiquetas con ≥ 490 vóxeles exactos en cada uno de los 20 especímenes del piloto (results/p3/diagnostico_segs.json);
 # los demás enteros > 48 aparecen en 1 o 2 vóxeles: son coincidencias de la interpolación (desviación D1).
 MUSMORPH_LABELS = tuple(range(1, 49)) + (102, 103)
+# Estructuras de §5 según la desviación D3: solo las etiquetas con el mismo número en MusMorph y en MEMOS.
+P3_STRUCTURES = tuple(range(1, 49))
+# Nombres de las etiquetas 1–48 de KOMP2 (Support/KOMP2.ctbl de SlicerMEMOS, BSD-2-Clause), tal cual.
+KOMP2_NAMES = {
+    1: "left_lung", 2: "cranial_lobe", 3: "middle_lobe", 4: "caudal_lobe", 5: "accessory_lobe",
+    6: "left_kidney", 7: "right_kidney", 8: "stomach_wall", 9: "stomach_lumen", 10: "medial_lobe_of_liver",
+    11: "left_lobe_of_liver", 12: "right_lobe_of_liver", 13: "caudate_lobe_of_liver", 14: "left_adrenal",
+    15: "right_adrenal", 16: "rectum", 17: "bladder", 18: "left_ventricle", 19: "right_ventricle",
+    20: "left_thymic_rudiment", 21: "right_thymic_rudiment", 22: "third_ventricle", 23: "mesencephalic_vesicle",
+    24: "fourth_ventricle", 25: "cerebral_aqueduct", 26: "left_lateral_ventricle", 27: "right_lateral_ventricle",
+    28: "right_olfactory_bulb", 29: "left_olfacotory_bulb", 30: "right_thalamus", 31: "left_thalamus",
+    32: "right_hypothamalus", 33: "left_hypothalmus", 34: "right_septal_area", 35: "left_septal_area",
+    36: "right_neopallial_cortex_and_amygdala", 37: "left_neopallial_cortex_abd_amygdala", 38: "right_striatum",
+    39: "left_striatum", 40: "right_ventricular_zone", 41: "left_ventricular_zone", 42: "pons",
+    43: "left_cerebellar_primordium_", 44: "right_cerebellar_primordium", 45: "midbrain", 46: "medulla_oblongata",
+    47: "spinal_cord", 48: "vertebrae",
+}
+# Pares bilaterales homólogos (§5.6: «los pares izquierda/derecha se promedian»). No se emparejan los
+# ventrículos cardíacos (18/19) ni los lóbulos de pulmón o hígado: no son homólogos bilaterales.
+BILATERAL_PAIRS = ((6, 7), (14, 15), (20, 21), (26, 27), (28, 29), (30, 31), (32, 33), (34, 35),
+                   (36, 37), (38, 39), (40, 41), (43, 44))
+
+
+def p3_units() -> dict[int, str]:
+    """Unidad de análisis de cada estructura de §5: el par bilateral o la propia etiqueta."""
+    units = {s: str(s) for s in P3_STRUCTURES}
+    for a, b in BILATERAL_PAIRS:
+        units[a] = units[b] = f"{a}+{b}"
+    return units
 
 
 def required_files(ids: Iterable[str]) -> list[str]:
