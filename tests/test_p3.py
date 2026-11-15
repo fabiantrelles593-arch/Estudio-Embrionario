@@ -120,6 +120,19 @@ def test_groups_from_atlas_put_the_plate_in_the_thin_group(phantom_table):
     assert g.loc["2", "d_over_hgeo"] < g.loc["1", "d_over_hgeo"]
 
 
+def test_groups_from_atlas_match_the_full_measurement(phantom_table):
+    """La ruta ligera (solo volumen y d_mean) da lo mismo que measure_mask."""
+    from geovida.budget import feature_value
+    from geovida.measure import measure_mask
+    _, atlas = phantom_table
+    sp = (0.027,) * 3
+    g = p3.groups_from_atlas(atlas, sp, [1, 2]).set_index("unit")
+    for s in (1, 2):
+        meas = measure_mask(atlas == s, sp)
+        assert g.loc[str(s), "d_over_hgeo"] == pytest.approx(feature_value(meas, sp), rel=1e-12)
+        assert g.loc[str(s), "log_volume"] == pytest.approx(math.log(meas["volume"]), rel=1e-12)
+
+
 def test_units_merge_left_and_right_labels(phantom_table):
     _, atlas = phantom_table
     g = p3.groups_from_atlas(atlas, (0.027,) * 3, [1, 2], units={1: "par", 2: "par"})
