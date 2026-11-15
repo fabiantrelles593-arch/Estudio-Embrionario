@@ -3,7 +3,8 @@
   python scripts/p3_report.py --memos results/p3/memos --groups results/p3/grupos.csv \\
       --analysis results/p3/analisis_piloto.json --out results/p3/informe_piloto.md
 
-Lee ``memos_run.json`` (comprobación 3.4), ``memos_vs_atlas.json`` (H-P3c y desviación D3), ``grupos.csv`` y
+Lee ``memos_run.json`` (comprobación 3.4), ``memos_vs_atlas.json`` (H-P3c y desviación D3),
+``memos_rigidity.json`` (desviación D5, si existe), ``grupos.csv`` y
 el JSON de ``p3_analyze.py pilot``. Las cifras del piloto son solo para tiempos y anchura de intervalos: los
 veredictos del piloto **no** son resultados de P3 (docs/PREREGISTRO_P3.md §4).
 """
@@ -36,13 +37,24 @@ def _median_dice(table: dict) -> float:
     return statistics.median(vals) if vals else math.nan
 
 
-def compare_rows(cmp: dict) -> pd.DataFrame:
-    """Una fila por espécimen: traslación (D3), Dice de la unión y mediana del Dice por estructura, sin y con traslación."""
+NON_RIGID_SPREAD_VOX = 4  # D5: dispersión > 4 vóxeles entre tercios = «desajuste no rígido»
+
+
+def compare_rows(cmp: dict, rigidity: dict | None = None) -> pd.DataFrame:
+    """Una fila por espécimen: traslación (D3), Dice de la unión y mediana del Dice por estructura, sin y con traslación.
+
+    Con ``rigidity`` (``memos_rigidity.json``) añade la dispersión entre tercios y la marca de D5; sin dato, la
+    dispersión queda vacía y el espécimen no se marca.
+    """
+    rigidity = rigidity or {}
     rows = []
     for sid, c in sorted(cmp.items()):
+        spread = rigidity.get(sid, {}).get("spread_vox")
         rows.append({"specimen": sid, "translation_vox": tuple(c["translation_vox"]),
                      "dice_union_raw": c["dice_union_raw"], "dice_union_shifted": c["dice_union_shifted"],
-                     "dice_median_raw": _median_dice(c["raw"]), "dice_median_shifted": _median_dice(c["shifted"])})
+                     "dice_median_raw": _median_dice(c["raw"]), "dice_median_shifted": _median_dice(c["shifted"]),
+                     "spread_vox": math.nan if spread is None else int(spread),
+                     "non_rigid": spread is not None and spread > NON_RIGID_SPREAD_VOX})
     return pd.DataFrame(rows)
 
 
@@ -61,13 +73,18 @@ def render(pre: dict, cmp: pd.DataFrame, groups: pd.DataFrame | None, analysis: 
             f"- Sin segmentación: {', '.join(pre['failed']) if pre['failed'] else 'ninguno'}.", ""]
     if len(cmp):
         out += ["## Comparación MEMOS frente a atlas propagado (H-P3c, desviación D3)", "",
-                "| Espécimen | Traslación (vóxeles) | Dice unión sin → con | Dice mediano sin → con |",
-                "|---|---|---|---|"]
+                "| Espécimen | Traslación (vóxeles) | Dice unión sin → con | Dice mediano sin → con | Dispersión D5 |",
+                "|---|---|---|---|---|"]
         for r in cmp.itertuples():
+            spread = "—" if not math.isfinite(r.spread_vox) else f"{int(r.spread_vox)}{' (no rígido)' if r.non_rigid else ''}"
             out.append(f"| `{r.specimen}` | {r.translation_vox} | {_f(r.dice_union_raw)} → {_f(r.dice_union_shifted)} | "
-                       f"{_f(r.dice_median_raw)} → {_f(r.dice_median_shifted)} |")
+                       f"{_f(r.dice_median_raw)} → {_f(r.dice_median_shifted)} | {spread} |")
+        rigid = cmp[~cmp["non_rigid"]]
         out += ["", f"Mediana entre especímenes del Dice mediano con traslación: "
-                    f"**{_f(cmp['dice_median_shifted'].median())}** (n = {len(cmp)}).", ""]
+                    f"**{_f(cmp['dice_median_shifted'].median())}** (n = {len(cmp)}).",
+                f"Sensibilidad D5, sin los {int(cmp['non_rigid'].sum())} marcados como no rígidos: "
+                f"**{_f(rigid['dice_median_shifted'].median())}** (n = {len(rigid)}); "
+                f"dispersión calculada en {int(cmp['spread_vox'].notna().sum())} de {len(cmp)}.", ""]
     if groups is not None and len(groups):
         counts = groups["group"].value_counts().to_dict()
         out += ["## Grupos sobre el atlas de consenso (D4)", "",
@@ -98,7 +115,10 @@ def main(argv=None) -> int:
     ids = json.loads(Path(a.selection).read_text(encoding="utf-8"))["pilot"]
     run = json.loads((memos / "memos_run.json").read_text(encoding="utf-8"))
     cmp_path = memos / "memos_vs_atlas.json"
-    cmp = compare_rows(json.loads(cmp_path.read_text(encoding="utf-8"))) if cmp_path.exists() else pd.DataFrame()
+    rig_path = memos / "memos_rigidity.json"
+    rigidity = json.loads(rig_path.read_text(encoding="utf-8")) if rig_path.exists() else None
+    cmp = (compare_rows(json.loads(cmp_path.read_text(encoding="utf-8")), rigidity)
+           if cmp_path.exists() else pd.DataFrame())
     groups = pd.read_csv(a.groups, dtype={"unit": str}) if a.groups and Path(a.groups).exists() else None
     analysis = (json.loads(Path(a.analysis).read_text(encoding="utf-8"))
                 if a.analysis and Path(a.analysis).exists() else None)
