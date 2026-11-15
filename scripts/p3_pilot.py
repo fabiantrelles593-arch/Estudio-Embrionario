@@ -127,7 +127,8 @@ def main(argv=None) -> int:
         return 0 if n_ok == len(log) else 1
 
     res = p3_data.precheck(args.data, sel[args.which], rule=args.rule,
-                           allowed=None if args.any_label else p3_data.MUSMORPH_LABELS)
+                           allowed=None if args.any_label else p3_data.MUSMORPH_LABELS,
+                           log=lambda m: print("  " + m, flush=True))
     vol = res.pop("volumes")
     out = Path(args.out)
     _write_json(res, out)
