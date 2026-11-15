@@ -80,7 +80,7 @@ def test_report_records_provenance_and_hides_the_file_name_by_default(tmp_path, 
     assert main(["certify", str(npy), "--spacing", *map(str, sp), "--segmenter", "smoothed_otsu",
                  "--profile", "us_compound", "--frozen", str(us_frozen_file),
                  "--report", str(rep)]) == 0
-    text = rep.read_text()
+    text = rep.read_text(encoding="utf-8")
     img_hash = hashlib.sha256(npy.read_bytes()).hexdigest()
     frozen_hash = hashlib.sha256(us_frozen_file.read_bytes()).hexdigest()
     assert img_hash in text and frozen_hash in text
