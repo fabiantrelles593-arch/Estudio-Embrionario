@@ -273,6 +273,59 @@ def best_translation(fixed: np.ndarray, moving: np.ndarray, coarse: int = 2, ref
     return best[1], best[0]
 
 
+def label_agreement(atlas: np.ndarray, memos: np.ndarray, t, sl=(slice(None),) * 3) -> float:
+    """Fracción de vóxeles con etiqueta del atlas desplazado `t`, dentro de `sl`, cuya etiqueta coincide con MEMOS."""
+    a = np.roll(atlas, tuple(int(v) for v in t), (0, 1, 2))[sl]
+    fg = a > 0
+    return float((a[fg] == memos[sl][fg]).mean()) if fg.any() else math.nan
+
+
+def local_translations(atlas: np.ndarray, memos: np.ndarray, center, n_parts: int = 3, rad: int = 20) -> dict:
+    """Traslación del atlas que mejor coincide con MEMOS en cada parte del cuerpo (desviación D5).
+
+    Divide el eje más largo del atlas en `n_parts` partes iguales. En cada una busca la traslación que maximiza
+    `label_agreement`: rejilla a 1/2 en ±`rad` vóxeles alrededor de `center` y refinamiento ±2 a resolución completa.
+    Si el desajuste es una traslación rígida, todas las partes dan la misma; `spread_vox` es la mayor diferencia,
+    por eje, entre las traslaciones de las partes.
+    """
+    idx = np.nonzero(atlas)
+    ax = int(np.argmax([int(i.max() - i.min()) for i in idx]))
+    edges = np.linspace(int(idx[ax].min()), int(idx[ax].max()) + 1, n_parts + 1).astype(int)
+    del idx
+    a2, m2 = atlas[::2, ::2, ::2], memos[::2, ::2, ::2]
+    c2 = [int(v) // 2 for v in center]
+    r2 = range(-(rad // 2), rad // 2 + 1)
+    parts = []
+    for k in range(n_parts):
+        sl = [slice(None)] * 3
+        sl2 = [slice(None)] * 3
+        sl[ax] = slice(int(edges[k]), int(edges[k + 1]))
+        sl2[ax] = slice(int(edges[k]) // 2, int(edges[k + 1]) // 2)
+        sl, sl2 = tuple(sl), tuple(sl2)
+        best = (-1.0, tuple(c2))
+        for dz in r2:
+            for dy in r2:
+                for dx in r2:
+                    t = (c2[0] + dz, c2[1] + dy, c2[2] + dx)
+                    v = label_agreement(a2, m2, t, sl2)
+                    if v > best[0]:
+                        best = (v, t)
+        c = [2 * v for v in best[1]]
+        best = (-1.0, tuple(c))
+        for dz in range(-2, 3):
+            for dy in range(-2, 3):
+                for dx in range(-2, 3):
+                    t = (c[0] + dz, c[1] + dy, c[2] + dx)
+                    v = label_agreement(atlas, memos, t, sl)
+                    if v > best[0]:
+                        best = (v, t)
+        parts.append({"translation_vox": [int(v) for v in best[1]], "agreement": round(best[0], 4),
+                      "agreement_center": round(label_agreement(atlas, memos, center, sl), 4)})
+    ts = np.array([p["translation_vox"] for p in parts])
+    return {"axis": ax, "parts": parts, "spread_vox": int((ts.max(0) - ts.min(0)).max()),
+            "agreement_center": round(label_agreement(atlas, memos, center), 4)}
+
+
 # ---------------------------------------------------------------- CLI
 def _ids(path: str, which: str) -> list[str]:
     sel = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -355,6 +408,42 @@ def cmd_compare(a):
         (out / "memos_vs_atlas.json").write_text(json.dumps(res, indent=1), encoding="utf-8")
 
 
+def cmd_rigidity(a):
+    """Desviación D5: ¿una sola traslación basta? Traslaciones locales por tercios del cuerpo, alrededor de la global."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+    from geovida.p3_data import MUSMORPH_LABELS, load_labels
+
+    out = Path(a.out)
+    cmp = json.loads((out / "memos_vs_atlas.json").read_text(encoding="utf-8"))
+    dest = out / "memos_rigidity.json"
+    res = json.loads(dest.read_text(encoding="utf-8")) if dest.exists() else {}
+    for sid, c in sorted(cmp.items()):
+        if sid in res and not a.force:
+            continue
+        z = np.load(out / f"{sid}_memos.npz")
+        lab, box = z["labels"], z["box"]
+        atlas, abox, *_ = load_labels(Path(a.data) / f"{sid}_Segs.mnc", MUSMORPH_LABELS, "nearest")
+        ab = np.array([[s.start, s.stop] for s in abox])
+        pad = a.pad
+        lo = np.minimum(box[:, 0], ab[:, 0]) - pad
+        hi = np.maximum(box[:, 1], ab[:, 1]) + pad
+        shape = tuple(int(v) for v in hi - lo)
+        M = np.zeros(shape, np.uint8)
+        M[tuple(slice(box[i][0] - lo[i], box[i][1] - lo[i]) for i in range(3))] = lab
+        A = np.zeros(shape, np.uint8)
+        A[tuple(slice(ab[i][0] - lo[i], ab[i][1] - lo[i]) for i in range(3))] = np.where(
+            (atlas >= 1) & (atlas <= 48), atlas, 0)
+        del lab, atlas
+        t0 = time.time()
+        r = local_translations(A, M, c["translation_vox"])
+        r["seconds"] = round(time.time() - t0, 1)
+        res[sid] = r
+        dest.write_text(json.dumps(res, indent=1), encoding="utf-8")
+        print(f"{sid}: global {c['translation_vox']} · locales {[p['translation_vox'] for p in r['parts']]} · "
+              f"dispersión {r['spread_vox']} vóxeles · acuerdo {r['agreement_center']}", flush=True)
+        del A, M
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -374,6 +463,12 @@ def main(argv=None):
     c.add_argument("--out", default="results/p3/memos")
     c.add_argument("--pad", type=int, default=40)
     c.set_defaults(fn=cmd_compare)
+    g = sub.add_parser("rigidity")
+    g.add_argument("--data", required=True)
+    g.add_argument("--out", default="results/p3/memos")
+    g.add_argument("--pad", type=int, default=60)
+    g.add_argument("--force", action="store_true")
+    g.set_defaults(fn=cmd_rigidity)
     a = p.parse_args(argv)
     a.fn(a)
 
