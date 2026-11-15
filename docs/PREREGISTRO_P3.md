@@ -1,4 +1,4 @@
-# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1 y D2**)
+# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1–D3**)
 
 > **Estado:** aprobado por el autor el 14 nov 2026 (Fase 2). Falta, idealmente, la revisión de un asesor antes de descargar datos. El análisis de §5 está en `src/geovida/p3.py`, probado solo con fantomas.
 > Se escribe **antes de descargar ningún archivo de MusMorph**: no hay resultados. Solo investigación y educación; datos animales publicados, sin datos humanos.
@@ -142,3 +142,20 @@ Registrada **antes de calcular τ, `p` o cualquier medida de las hipótesis**, y
 - **Comprobación 3.3 [EI].** Ni el artículo, ni el repositorio de MEMOS, ni los metadatos de MusMorph identifican los 91 escáneres de entrenamiento. MusMorph renumera los especímenes sin conservar el identificador del portal IMPC. Por tanto, según §3.3, no se excluye a nadie y se declara la limitación: el acuerdo atlas–MEMOS puede estar sobreestimado en los especímenes que coincidan.
 - **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo. El segmentador B pasa a ser «MEMOS a ×2, logits ampliados de forma trilineal a la rejilla nativa».
 - **Límite declarado.** La máscara nativa de MEMOS se infiere a la mitad de resolución: su detalle fino es interpolado, no observado. Con el factor ×2 de §5.1, ambos segmentadores parten de máscaras nativas, pero la de MEMOS tiene menos información independiente a ×1. El exploratorio «MEMOS ejecutado otra vez sobre la imagen degradada ×2» pasa a ser a ×4 sobre la nativa.
+
+### D3 (15 nov 2026) — Las segmentaciones de MusMorph están trasladadas respecto a su imagen
+
+Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b**, y antes de comparar MEMOS con el atlas en los otros 19 especímenes del piloto. Solo se miró `IMPC_E15.5_0040`, que es del piloto y no entra en el confirmatorio.
+
+- **Hallazgo [HV, 1 espécimen].** Al superponer los contornos sobre la imagen, las vértebras y la médula del atlas de MusMorph quedan fuera del raquis, sobre la piel dorsal, mientras que las de MEMOS lo siguen. La mejor traslación entera del atlas es de (16, 6, −4) vóxeles, es decir, (0,43; 0,16; −0,11) mm.
+  - Con ella, el Dice de la unión de etiquetas pasa de 0,70 a 0,90.
+  - El Dice mediano por etiqueta pasa de 0,22 a 0,73.
+  - Las etiquetas 1 a 48 de MusMorph caen sobre la misma etiqueta de MEMOS (KOMP2) [HV]. Su correspondencia queda establecida en este espécimen.
+- **La hipótesis de D1 sobre la 102 y la 103 no se sostiene [HV, 1 espécimen].** Según `KOMP2.ctbl` de SlicerMEMOS, la 49 y la 50 son las cámaras de los ventrículos izquierdo y derecho, y la 18 y la 19 los ventrículos. En `0040`, la 102 y la 103 de MusMorph solapan sobre todo con el fondo y con la 18 y la 19 de MEMOS, y casi nada con la 49 y la 50. Su identidad queda [PV].
+- **Regla fijada ahora.**
+  - Estructuras de §5: solo las 48 etiquetas con el mismo número en ambos segmentadores (1–48). La 102 y la 103 de MusMorph, y la 49 y la 50 de MEMOS, se excluyen de τ y de H-P3a/H-P3b por no tener par establecido, y se informan aparte.
+  - H-P3c se informa de dos formas: (a) sin trasladar, y (b) tras trasladar el atlas con la traslación entera que maximiza el Dice de las uniones (`best_translation` en `scripts/p3_memos.py`: correlación cruzada por FFT a 1/2 y refinamiento de ±2 vóxeles, sin rotaciones). La principal es (b), porque (a) mezcla el desfase de los archivos con el desacuerdo entre segmentadores.
+  - Se informan los vectores de traslación por espécimen como hallazgo sobre los datos.
+- **Qué no afecta.** τ y el certificado solo usan la máscara y el vóxel (`geovida.measure.measure_mask`, `geovida.budget.adequacy`). El volumen, el área y b0 no cambian con una traslación entera, así que H-P3a y H-P3b no dependen del desfase.
+- **Límite declarado.** La traslación se estima con la propia máscara de MEMOS, así que (b) es el acuerdo tras el mejor alineamiento por traslación, optimista por construcción. No se corrigen posibles rotaciones. Como ya dice H-P3c, no es una validación.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
