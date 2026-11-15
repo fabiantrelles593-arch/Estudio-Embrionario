@@ -111,11 +111,13 @@ def recover_labels(arr: np.ndarray, allowed: Iterable[int] | None = None, rule: 
 
 def _nearest_candidate(vals, coords, lab, background, radius):
     """Para cada vóxel mezclado, la etiqueta exacta (o el fondo) a ≤ ``radius`` vóxeles de valor más cercano."""
-    struct = np.ones((2 * radius + 1,) * 3, bool)
+    def grow(mask):  # cubo de lado 2·radius + 1 = radius dilataciones del cubo 3×3×3 (idéntico y ~3 veces más rápido)
+        return ndimage.binary_dilation(mask, structure=_K26, iterations=radius)
+
     best_d = np.full(vals.size, np.inf)
     best_l = np.zeros(vals.size, np.int16)
     n_cand = np.zeros(vals.size, np.int16)
-    hit = ndimage.binary_dilation(background, structure=struct)[coords]
+    hit = grow(background)[coords]
     n_cand += hit
     best_d[hit] = np.abs(vals[hit])
     for L, sl in enumerate(ndimage.find_objects(lab.astype(np.int32)), start=1):
@@ -127,7 +129,7 @@ def _nearest_candidate(vals, coords, lab, background, radius):
             inside &= (coords[ax] >= s.start) & (coords[ax] < s.stop)
         if not inside.any():
             continue
-        near = ndimage.binary_dilation(lab[sl] == L, structure=struct)
+        near = grow(lab[sl] == L)
         hit = np.zeros(vals.size, bool)
         hit[inside] = near[tuple(coords[ax][inside] - s.start for ax, s in enumerate(sl))]
         n_cand += hit
@@ -162,8 +164,9 @@ def load_labels(path, allowed: Iterable[int] | None = None, rule: str = "nearest
     return lab, box, spacing, meta, info
 
 
-def precheck(folder, ids: Iterable[str], allowed: Iterable[int] | None = None, rule: str = "nearest") -> dict:
-    """Comprobaciones previas 3.1 y 3.2 sobre las segmentaciones descargadas."""
+def precheck(folder, ids: Iterable[str], allowed: Iterable[int] | None = None, rule: str = "nearest",
+             log=None) -> dict:
+    """Comprobaciones previas 3.1 y 3.2 sobre las segmentaciones descargadas (``log``: función de avance)."""
     ids = [str(i) for i in ids]
     idx = index_folder(folder)
     rows, per_specimen = [], []
@@ -176,6 +179,8 @@ def precheck(folder, ids: Iterable[str], allowed: Iterable[int] | None = None, r
             values, counts = np.unique(lab[lab > 0], return_counts=True)
             rec.update(spacing_mm=[round(s, 6) for s in spacing], world_axes=meta["world_axes"],
                        n_labels=int(values.size), label_recovery=info)
+            if log:
+                log(f"{i}: {values.size} etiquetas, {info['frac_mixed']:.1%} de vóxeles mezclados")
             rows += [{"specimen": i, "structure": int(v), "segmenter": "A", "factor": 1,
                       "volume": float(c) * vox} for v, c in zip(values, counts)]
         per_specimen.append(rec)
