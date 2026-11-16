@@ -77,3 +77,12 @@ def test_render_confirm_transcribes_verdicts_and_d1():
     assert "| H-P3a | Δ = 0,100 | 0,050 a 0,150 | apoyada |" in text
     assert "(a) sin trasladar | 2 | 0,60" in text and "(b) con traslación (principal) | 2 | 0,85" in text
     assert "no rígidos (D5): 1 (`s7`)" in text and "MEMOS a ×4: no calculado" in text
+    assert "Combinación no prevista en §7" in text
+
+
+def test_section7_rows():
+    assert rep.section7("apoyada", "apoyada")[1].startswith("Repetir en un segundo estadio")
+    assert rep.section7("apoyada", "no_apoyada")[0].startswith("El fenómeno existe")
+    assert rep.section7("no_concluyente", "apoyada")[0] == rep.section7("contraria", "no_apoyada")[0]
+    assert rep.section7("apoyada", "no_evaluable")[0].startswith("Combinación no prevista")
+    assert rep.section7("no_interpretable_D1", "apoyada")[0].startswith("Combinación no prevista")
