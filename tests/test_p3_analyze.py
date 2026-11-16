@@ -42,6 +42,38 @@ def test_d1_verdicts_rule():
                                                              "verdict_b": "no_apoyada"}
 
 
+def test_pilot_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
+    """Modo ``pilot`` con mapas sintéticos: produce la decisión de ampliación y las tablas."""
+    import json
+
+    import numpy as np
+    import pandas as pd
+
+    memos = tmp_path / "memos"
+    memos.mkdir()
+    for i in range(4):
+        np.savez(memos / f"s{i}_memos.npz", labels=np.zeros(1), box=np.zeros((3, 2)))
+    pd.DataFrame({"unit": ["1", "2"], "group": ["delgada", "compacta"], "log_volume": [1.0, 2.0],
+                  "d_over_hgeo": [1.0, 3.0]}).to_csv(tmp_path / "g.csv", index=False)
+    rng = np.random.default_rng(4)
+
+    def fake_maps(sid, data_dir, memos_dir, rule="nearest", pad=0, memos_as_b=None):
+        a = np.zeros((32, 32, 32), np.int16)
+        g = np.indices(a.shape)
+        a[((g - 16) ** 2).sum(0) <= (7 + rng.normal(0, 1)) ** 2] = 2
+        a[4:7, 4:26, 4:26] = 1
+        return {"A": a, "B": a.astype(np.uint8)}, (0.027, 0.027, 0.027)
+
+    monkeypatch.setattr(pa, "_specimen_maps", fake_maps)
+    monkeypatch.setattr(pa.p3_data, "P3_STRUCTURES", (1, 2))
+    out = tmp_path / "pilot.json"
+    assert pa.main(["pilot", "--data", str(tmp_path), "--memos", str(memos), "--groups", str(tmp_path / "g.csv"),
+                    "--out", str(out), "--n-boot", "10"]) == 0
+    s = json.loads(out.read_text(encoding="utf-8"))
+    assert s["specimens"] == [f"s{i}" for i in range(4)] and s["n_confirm_decision"] in (60, 120)
+    assert out.with_suffix(".conditions.csv").exists() and out.with_suffix(".units.csv").exists()
+
+
 def test_confirm_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
     """Flujo completo de ``confirm`` con mapas sintéticos (sin MINC): produce el resumen y todas las tablas."""
     import json
@@ -95,6 +127,15 @@ def test_confirm_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
     for suffix in (".conditions.csv", ".agreement.csv", ".agreement_summary.csv", ".units.csv", ".tau.csv",
                    ".mixed.csv", ".exploratory.csv", ".conditions_exact.csv"):
         assert out.with_suffix(suffix).exists()
+    main, exact = (pd.read_csv(out.with_suffix(x)) for x in (".conditions.csv", ".conditions_exact.csv"))
+    assert set(exact["segmenter"]) == {"A", "B"} and len(exact) == len(main)
+    cols = ["specimen", "structure", "factor", "volume"]
+    pd.testing.assert_frame_equal(  # B no depende de la regla de D1: se reutiliza tal cual
+        exact[exact["segmenter"] == "B"][cols].reset_index(drop=True),
+        main[main["segmenter"] == "B"][cols].reset_index(drop=True))
+    assert not exact[exact["segmenter"] == "A"]["volume"].equals(main[main["segmenter"] == "A"]["volume"])
+    x4c = pd.read_csv(out.with_suffix(".conditions_x4.csv"))
+    assert set(x4c["segmenter"]) == {"A", "B"} and x4c["specimen"].nunique() == 4
     agr = pd.read_csv(out.with_suffix(".agreement.csv"))
     b = agr[(agr["form"] == "b") & (agr["structure"] == 2)]
     assert b["dice"].min() == pytest.approx(1.0)  # la traslación de D3 alinea A con B
