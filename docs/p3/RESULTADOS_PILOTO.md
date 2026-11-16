@@ -88,7 +88,7 @@ Traslación entera del atlas que maximiza el Dice de las uniones (D3), y Dice me
 - **[HV] Los otros 17 tienen dispersión de 1 a 4 vóxeles**, incluidos `0040` y `0092`, cuyo desfase grande sí es una traslación casi rígida (dispersión 4). Cinco quedan justo en el umbral (dispersión 4: `0040`, `0071`, `0092`, `0406`, `0455`), así que en el confirmatorio la lista de no rígidos puede depender de 1 vóxel; por eso D5 es solo un análisis de sensibilidad de H-P3c y no cambia el análisis principal.
 - **[HV] Sensibilidad de D5 en el piloto:** la mediana entre especímenes del Dice mediano con traslación pasa de 0,75 (n = 20) a 0,78 sin los 3 no rígidos (n = 17) [`results/p3/informe_piloto.md`].
 - **[HV] Sin desfase, el acuerdo por estructura es moderado:** en los 16 especímenes bien alineados, el Dice mediano por estructura va de 0,58 a 0,85 (mediana del conjunto 0,75 con los 20).
-- **[HIP] Causa del desfase:** error de registro del atlas al especímen, o diferencia de orientación entre la imagen y la segmentación publicadas. No se puede decidir cuál de las dos máscaras está mal colocada [PV].
+- **[HIP] Causa del desfase:** error de registro del atlas al espécimen, o diferencia de orientación entre la imagen y la segmentación publicadas. No se puede decidir cuál de las dos máscaras está mal colocada [PV].
 - Como fija el preregistro, **ninguno de los dos segmentadores es una verdad anatómica**: esto describe su acuerdo, no su exactitud.
 
 ## 6. Análisis del piloto (solo tiempos y anchura de intervalos)
