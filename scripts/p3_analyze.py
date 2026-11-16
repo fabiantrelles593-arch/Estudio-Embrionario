@@ -147,7 +147,8 @@ def cmd_confirm(a) -> int:
                     agr.extend(dict(r, form=form) for r in
                                p3.agreement_rows(sid, maps["A"], maps["B"], spacing, p3_data.P3_STRUCTURES, t))
             print(f"  {rule} {sid}", flush=True)
-            yield sid, maps, spacing
+            # la regla de D1 solo cambia A: en la pasada «exact», B se reutiliza de la tabla principal
+            yield sid, (maps if with_agreement else {"A": maps["A"]}), spacing
 
     df = p3.condition_table(items("nearest", True), p3_data.P3_STRUCTURES, cert_segmenter="A")
     df.to_csv(out.with_suffix(".conditions.csv"), index=False)
@@ -173,20 +174,22 @@ def cmd_confirm(a) -> int:
         mx4 = Path(a.memos_x4)
         ids4 = [s for s in ids if (mx4 / f"{s}_memos.npz").exists()]
 
-        def items_x4():
+        def items_x4():  # solo B cambia: A se reutiliza de la tabla principal
             for sid in ids4:
                 maps, spacing = _specimen_maps(sid, data, memos, "nearest", memos_as_b=mx4)
                 print(f"  x4 {sid}", flush=True)
-                yield sid, maps, spacing
+                yield sid, {"B": maps["B"]}, spacing
 
-        df4 = p3.condition_table(items_x4(), p3_data.P3_STRUCTURES, cert_segmenter="A")
+        b4 = p3.condition_table(items_x4(), p3_data.P3_STRUCTURES, cert_segmenter="A")
+        df4 = pd.concat([df[(df["segmenter"] == "A") & df["specimen"].isin(ids4)], b4], ignore_index=True)
         df4.to_csv(out.with_suffix(".conditions_x4.csv"), index=False)
         tau4 = p3.technical_fraction(df4)
         tau4.to_csv(out.with_suffix(".tau_x4.csv"), index=False)
         x4 = {"n_specimens": len(ids4), "order_tau_vs_x4": p3.order_agreement(taus["log_volume"], tau4)}
 
     t1 = time.time()
-    df_exact = p3.condition_table(items("exact", False), p3_data.P3_STRUCTURES, cert_segmenter="A")
+    a_exact = p3.condition_table(items("exact", False), p3_data.P3_STRUCTURES, cert_segmenter="A")
+    df_exact = pd.concat([a_exact, df[df["segmenter"] == "B"]], ignore_index=True)
     df_exact.to_csv(out.with_suffix(".conditions_exact.csv"), index=False)
     res_exact = p3.evaluate(df_exact, groups, units, n_boot=a.n_boot)
     order_d1 = p3.order_agreement(taus["log_volume"], p3.technical_fraction(df_exact))
@@ -250,7 +253,8 @@ def main(argv=None) -> int:
         for sid in ids:
             maps, spacing = _specimen_maps(sid, Path(a.data), memos)
             print(f"  {sid}", flush=True)
-            yield sid, maps, spacing
+            # la regla de D1 solo cambia A: en la pasada «exact», B se reutiliza de la tabla principal
+            yield sid, (maps if with_agreement else {"A": maps["A"]}), spacing
 
     df = p3.condition_table(items(), p3_data.P3_STRUCTURES, cert_segmenter="A")
     t_measure = time.time() - t0
