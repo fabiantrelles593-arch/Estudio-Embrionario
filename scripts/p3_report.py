@@ -119,6 +119,22 @@ def _order(o: dict | None) -> str:
     return f"ρ = {_f(o['rho'], 2)} en {o['n_structures']} estructuras → {'coinciden' if o['agree'] else '**discrepan**'} (umbral 0,7)"
 
 
+def section7(verdict_a: str, verdict_b: str) -> tuple[str, str]:
+    """Fila de la tabla §7 del preregistro (conclusión, siguiente paso) para los veredictos tras D1."""
+    if verdict_a == "apoyada" and verdict_b == "apoyada":
+        return ("La resolución y la segmentación pesan más en las estructuras finas, y el certificado lo anticipa "
+                "mejor que el tamaño", "Repetir en un segundo estadio o conjunto (validación externa) antes de "
+                "cualquier afirmación general")
+    if verdict_a == "apoyada" and verdict_b == "no_apoyada":
+        return ("El fenómeno existe, pero el certificado no añade nada al tamaño", "Reformular MORPHO-TRACE: la "
+                "descomposición de varianza es la contribución; el certificado actual no lo es")
+    if verdict_a in ("contraria", "no_concluyente"):
+        return ("La fracción técnica no depende del tamaño o grosor como se esperaba",
+                "Informar el resultado negativo; revisar los supuestos de H1 y H3 sintéticas")
+    return ("Combinación no prevista en §7 (algún veredicto no evaluable o no interpretable por D1): no se extrae "
+            "conclusión", "Informar tal cual; no se reinterpreta")
+
+
 def render_confirm(summary: dict, agreement: pd.DataFrame | None = None) -> str:
     """Informe confirmatorio a partir de ``confirmatorio.json`` (``p3_analyze.py confirm``) y su
     ``.agreement_summary.csv``. Los veredictos son los del código preregistrado; aquí solo se transcriben."""
@@ -136,6 +152,9 @@ def render_confirm(summary: dict, agreement: pd.DataFrame | None = None) -> str:
            f"| H-P3b | ρ = {_f(p['rho'], 3)}; ρ parcial = {_f(p['rho_partial'], 3)} | {_ci(p['rho_partial_ci'])} (ρ parcial) | "
            f"{VERDICT_TEXT[p['verdict_b']]} | ρ = {_f(e['rho'], 3)} → {VERDICT_TEXT[e['verdict_b']]} | "
            f"**{VERDICT_TEXT[v['verdict_b']]}** |", "",
+           "## Consecuencia según la tabla §7 del preregistro", "",
+           "- Conclusión: {}.".format(section7(v["verdict_a"], v["verdict_b"])[0]),
+           "- Siguiente paso: {}.".format(section7(v["verdict_a"], v["verdict_b"])[1]), "",
            "## Concordancia de órdenes", "",
            f"- τ con `nearest` frente a `exact` (D1): {_order(summary['order_tau_vs_exact_D1'])}.",
            f"- τ por varianzas frente a modelo mixto: {_order(summary['order_tau_vs_mixed'])}; "
