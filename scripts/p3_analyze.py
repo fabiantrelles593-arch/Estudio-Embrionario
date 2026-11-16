@@ -253,8 +253,7 @@ def main(argv=None) -> int:
         for sid in ids:
             maps, spacing = _specimen_maps(sid, Path(a.data), memos)
             print(f"  {sid}", flush=True)
-            # la regla de D1 solo cambia A: en la pasada «exact», B se reutiliza de la tabla principal
-            yield sid, (maps if with_agreement else {"A": maps["A"]}), spacing
+            yield sid, maps, spacing
 
     df = p3.condition_table(items(), p3_data.P3_STRUCTURES, cert_segmenter="A")
     t_measure = time.time() - t0
