@@ -53,3 +53,27 @@ def test_render_includes_decision_and_marks_pilot_as_not_a_result():
     text = rep.render(pre, pd.DataFrame(), groups, analysis)
     assert "19 de 20" in text and "no es resultado de P3" in text
     assert "confirmatorio según la regla de D4: 60" in text and "0,056" in text
+
+
+def _res(delta, va, rho, vb):
+    return {"n_specimens": 60, "n_boot": 2000, "seed": 20261115, "n_units": {"compacta": 20, "delgada": 12},
+            "delta": delta, "delta_ci": [delta - 0.05, delta + 0.05], "verdict_a": va,
+            "rho": rho, "rho_partial": rho, "rho_partial_ci": [rho - 0.1, rho + 0.1], "verdict_b": vb}
+
+
+def test_render_confirm_transcribes_verdicts_and_d1():
+    summary = {"which": "confirm", "specimens": ["s"] * 60, "missing": [], "non_rigid_D5": ["s7"],
+               "primary": _res(0.1, "apoyada", -0.6, "apoyada"),
+               "exact_D1": _res(0.02, "no_concluyente", -0.55, "apoyada"),
+               "order_tau_vs_exact_D1": {"rho": 0.5, "n_structures": 40, "agree": False},
+               "verdicts_after_D1": {"verdict_a": "no_interpretable_D1", "verdict_b": "apoyada"},
+               "order_tau_vs_mixed": {"rho": 0.9, "n_structures": 40, "agree": True}, "mixed_converged": 38,
+               "exploratory_sex": True, "exploratory_x4": None, "seconds_main": 10.0, "seconds_exact": 5.0}
+    agr = pd.DataFrame({"form": ["a", "a", "b", "b"], "structure": [1, 2, 1, 2], "dice": [0.5, 0.7, 0.8, 0.9],
+                        "hd95": [1, 2, 1, 1], "assd": [0.1, 0.2, 0.1, 0.1], "vol_diff_rel": [0.1, 0.1, 0.0, 0.0],
+                        "n_specimens": [60] * 4})
+    text = rep.render_confirm(summary, agr)
+    assert "**no interpretable (regla de D1)**" in text and "**discrepan**" in text
+    assert "| H-P3a | Δ = 0,100 | 0,050 a 0,150 | apoyada |" in text
+    assert "(a) sin trasladar | 2 | 0,60" in text and "(b) con traslación (principal) | 2 | 0,85" in text
+    assert "no rígidos (D5): 1 (`s7`)" in text and "MEMOS a ×4: no calculado" in text
