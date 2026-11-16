@@ -33,6 +33,33 @@ def test_degrade_identity_power_of_two_and_volume():
         p3.degrade_mask(m, 3)
 
 
+def test_p3_measure_equals_measure_mask_on_the_keys_p3_uses():
+    from geovida.measure import measure_mask
+    sp = (0.027, 0.03, 0.025)
+    plate = np.zeros((30, 40, 40), bool)
+    plate[10:13, 5:35, 4:36] = True
+    two = _ball((40, 40, 40), (12, 12, 12), 6) | _ball((40, 40, 40), (28, 28, 28), 5)
+    for m in (_ball((36, 36, 36), (18, 18, 18), 10.5), plate, two, np.zeros((8, 8, 8), bool)):
+        ref = measure_mask(m, sp)
+        got = p3.p3_measure(m, sp, depth=True)
+        assert got["volume"] == ref["volume"] and got["b0_26"] == ref["b0_26"]
+        assert got["area_sdf"] == pytest.approx(ref["area_sdf"], rel=1e-12, abs=0)
+        assert got["d_mean"] == pytest.approx(ref["d_mean"], rel=1e-12, abs=0)
+    assert "d_mean" not in p3.p3_measure(plate, sp)
+
+
+def test_label_boxes_match_aligned_box_for_every_label():
+    rng = np.random.default_rng(9)
+    lab = np.zeros((50, 41, 37), np.uint8)
+    lab[_ball(lab.shape, (20, 18, 15), 9)] = 3
+    lab[2:5, 30:40, 1:3] = 7
+    lab[49, 40, 36] = 9                     # vóxel en la esquina: la caja se recorta al borde
+    lab[rng.random(lab.shape) < 0.001] = 120  # etiqueta mayor que las pedidas: se ignora
+    boxes = p3.label_boxes(lab, [3, 7, 9, 11])
+    for s in (3, 7, 9, 11):
+        assert boxes[s] == p3._aligned_box(lab == s)
+
+
 def test_aligned_crop_gives_the_same_degraded_volume_as_the_full_volume():
     m = _ball((64, 64, 64), (37, 21, 45), 7.3)
     box = p3._aligned_box(m)
