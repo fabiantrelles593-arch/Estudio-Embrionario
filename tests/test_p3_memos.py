@@ -142,6 +142,24 @@ def test_local_translations_detect_non_rigid_misfit():
     assert pm.label_agreement(atlas, memos, (0, 0, 0)) < 0.9
 
 
+def test_shift_agreement_equals_label_agreement():
+    """El atajo sin desplazar el volumen da exactamente el mismo valor, también cuando hay vuelta (np.roll)."""
+    rng = np.random.default_rng(7)
+    atlas = np.where(rng.random((23, 17, 13)) < 0.3, rng.integers(1, 5, (23, 17, 13)), 0).astype(np.uint8)
+    memos = np.where(rng.random(atlas.shape) < 0.5, rng.integers(0, 5, atlas.shape), atlas).astype(np.uint8)
+    for ax, (lo, hi) in ((0, (3, 11)), (1, (0, 17)), (2, (9, 13))):
+        shifts = list(range(-25, 26, 3))
+        f = pm._ShiftAgreement(atlas, memos, ax, lo, hi, shifts)
+        for t in [(0, 0, 0), (5, -3, 2), (-22, 16, 12), (24, -18, -14)]:
+            t = list(t)
+            t[ax] = shifts[(sum(t) + 7) % len(shifts)]
+            sl = [slice(None)] * 3
+            sl[ax] = slice(lo, hi)
+            want = pm.label_agreement(atlas, memos, t, tuple(sl))
+            got = f(t)
+            assert got == want or (np.isnan(got) and np.isnan(want))
+
+
 def test_dice_table_best_match():
     atlas = np.zeros((10, 10, 10), np.int16)
     memos = np.zeros_like(atlas, dtype=np.uint8)
