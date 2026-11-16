@@ -129,3 +129,38 @@ No cambian ningún criterio; fijan lo que el texto dejaba abierto. Se prueban co
    aparte, con los de la ecografía simulada de H12 (`--frozen h12_frozen.json --tag h12`). Los dos
    resultados se publican. Los veredictos de la segunda se interpretan según `PREREGISTRO_H12R.md`
    (ya escrito, commit 24df964, antes de abrir datos).
+
+### D1 (16 nov 2026) — Lo que obliga a precisar la ficha (escrito tras la ficha y antes de medir nada contra la referencia)
+
+Solo se ha leído la ficha (`scripts/real_datasheet.py`: formas, vóxel, intensidades, etiquetas). No se ha
+calculado ningún acuerdo, Dice, volumen ni certificado sobre estos datos.
+
+* **Datos obtenidos [HV].** Página del conjunto en IEEE DataPort (acceso abierto, licencia Creative Commons
+  Attribution; hay que citar a Qiu et al.). Archivo `tuffc_mouse_embryo_ultarsound_data.zip`, 2 085 375 779
+  bytes, SHA-256 `69d2973fd8d402d112bb73f1c753213002e9612e25512d6ae7cb3f66bb861ec5`; se guarda fuera de git
+  (`data/external/ieee_qiu2021/`). Se usa solo la parte `BV_body_segmentation` (la de clasificación de
+  mutantes no entra en H11). El reparto entrenamiento/prueba de los autores no se usa: aquí nada se entrena.
+* **Emparejamiento [HV].** Cada volumen `X.nii` trae `X_BODY_labels.nii` (cuerpo) y, salvo 11,
+  `X_BV_labels.nii` (ventrículo cerebral), con valores 0/1: la estructura es la etiqueta 1. Esos 11 traen en su
+  lugar un `X…_prebv.nii`; el nombre no dice qué contiene, así que **no se emparejan** y esos casos no tienen
+  ventrículo.
+* **Unidad.** Ninguna cabecera declara unidad. Por §3 se asume milímetros: las imágenes dicen 0,05 mm
+  (50 µm), un valor plausible para ecografía de alta frecuencia.
+* **47 etiquetas de cuerpo con otro vóxel [HV].** Tienen la misma forma que su imagen, pero la cabecera dice
+  1 mm en lugar de 0,05 mm. Por la aclaración 5 se **excluyen** del análisis principal. Como **sensibilidad
+  declarada ahora** (no primaria, no puede sustituir al principal) se corre también con esas 47 admitidas
+  midiendo con el vóxel de la imagen (`--relaxed-spacing` en el manifiesto; salida con sufijo `_rs`).
+* **Duplicados [HV].** 4 volúmenes aparecen con el mismo nombre en dos carpetas; se usa uno.
+* **Identidad del embrión.** El conjunto no la da explícitamente. Se fija así: fecha + estadio + número de
+  embrión (`20171122_En1_E12_Ext_E11a_reg` → `20171122_E12_E11`). Las letras a/b/c/d/R, `Mut`, `Ex`/`Ext`,
+  `reg` y `filt` **no** separan embriones: se supone que pueden ser otra adquisición del mismo. Si eso junta
+  embriones distintos, solo ensancha los intervalos (más prudente).
+* **Resultado del manifiesto** (`scripts/h11_manifest_qiu2021.py`; los CSV quedan fuera de git en
+  `results/h11/` y se fijan por su huella): **cuerpo 180 casos de 170 embriones; ventrículo 216 casos de 203**.
+  Sensibilidad: cuerpo 227 de 213. Los mutantes se incluyen, como ya decía §2. SHA-256:
+  ficha `60c5650fa42603b428d111950ccd78e05864ad2cbdabc4a1e9c7eaef253bbe51`;
+  manifiesto `e0d2782abdae1121fde5f3089e8295de508cee0d736706e040fe85fd77c016dd`;
+  excluidos `7198d360ae057775366b2077abe6e68681a7bf733047c47ae10660dcfdce175d`;
+  manifiesto de sensibilidad `3504ae5b9f9a58492efa2e0804fe944bd019fbc6514bd7fe455fff0139994ca7`.
+* **Ejecución.** Por la memoria del equipo, se corre a baja prioridad mientras sigue el confirmatorio de P3.
+  No cambia nada del protocolo.
