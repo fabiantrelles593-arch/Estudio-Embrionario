@@ -19,6 +19,7 @@ import warnings
 from importlib.metadata import version
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from geovida import h11
@@ -30,6 +31,53 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _plain(v):
+    """Valores de numpy a tipos de JSON (NaN se conserva: ``json`` de Python lo escribe y lo lee)."""
+    if isinstance(v, np.generic):
+        return v.item()
+    if isinstance(v, np.ndarray):
+        return v.tolist()
+    return v
+
+
+def _read_cache(cache: Path) -> tuple[str, list[dict]]:
+    lines = cache.read_text(encoding="utf-8").splitlines()
+    return json.loads(lines[0])["stamp"], [json.loads(x) for x in lines[1:] if x.strip()]
+
+
+def _run_cached(manifest: pd.DataFrame, a, frozen, cache: Path) -> pd.DataFrame:
+    """Igual que ``h11.run_cases`` sobre todo el manifiesto, pero caso a caso y guardando cada uno en ``cache``.
+
+    ``cache`` es JSON por líneas (conserva tipos, listas y NaN). Es propia de una calibración y un perfil: la
+    primera línea lo dice y se comprueba. Las filas se devuelven en el orden del manifiesto y solo las de sus
+    casos (una caché con más casos sirve, p. ej. la del manifiesto de sensibilidad).
+    """
+    stamp = f"frozen={a.frozen or 'v04'} profile={a.profile}"
+    if cache.exists():
+        found, done = _read_cache(cache)
+        if found != stamp:
+            raise SystemExit(f"la caché {cache} es de otra calibración: {found!r} frente a {stamp!r}")
+    else:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_bytes((json.dumps({"stamp": stamp}) + "\n").encode("utf-8"))
+        done = []
+    have = {(r["image"], r["structure"]) for r in done}
+    todo = manifest[[k not in have for k in zip(manifest["image"], manifest["structure"])]]
+    for i, (_, case) in enumerate(todo.iterrows(), 1):
+        rows = h11.run_cases(case.to_frame().T, root=a.root, profile=a.profile, frozen=frozen)
+        with cache.open("ab") as f:
+            for r in rows.to_dict("records"):
+                rec = {"image": case["image"], **{k: _plain(v) for k, v in r.items()}}
+                f.write((json.dumps(rec, ensure_ascii=False) + "\n").encode("utf-8"))
+        print(f"[{i}/{len(todo)}] {case['structure']} {case['image']}", flush=True)
+    _, done = _read_cache(cache)
+    by_key: dict = {}
+    for r in done:
+        by_key.setdefault((r["image"], r["structure"]), []).append({k: v for k, v in r.items() if k != "image"})
+    out = [r for k in zip(manifest["image"], manifest["structure"]) for r in by_key[k]]
+    return pd.DataFrame(out)
+
+
 def main():
     warnings.filterwarnings("ignore")
     ap = argparse.ArgumentParser()
@@ -38,6 +86,8 @@ def main():
     ap.add_argument("--frozen", default=None, help="modelos congelados de H12 (por defecto: los de v0.4)")
     ap.add_argument("--profile", default="realistic")
     ap.add_argument("--tag", default="v04", help="sufijo de los archivos de salida (p. ej. v04 o h12)")
+    ap.add_argument("--cache", default=None,
+                    help="JSONL donde se guarda cada caso al terminarlo; al relanzar, los ya hechos no se repiten")
     a = ap.parse_args()
 
     man_path = Path(a.manifest)
@@ -50,11 +100,14 @@ def main():
         frozen, calib = load_frozen(), {"source": "paquete: geovida/frozen/h9_frozen.json"}
 
     state = git_state()
-    df = h11.run_cases(manifest, root=a.root, profile=a.profile, frozen=frozen)
-    verdicts = h11.evaluate_h11(df)
-
     out = Path("results/summary")
     out.mkdir(parents=True, exist_ok=True)
+    if a.cache:
+        df = _run_cached(manifest, a, frozen, Path(a.cache))
+    else:
+        df = h11.run_cases(manifest, root=a.root, profile=a.profile, frozen=frozen)
+    verdicts = h11.evaluate_h11(df)
+
     df.to_csv(out / f"h11_{a.tag}_cases.csv", index=False)
     meta = {"generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(), "git_commit": state["commit"],
             "code_dirty": state["dirty_code"], "manifest": man_path.name, "manifest_sha256": _sha256(man_path),
