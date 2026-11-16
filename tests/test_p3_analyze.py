@@ -64,7 +64,7 @@ def test_confirm_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
     pd.DataFrame({"unit": ["1", "2"], "group": ["delgada", "compacta"], "log_volume": [1.0, 2.0],
                   "d_over_hgeo": [1.0, 3.0]}).to_csv(tmp_path / "g.csv", index=False)
 
-    def fake_maps(sid, data_dir, memos_dir, rule="nearest", pad=0):
+    def fake_maps(sid, data_dir, memos_dir, rule="nearest", pad=0, memos_as_b=None):
         a = np.zeros((40, 40, 40), np.int16)
         r = 9 + rng.normal(0, 1)
         g = np.indices(a.shape)
@@ -77,11 +77,20 @@ def test_confirm_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
 
     monkeypatch.setattr(pa, "_specimen_maps", fake_maps)
     monkeypatch.setattr(pa.p3_data, "P3_STRUCTURES", (1, 2))
+    x4 = tmp_path / "x4"
+    x4.mkdir()
+    for s in ids[:4]:
+        np.savez(x4 / f"{s}_memos.npz", labels=np.zeros(1), box=np.zeros((3, 2)))
+    meta = tmp_path / "meta.csv"
+    pd.DataFrame({"Biosample": ids, "Sex": ["F", "M"] * 3}).to_csv(meta, index=False)
     out = tmp_path / "res" / "confirm.json"
     assert pa.main(["confirm", "--data", str(data), "--memos", str(memos), "--groups", str(tmp_path / "g.csv"),
-                    "--ids", str(sel), "--out", str(out), "--n-boot", "20"]) == 0
+                    "--ids", str(sel), "--out", str(out), "--n-boot", "20", "--metadata", str(meta),
+                    "--memos-x4", str(x4)]) == 0
     s = json.loads(out.read_text(encoding="utf-8"))
     assert s["specimens"] == ids and s["missing"] == ["falta"] and s["non_rigid_D5"] == ["s0"]
+    assert s["exploratory_sex"] and s["exploratory_x4"]["n_specimens"] == 4
+    assert set(pd.read_csv(out.with_suffix(".sex.csv"))["variant"]) == {"sex_F", "sex_M"}
     assert s["primary"]["verdict_a"] == "no_evaluable"  # menos de 8 unidades por grupo
     for suffix in (".conditions.csv", ".agreement.csv", ".agreement_summary.csv", ".units.csv", ".tau.csv",
                    ".mixed.csv", ".exploratory.csv", ".conditions_exact.csv"):
