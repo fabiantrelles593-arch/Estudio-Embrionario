@@ -103,14 +103,82 @@ def render(pre: dict, cmp: pd.DataFrame, groups: pd.DataFrame | None, analysis: 
     return "\n".join(out)
 
 
+VERDICT_TEXT = {"apoyada": "apoyada", "contraria": "contraria", "no_concluyente": "no concluyente",
+                "no_apoyada": "no apoyada", "no_evaluable": "no evaluable",
+                "no_interpretable_D1": "no interpretable (regla de D1)"}
+
+
+def _ci(pair, nd=3) -> str:
+    lo, hi = pair
+    return f"{_f(lo, nd)} a {_f(hi, nd)}"
+
+
+def _order(o: dict | None) -> str:
+    if not o:
+        return "—"
+    return f"ρ = {_f(o['rho'], 2)} en {o['n_structures']} estructuras → {'coinciden' if o['agree'] else '**discrepan**'} (umbral 0,7)"
+
+
+def render_confirm(summary: dict, agreement: pd.DataFrame | None = None) -> str:
+    """Informe confirmatorio a partir de ``confirmatorio.json`` (``p3_analyze.py confirm``) y su
+    ``.agreement_summary.csv``. Los veredictos son los del código preregistrado; aquí solo se transcriben."""
+    p, e, v = summary["primary"], summary["exact_D1"], summary["verdicts_after_D1"]
+    out = ["# P3 — Informe confirmatorio (generado por `scripts/p3_report.py`)", "",
+           f"- Especímenes analizados: **{p['n_specimens']}**; ausentes: "
+           f"{', '.join(summary['missing']) if summary['missing'] else 'ninguno'}.",
+           f"- Unidades por grupo: {', '.join(f'{k}: {n}' for k, n in sorted(p['n_units'].items()))}; "
+           f"bootstrap {p['n_boot']} réplicas, semilla {p['seed']}.", "",
+           "## Veredictos preregistrados (regla `nearest`, valor log-volumen)", "",
+           "| Hipótesis | Estadístico | IC 95 % | Veredicto | Con regla `exact` (D1) | Veredicto tras D1 |",
+           "|---|---|---|---|---|---|",
+           f"| H-P3a | Δ = {_f(p['delta'], 3)} | {_ci(p['delta_ci'])} | {VERDICT_TEXT[p['verdict_a']]} | "
+           f"Δ = {_f(e['delta'], 3)} → {VERDICT_TEXT[e['verdict_a']]} | **{VERDICT_TEXT[v['verdict_a']]}** |",
+           f"| H-P3b | ρ = {_f(p['rho'], 3)}; ρ parcial = {_f(p['rho_partial'], 3)} | {_ci(p['rho_partial_ci'])} (ρ parcial) | "
+           f"{VERDICT_TEXT[p['verdict_b']]} | ρ = {_f(e['rho'], 3)} → {VERDICT_TEXT[e['verdict_b']]} | "
+           f"**{VERDICT_TEXT[v['verdict_b']]}** |", "",
+           "## Concordancia de órdenes", "",
+           f"- τ con `nearest` frente a `exact` (D1): {_order(summary['order_tau_vs_exact_D1'])}.",
+           f"- τ por varianzas frente a modelo mixto: {_order(summary['order_tau_vs_mixed'])}; "
+           f"modelos mixtos convergidos: {summary['mixed_converged']}.", ""]
+    nr = summary.get("non_rigid_D5", [])
+    out += ["## H-P3c — acuerdo atlas frente a MEMOS (descriptivo, no es validación)", "",
+            f"- Marcados como no rígidos (D5): {len(nr)}" + (f" ({', '.join(f'`{s}`' for s in nr)})." if nr else "."), ""]
+    if agreement is not None and len(agreement):
+        out += ["| Forma | Estructuras | Dice (mediana de medianas) | HD95 mm | ASSD mm | Dif. relativa de volumen |",
+                "|---|---|---|---|---|---|"]
+        label = {"a": "(a) sin trasladar", "b": "(b) con traslación (principal)", "b_rigid": "(b) sin no rígidos (D5)"}
+        for form, g in agreement.groupby("form", sort=False):
+            out.append(f"| {label.get(form, form)} | {len(g)} | {_f(g['dice'].median())} | {_f(g['hd95'].median())} | "
+                       f"{_f(g['assd'].median())} | {_f(g['vol_diff_rel'].median())} |")
+        out.append("")
+    x4 = summary.get("exploratory_x4")
+    out += ["## Exploratorios (no confirmatorios)", "",
+            f"- Por sexo: {'calculado (`.sex.csv`)' if summary.get('exploratory_sex') else 'no calculado'}.",
+            "- MEMOS a ×4: " + (f"{x4['n_specimens']} especímenes; orden de τ frente a ×4: {_order(x4['order_tau_vs_x4'])}."
+                                 if x4 else "no calculado."),
+            f"- Tiempo: principal {_f(summary['seconds_main'], 0)} s; pasada `exact` {_f(summary['seconds_exact'], 0)} s.", ""]
+    return "\n".join(out)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--memos", required=True)
+    ap.add_argument("--confirm", help="confirmatorio.json: genera el informe confirmatorio en lugar del del piloto")
+    ap.add_argument("--memos")
     ap.add_argument("--selection", default="results/p3/seleccion.json")
     ap.add_argument("--groups")
     ap.add_argument("--analysis")
     ap.add_argument("--out", required=True)
     a = ap.parse_args(argv)
+    if a.confirm:
+        path = Path(a.confirm)
+        agr_path = path.with_suffix(".agreement_summary.csv")
+        text = render_confirm(json.loads(path.read_text(encoding="utf-8")),
+                              pd.read_csv(agr_path) if agr_path.exists() else None)
+        Path(a.out).write_text(text + "\n", encoding="utf-8")
+        print(text)
+        return 0
+    if not a.memos:
+        ap.error("--memos es obligatorio para el informe del piloto")
     memos = Path(a.memos)
     ids = json.loads(Path(a.selection).read_text(encoding="utf-8"))["pilot"]
     run = json.loads((memos / "memos_run.json").read_text(encoding="utf-8"))
