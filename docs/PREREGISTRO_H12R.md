@@ -87,3 +87,5 @@ Un valor no calculable es «no evaluable», nunca «no apoyada».
   promediar ángulos». Es inexacto: en el simulador `us_raw` promedia 3 «miradas» de moteado y
   `us_compound` promedia 8. Se corrigió la descripción; la elección de `us_raw` como perfil primario y
   todos los criterios no cambian.
+* 2026-11-16 (tras la ficha, antes de medir): manifiesto, exclusiones, identidad del embrión y sensibilidad
+  de vóxel según la desviación D1 de `PREREGISTRO_H11.md`; se aplican igual aquí.
