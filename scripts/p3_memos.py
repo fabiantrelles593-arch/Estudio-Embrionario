@@ -280,6 +280,38 @@ def label_agreement(atlas: np.ndarray, memos: np.ndarray, t, sl=(slice(None),) *
     return float((a[fg] == memos[sl][fg]).mean()) if fg.any() else math.nan
 
 
+class _ShiftAgreement:
+    """`label_agreement` para muchas traslaciones sin desplazar el volumen entero en cada una.
+
+    Recorre solo los vóxeles con etiqueta del atlas: el vóxel `q` del atlas cae en `(q + t) mod forma`, y cuenta si
+    ese destino está en `[lo, hi)` sobre el eje `ax`. Da exactamente el mismo cociente (mismos aciertos sobre los
+    mismos vóxeles) que `label_agreement(atlas, memos, t, sl)` con `sl[ax] = slice(lo, hi)` y los otros ejes enteros.
+    `ax_shifts` limita de antemano los vóxeles a los que pueden caer en `[lo, hi)` con alguno de esos desplazamientos.
+    """
+
+    def __init__(self, atlas: np.ndarray, memos: np.ndarray, ax: int, lo: int, hi: int, ax_shifts):
+        self.shape = atlas.shape
+        self.ax, self.lo, self.hi = ax, lo, hi
+        q = np.nonzero(atlas)
+        n = self.shape[ax]
+        near = np.zeros(q[ax].shape, bool)
+        for s in set(int(v) for v in ax_shifts):
+            d = (q[ax] + s) % n
+            near |= (d >= lo) & (d < hi)
+        self.q = [i[near].astype(np.int64) for i in q]
+        self.labels = atlas[q][near]
+        self.memos = memos.ravel()
+
+    def __call__(self, t) -> float:
+        n = self.shape
+        p = [(self.q[i] + int(t[i])) % n[i] for i in range(3)]
+        keep = (p[self.ax] >= self.lo) & (p[self.ax] < self.hi)
+        if not keep.any():
+            return math.nan
+        flat = (p[0][keep] * n[1] + p[1][keep]) * n[2] + p[2][keep]
+        return float((self.memos[flat] == self.labels[keep]).mean())
+
+
 def local_translations(atlas: np.ndarray, memos: np.ndarray, center, n_parts: int = 3, rad: int = 20) -> dict:
     """Traslación del atlas que mejor coincide con MEMOS en cada parte del cuerpo (desviación D5).
 
@@ -302,12 +334,13 @@ def local_translations(atlas: np.ndarray, memos: np.ndarray, center, n_parts: in
         sl[ax] = slice(int(edges[k]), int(edges[k + 1]))
         sl2[ax] = slice(int(edges[k]) // 2, int(edges[k + 1]) // 2)
         sl, sl2 = tuple(sl), tuple(sl2)
+        coarse = _ShiftAgreement(a2, m2, ax, *sl2[ax].indices(a2.shape[ax])[:2], [c2[ax] + d for d in r2])
         best = (-1.0, tuple(c2))
         for dz in r2:
             for dy in r2:
                 for dx in r2:
                     t = (c2[0] + dz, c2[1] + dy, c2[2] + dx)
-                    v = label_agreement(a2, m2, t, sl2)
+                    v = coarse(t)  # = label_agreement(a2, m2, t, sl2), sin desplazar el volumen
                     if v > best[0]:
                         best = (v, t)
         c = [2 * v for v in best[1]]
