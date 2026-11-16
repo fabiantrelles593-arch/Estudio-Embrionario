@@ -32,7 +32,7 @@ import pandas as pd
 from scipy.stats import rankdata
 
 from .budget import feature_value, p_volume_ok
-from .measure import _mean_depth, measure_mask
+from .measure import _area_sdf, _mean_depth
 from .scaleaxis import block_mean
 
 FACTORS = (1, 2, 4)
@@ -102,6 +102,57 @@ def _aligned_box(mask: np.ndarray, block: int = max(FACTORS), margin: int = 1):
     return tuple(box)
 
 
+def label_boxes(lab: np.ndarray, labels: Iterable[int], block: int = max(FACTORS), margin: int = 1) -> dict:
+    """``_aligned_box(lab == s)`` para todas las etiquetas a la vez, con una sola pasada (``ndimage.find_objects``).
+
+    Evita crear una máscara del volumen completo por estructura: en especímenes de 10⁸ vóxeles y 4 GB de RAM,
+    eso obligaba a paginar. Devuelve {etiqueta: caja o None}; las cajas son idénticas a las de ``_aligned_box``.
+    """
+    from scipy import ndimage as ndi
+
+    lab = np.asarray(lab)
+    if lab.dtype.kind not in "iu":
+        raise ValueError("el mapa de etiquetas debe ser entero")
+    labels = [int(s) for s in labels]
+    top = max([s for s in labels if s > 0] or [0])
+    objs = ndi.find_objects(lab, max_label=top) if top else []  # las etiquetas > top se ignoran
+    out = {}
+    for s in labels:
+        sl = objs[s - 1] if 0 < s <= len(objs) else None
+        if sl is None:
+            out[s] = None
+            continue
+        box = []
+        for ax, d in enumerate(sl):
+            lo = max(0, (d.start // block - margin) * block)
+            hi = min(lab.shape[ax], ((d.stop - 1) // block + 1 + margin) * block)
+            box.append(slice(lo, hi))
+        out[s] = tuple(box)
+    return out
+
+
+def p3_measure(mask, spacing, depth: bool = False) -> dict:
+    """Solo las medidas que usa P3: volumen, ``area_sdf``, b0 (conectividad 26) y, si ``depth``, ``d_mean``.
+
+    Da exactamente los mismos valores que ``measure_mask`` para esas claves (lo comprueba una prueba), sin
+    calcular ``area_mc``, ``area_faces`` ni la topología completa, que P3 no usa y que en 4 GB de RAM triplicaban
+    el tiempo por espécimen.
+    """
+    from scipy import ndimage as ndi
+
+    mask = np.asarray(mask, dtype=bool)
+    sp = np.asarray(spacing, dtype=float)
+    out = {"volume": float(mask.sum() * np.prod(sp))}
+    if not mask.any():
+        out.update(area_sdf=0.0, b0_26=0, d_mean=0.0)
+        return out
+    out["area_sdf"] = _area_sdf(mask, sp)
+    out["b0_26"] = int(ndi.label(mask, structure=ndi.generate_binary_structure(3, 3))[1])
+    if depth:
+        out["d_mean"] = _mean_depth(mask, sp)
+    return out
+
+
 def specimen_rows(specimen, labelmaps: Mapping[str, np.ndarray], spacing, labels: Iterable[int],
                   factors=FACTORS, cert_segmenter: str | None = None) -> list[dict]:
     """Filas de medida de un espécimen: una por segmentador × estructura × factor."""
@@ -114,14 +165,15 @@ def specimen_rows(specimen, labelmaps: Mapping[str, np.ndarray], spacing, labels
     rows = []
     for seg, lab in labelmaps.items():
         lab = np.asarray(lab)
+        boxes = label_boxes(lab, labels)
         for s in labels:
-            full = lab == s
-            box = _aligned_box(full)
+            box = boxes[s]
+            crop = None if box is None else lab[box] == s
             for k in factors:
                 if box is None:
                     meas = {"volume": 0.0, "area_sdf": 0.0, "b0_26": 0}
                 else:
-                    meas = measure_mask(degrade_mask(full[box], k), sp * k)
+                    meas = p3_measure(degrade_mask(crop, k), sp * k, depth=(seg == cert_segmenter and k == 1))
                 v = float(meas["volume"])
                 row = {"specimen": str(specimen), "structure": s, "segmenter": str(seg), "factor": int(k),
                        "volume": v, "log_volume": math.log(v) if v > 0 else math.nan,
