@@ -1,0 +1,403 @@
+{
+ "pipeline": {
+  "image": "20170320_En1_E11_E1a.nii",
+  "embryo_id": "20170320_E11_E1",
+  "slice_z": 77,
+  "spacing_mm": [
+   0.05000000074505806,
+   0.05000000074505806,
+   0.05000000074505806
+  ],
+  "shape": [
+   180,
+   221,
+   141
+  ],
+  "slice_2d_reference_body": {
+   "area_mm2": 20.02500059679151,
+   "perimeter_mm": 24.327352875014185,
+   "b0": 2,
+   "b1": 0,
+   "circularity": 0.42519944818136896,
+   "solidity": 0.9325263662511984,
+   "eccentricity": 0.915965041396353,
+   "aspect_ratio": 2.49216168277501,
+   "length_mm": 8.053596861850355,
+   "width_mm": 3.231570775489459,
+   "hu": [
+    0.24194663232870173,
+    0.03056921605078784,
+    2.3338296725665177e-06
+   ]
+  },
+  "volume_3d_reference_body": {
+   "volume_mm3": 57.33325256299604,
+   "area_sdf_mm2": 113.48628825345321,
+   "area_crofton_mm2": 112.87893873868795,
+   "betti26": [
+    1,
+    11,
+    1
+   ],
+   "chi26": -9,
+   "betti6": [
+    2,
+    6,
+    0
+   ],
+   "chi6": -4,
+   "voxels": 458666
+  },
+  "volume_3d_reference_ventricle": {
+   "volume_mm3": 4.100125183289873,
+   "area_sdf_mm2": 26.376035804554878,
+   "area_crofton_mm2": 25.824372721879804,
+   "betti26": [
+    1,
+    0,
+    0
+   ],
+   "chi26": 1,
+   "betti6": [
+    1,
+    0,
+    0
+   ],
+   "chi6": 1,
+   "voxels": 32801
+  },
+  "volume_3d_segmented": {
+   "global": {
+    "volume_mm3": 701.1082813419816,
+    "area_sdf_mm2": 479.1611025349637,
+    "area_crofton_mm2": 445.1311452348465,
+    "betti26": [
+     1,
+     0,
+     0
+    ],
+    "chi26": 1,
+    "betti6": [
+     1,
+     0,
+     0
+    ],
+    "chi6": 1,
+    "voxels": 5608866
+   },
+   "otsu": {
+    "volume_mm3": 308.8560138069393,
+    "area_sdf_mm2": 2042.993838879564,
+    "area_crofton_mm2": 2533.4766111244567,
+    "betti26": [
+     4865,
+     27000,
+     34981
+    ],
+    "chi26": 12846,
+    "betti6": [
+     18065,
+     36080,
+     7280
+    ],
+    "chi6": -10735,
+    "voxels": 2470848
+   },
+   "smoothed_otsu": {
+    "volume_mm3": 316.89338916623797,
+    "area_sdf_mm2": 900.21510651672,
+    "area_crofton_mm2": 893.5705017941424,
+    "betti26": [
+     201,
+     413,
+     235
+    ],
+    "chi26": 23,
+    "betti6": [
+     253,
+     429,
+     143
+    ],
+    "chi6": -33,
+    "voxels": 2535147
+   }
+  }
+ },
+ "h11_case": [
+  {
+   "structure": "body",
+   "segmenter": "global",
+   "volume_mm3_measured": 701.1082813419816,
+   "volume_mm3_reference": 57.33325256299604,
+   "rel_error_volume": 11.228650041642505,
+   "dice": 0.15118700651269742,
+   "betti_measured": [
+    1,
+    0,
+    0
+   ],
+   "betti_reference": [
+    1,
+    11,
+    1
+   ],
+   "p_volume": 0.9999999998548295,
+   "light_volume": "amarillo",
+   "light_volume_without_guard": "verde",
+   "in_domain_volume": false,
+   "light_topology": "amarillo",
+   "d_over_hgeo": 21.466926047986306
+  },
+  {
+   "structure": "body",
+   "segmenter": "otsu",
+   "volume_mm3_measured": 308.8560138069393,
+   "volume_mm3_reference": 57.33325256299604,
+   "rel_error_volume": 4.387031085800996,
+   "dice": 0.20039774515499842,
+   "betti_measured": [
+    4865,
+    27000,
+    34981
+   ],
+   "betti_reference": [
+    1,
+    11,
+    1
+   ],
+   "p_volume": 0.9999920806647676,
+   "light_volume": "amarillo",
+   "light_volume_without_guard": "verde",
+   "in_domain_volume": false,
+   "light_topology": "amarillo",
+   "d_over_hgeo": 2.9971677325238235
+  },
+  {
+   "structure": "body",
+   "segmenter": "smoothed_otsu",
+   "volume_mm3_measured": 316.89338916623797,
+   "volume_mm3_reference": 57.33325256299604,
+   "rel_error_volume": 4.527218062816951,
+   "dice": 0.21913993960210607,
+   "betti_measured": [
+    201,
+    413,
+    235
+   ],
+   "betti_reference": [
+    1,
+    11,
+    1
+   ],
+   "p_volume": 0.9999999877001927,
+   "light_volume": "amarillo",
+   "light_volume_without_guard": "verde",
+   "in_domain_volume": false,
+   "light_topology": "rojo",
+   "d_over_hgeo": 5.977771119568203
+  },
+  {
+   "structure": "ventricle",
+   "segmenter": "global",
+   "volume_mm3_measured": 131.73300588892408,
+   "volume_mm3_reference": 4.100125183289873,
+   "rel_error_volume": 31.129020456693393,
+   "dice": 0.060370031242379205,
+   "betti_measured": [
+    1,
+    0,
+    0
+   ],
+   "betti_reference": [
+    1,
+    0,
+    0
+   ],
+   "p_volume": 0.9999999953782626,
+   "light_volume": "amarillo",
+   "light_volume_without_guard": "verde",
+   "in_domain_volume": false,
+   "light_topology": "rojo",
+   "d_over_hgeo": 12.395424836601306
+  },
+  {
+   "structure": "ventricle",
+   "segmenter": "otsu",
+   "volume_mm3_measured": 59.5726276631039,
+   "volume_mm3_reference": 4.100125183289873,
+   "rel_error_volume": 13.529465565074235,
+   "dice": 0.00036122202983222807,
+   "betti_measured": [
+    1508,
+    6128,
+    10813
+   ],
+   "betti_reference": [
+    1,
+    0,
+    0
+   ],
+   "p_volume": 0.8916798427124505,
+   "light_volume": "amarillo",
+   "light_volume_without_guard": "amarillo",
+   "in_domain_volume": false,
+   "light_topology": "rojo",
+   "d_over_hgeo": 0.9899189091747564
+  },
+  {
+   "structure": "ventricle",
+   "segmenter": "smoothed_otsu",
+   "volume_mm3_measured": 62.8093778077979,
+   "volume_mm3_reference": 4.100125183289873,
+   "rel_error_volume": 14.318892716685465,
+   "dice": 0.0,
+   "betti_measured": [
+    55,
+    80,
+    36
+   ],
+   "betti_reference": [
+    1,
+    0,
+    0
+   ],
+   "p_volume": 0.9999691312911003,
+   "light_volume": "amarillo",
+   "light_volume_without_guard": "verde",
+   "in_domain_volume": false,
+   "light_topology": "rojo",
+   "d_over_hgeo": 3.190177269090831
+  }
+ ],
+ "resolution": [
+  {
+   "volume_mm3": 57.33325256299604,
+   "area_sdf_mm2": 113.48628881382241,
+   "area_crofton_mm2": 112.87893873868795,
+   "betti26": [
+    1,
+    11,
+    1
+   ],
+   "chi26": -9,
+   "betti6": [
+    2,
+    6,
+    0
+   ],
+   "chi6": -4,
+   "voxels": 458666,
+   "factor": 1,
+   "voxel_um": 50.00000074505806
+  },
+  {
+   "volume_mm3": 56.47700252471868,
+   "area_sdf_mm2": 105.84478943295292,
+   "area_crofton_mm2": 104.63620018250303,
+   "betti26": [
+    1,
+    5,
+    0
+   ],
+   "chi26": -4,
+   "betti6": [
+    1,
+    3,
+    0
+   ],
+   "chi6": -2,
+   "voxels": 56477,
+   "factor": 2,
+   "voxel_um": 100.00000149011612
+  },
+  {
+   "volume_mm3": 57.25687755958181,
+   "area_sdf_mm2": 102.76380609403463,
+   "area_crofton_mm2": 101.77831201517792,
+   "betti26": [
+    1,
+    4,
+    0
+   ],
+   "chi26": -3,
+   "betti6": [
+    1,
+    3,
+    0
+   ],
+   "chi6": -2,
+   "voxels": 16965,
+   "factor": 3,
+   "voxel_um": 150.00000223517418
+  },
+  {
+   "volume_mm3": 56.92000254452232,
+   "area_sdf_mm2": 99.62219641361602,
+   "area_crofton_mm2": 98.88657639929927,
+   "betti26": [
+    1,
+    4,
+    0
+   ],
+   "chi26": -3,
+   "betti6": [
+    1,
+    0,
+    0
+   ],
+   "chi6": 1,
+   "voxels": 7115,
+   "factor": 4,
+   "voxel_um": 200.00000298023224
+  }
+ ],
+ "euler": [
+  {
+   "name": "Región sin agujeros",
+   "dim": 2,
+   "betti": [
+    1,
+    0
+   ],
+   "chi": 1
+  },
+  {
+   "name": "Dos componentes",
+   "dim": 2,
+   "betti": [
+    2,
+    0
+   ],
+   "chi": 2
+  },
+  {
+   "name": "Un ciclo (anillo)",
+   "dim": 2,
+   "betti": [
+    1,
+    1
+   ],
+   "chi": 0
+  },
+  {
+   "name": "Túnel (toro)",
+   "dim": 3,
+   "betti": [
+    1,
+    1,
+    0
+   ],
+   "chi": 0
+  },
+  {
+   "name": "Cavidad cerrada (cáscara)",
+   "dim": 3,
+   "betti": [
+    1,
+    0,
+    1
+   ],
+   "chi": 2
+  }
+ ]
+}
