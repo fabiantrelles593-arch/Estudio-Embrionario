@@ -22,10 +22,12 @@ dentro: la tecla **G** lo muestra lámina por lámina.
 | 7 | **Demostración 2: la prueba de que funciona** (200 objetos al azar) | 2 min |
 | 8–10 | Demostraciones 3, 4 y 5: volumen y forma, crecimiento 4D, eje de escala | 3 min |
 | 11 | El programa real en Python (salida de `geovida plan` y `geovida certify`) | 1 min |
-| 12–14 | Resultados, lo que salió mal, límites | 2 min |
-| 15 | Impacto y siguiente paso | 1 min |
-| 16–18 | Glosario, cuestionario, preguntas del jurado: para estudio o para el turno de preguntas | — |
-| 19 | Cierre | 1 min |
+| 12 | Resultados sintéticos (H1–H10) | 1 min |
+| 13 | **Datos reales**: P3, ONTO-MAP y H11 | 2 min |
+| 14–15 | Lo que salió mal, límites | 1,5 min |
+| 16 | Impacto y siguiente paso | 1 min |
+| 17–19 | Glosario, cuestionario, preguntas del jurado: para estudio o para el turno de preguntas | — |
+| 20 | Cierre | 1 min |
 
 (Los números de lámina pueden cambiar si el mazo se amplía; los títulos de la barra inferior son
 la referencia.)
@@ -60,6 +62,26 @@ la referencia.)
   perdió no se ven).
 * Todo es sintético. Detalle y tablas: `docs/RESULTADOS_V04.md`.
 
+## Qué decir de los datos reales (lámina 13)
+
+Estado al 16 nov 2026. Si para la exposición ya salió algún veredicto, se cita de su documento de
+resultados y no de memoria.
+
+* **La regla primero:** con datos reales no se conoce la verdad. Se mide acuerdo entre métodos y
+  estabilidad, no exactitud. Datos animales públicos con licencia CC BY; ningún dato humano.
+* **P3 (micro-CT de ratón, MusMorph/IMPC, E15.5):** piloto de 20 especímenes. Los 40 archivos
+  llegaron con su MD5 comprobado y el flujo funciona de principio a fin. El piloto encontró dos
+  problemas en los datos publicados: segmentaciones interpoladas (28–32 % de vóxeles mezclados) y
+  4 de 20 desplazadas 0,5–0,6 mm respecto a su imagen. El confirmatorio (60 especímenes) estaba
+  midiendo; **sin veredicto todavía**. Las cifras del piloto no son resultados de P3.
+* **ONTO-MAP (landmarks de cabeza, E15.5 → E18.5, 259 + 458 especímenes):** las tres hipótesis
+  salieron contrarias (θ = 84,5°, IC 79,3°–89,5°; el criterio era < 45°). Cada estadio tiene su propio
+  atlas, así que no se atribuye a la biología. El método ya existía (revisión de originalidad): es
+  una réplica con un resultado negativo, no un hallazgo.
+* **H11 (ecografía 3D real de ratón, Qiu et al. 2021):** 180 casos de cuerpo (170 embriones) y 216
+  de ventrículo (203). La desviación D1 se escribió antes de medir. **Medición en curso; sin
+  veredicto.**
+
 ## Frases que no conviene decir
 
 «Primer método» o «nunca antes» (no lo sabemos: solo no encontramos algo igual); «validado» a secas
@@ -69,9 +91,15 @@ detectan); «5D» (en bioimagen ya significa otra cosa: aquí es un eje de escal
 
 ## Preguntas del jurado
 
-* **¿Lo probaste con embriones reales?** No. Solo con formas matemáticas y un simulador de imagen,
-  porque solo así se conoce la respuesta correcta. Siguiente paso: imágenes públicas con licencia.
-  Una imagen de una persona solo con consentimiento, anonimización y aprobación ética.
+* **¿Lo probaste con embriones reales?** El semáforo se confirmó solo con formas matemáticas y un
+  simulador, porque solo así se conoce la respuesta correcta. Con embriones reales de ratón (bases
+  públicas, CC BY) hay un piloto de micro-CT que funcionó de principio a fin, un análisis de forma
+  con 717 especímenes que salió negativo y dos mediciones en curso sin veredicto. Ningún dato humano:
+  exigiría consentimiento, anonimización y aprobación ética.
+* **¿Por qué presentas un resultado negativo?** Las hipótesis de ONTO-MAP se escribieron antes de
+  mirar los datos y salieron contrarias; ocultarlo sería elegir resultados. Y enseñó algo: con un
+  atlas distinto por estadio no se separa la biología del procesamiento, que es la pregunta de
+  MORPHO-TRACE.
 * **¿Cómo sabes que el semáforo funciona?** Se calibró con unas imágenes y se comprobó con 50 400
   que no había visto, con el criterio escrito antes: en verde se equivocó entre 0,4 % y 2,6 %.
   El de topología se comprobó con otras 18 900: en verde, como máximo 7,0 %. La demostración 2
@@ -86,5 +114,5 @@ detectan); «5D» (en bioimagen ya significa otra cosa: aquí es un eje de escal
 * **¿Lo hiciste tú?** Yo planteé el problema, dirigí las decisiones y revisé resultados. El código
   se desarrolló con asistencia de inteligencia artificial (Claude) y está declarado así en el
   repositorio. Aún no tiene revisión científica externa.
-* **¿Cuál es la parte más débil?** Que no hay datos reales ni revisión externa, y que un rasgo que
-  la imagen pierde por completo no se puede detectar.
+* **¿Cuál es la parte más débil?** Que con datos reales aún no hay ningún veredicto del semáforo,
+  que no hay revisión externa, y que un rasgo que la imagen pierde por completo no se puede detectar.
