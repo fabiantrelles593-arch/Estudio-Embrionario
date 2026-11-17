@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geometría de la Vida — exposición</title>
+<style>
+:root{
+  --bg:#060b12; --panel:#0c1520; --panel2:#101c2a; --line:#1c2a39; --fg:#e9eff5; --muted:#8e9cab;
+  --acc:#3fd0c9; --acc2:#f2a541; --acc3:#b69cff; --bad:#ff6b6b; --ok:#5ad37f; --mid:#f2c94c; --deep:#0b2a3d;
+  --sans:"Segoe UI",Inter,system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --mono:"Cascadia Mono",Consolas,"SFMono-Regular",Menlo,monospace;
+  --serif:"Cambria Math","Cambria","Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:var(--sans)}
+body{overflow:hidden}
+.slide{position:absolute;inset:0 0 56px 0;padding:40px 60px 24px;display:none;flex-direction:column;gap:16px;overflow:auto;
+  background:radial-gradient(1200px 600px at 85% -10%,rgba(63,208,201,.08),transparent 60%),
+             radial-gradient(900px 500px at -10% 110%,rgba(11,42,61,.55),transparent 60%),var(--bg)}
+body.present .slide{inset:0}
+.slide.on{display:flex;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.grid-bg{position:absolute;inset:0;pointer-events:none;opacity:.33;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:48px 48px;mask-image:radial-gradient(ellipse at 70% 30%,#000 10%,transparent 70%)}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--acc)}
+.eyebrow i{color:var(--muted);font-style:normal}
+h1{font-size:62px;line-height:1.02;margin:0;letter-spacing:-.02em;font-weight:700}
+h2{font-size:36px;line-height:1.12;margin:0;letter-spacing:-.01em;font-weight:650;max-width:1150px}
+h3{font-size:16px;margin:0 0 8px;color:var(--acc);font-weight:600;letter-spacing:.02em}
+p{margin:0;line-height:1.5;font-size:17.5px;color:#cfd8e1;max-width:1080px}
+.lead{font-size:21px;color:var(--fg)}
+.muted{color:var(--muted);font-size:14px}
+.src{color:var(--muted);font-size:12px;font-family:var(--mono);margin-top:auto}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.cols5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card p{font-size:15px}
+.card.hl{border-color:rgba(63,208,201,.5)}
+.kpi{font:700 42px/1 var(--sans);letter-spacing:-.02em}
+.kpi small{font-size:17px;color:var(--muted);font-weight:500}
+.kpi.acc{color:var(--acc)} .kpi.acc2{color:var(--acc2)}
+.kpi-l{margin-top:8px;font-size:14.5px;color:#cfd8e1;line-height:1.4}
+.tag{display:inline-block;font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.tag.acc{color:var(--acc);border-color:rgba(63,208,201,.4)} .tag.acc2{color:var(--acc2);border-color:rgba(242,165,65,.4)}
+.chip{display:inline-block;font:600 11px/1 var(--mono);padding:5px 8px;border-radius:6px;background:#162232;color:var(--muted);white-space:nowrap}
+.chip.ok{color:var(--ok)} .chip.mid{color:var(--mid)} .chip.bad{color:var(--bad)} .chip.fut{color:var(--acc3)}
+.st-done:before{content:"● ";color:var(--ok)} .st-run:before{content:"● ";color:var(--mid)} .st-fut:before{content:"○ ";color:var(--acc3)}
+.hv{font:700 10px/1 var(--mono);color:var(--acc);border:1px solid rgba(63,208,201,.35);padding:3px 5px;border-radius:4px;vertical-align:2px;margin-left:6px}
+.kind{font:700 10px/1 var(--mono);padding:4px 7px;border-radius:4px;letter-spacing:.06em;text-transform:uppercase}
+.kind.real{background:rgba(63,208,201,.15);color:var(--acc)} .kind.soft{background:rgba(242,165,65,.15);color:var(--acc2)}
+.kind.syn{background:rgba(182,156,255,.15);color:var(--acc3)} .kind.concept{background:#1a2532;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td.num{font-family:var(--mono);white-space:nowrap}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:36px;align-items:center;height:100%}
+.figure{margin:0;border-radius:14px;border:1px solid var(--line);overflow:hidden;background:#0b1016;position:relative}
+.figure img{display:block;width:100%;max-height:44vh;object-fit:contain;background:#0b1016;cursor:zoom-in}
+.figure figcaption{padding:9px 13px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
+.figure .kind{position:absolute;top:10px;right:10px}
+.bar{display:grid;grid-template-columns:230px 1fr 60px;gap:12px;align-items:center;margin:9px 0;font-size:15.5px}
+.bar .t{height:20px;background:#16202a;border-radius:6px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:linear-gradient(90deg,#2a3a48,#3c5266)}
+.bar.hl .t i{background:linear-gradient(90deg,var(--acc2),#ffcf7a)}
+.bar b{font-family:var(--mono);text-align:right}
+.flow{display:grid;gap:10px;counter-reset:s}
+.flow.n6{grid-template-columns:repeat(6,1fr)} .flow.n7{grid-template-columns:repeat(7,1fr)}
+.flow .st{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px;min-height:140px}
+.flow .st:before{counter-increment:s;content:"0" counter(s);font:700 12px/1 var(--mono);color:var(--acc);display:block;margin-bottom:9px}
+.flow .st b{display:block;font-size:15px;margin-bottom:6px}
+.flow .st span{font-size:13px;color:#b9c4ce;line-height:1.45;display:block}
+.flow .st em{display:block;margin-top:8px;font-style:normal}
+.flow .st:not(:last-child):after{content:"";position:absolute;right:-9px;top:50%;width:8px;height:2px;background:var(--acc)}
+.chain{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+.chain div{flex:1;min-width:140px;background:var(--panel);border:1px solid var(--line);padding:14px;border-radius:12px;position:relative;margin-right:18px}
+.chain div:not(:last-child):after{content:"→";position:absolute;right:-16px;top:40%;color:var(--acc);font-weight:700}
+.chain b{display:block;font-size:15px;margin-bottom:5px} .chain span{font-size:13px;color:#b9c4ce}
+.list{margin:0;padding:0;list-style:none;display:grid;gap:9px}
+.list li{padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:15px;line-height:1.45;color:#d3dbe3}
+.list li b{color:var(--fg)}
+.big-q{font-size:28px;line-height:1.3;color:var(--fg);max-width:1050px;border-left:3px solid var(--acc);padding-left:22px}
+.quote{font-size:26px;line-height:1.35;color:var(--fg);text-align:center;max-width:1000px;margin:6px auto;font-weight:500}
+.eq{font-family:var(--serif);font-size:30px;color:var(--fg);text-align:center;padding:10px 0;letter-spacing:.02em}
+.eq sub{font-size:.6em} .eq sup{font-size:.6em}
+.eq small{display:block;font-family:var(--sans);font-size:13px;color:var(--muted);letter-spacing:0;margin-top:4px}
+details{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 14px}
+details summary{cursor:pointer;font-weight:600;color:var(--acc);font-size:14.5px}
+details p,details li{font-size:14.5px;margin-top:8px}
+.atlas{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.spec{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:transform .15s,border-color .15s}
+.spec:hover{transform:translateY(-3px);border-color:var(--acc)}
+.spec .th{height:120px;background-size:cover;background-position:center}
+.spec .bd{padding:10px 12px} .spec .bd b{display:block;font-size:13.5px} .spec .bd span{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+.meta{display:grid;grid-template-columns:140px 1fr;gap:6px 14px;font-size:13.5px}
+.meta dt{color:var(--muted);font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.meta dd{margin:0;color:#d3dbe3;word-break:break-all}
+.lightbox{position:fixed;inset:0;background:rgba(3,6,9,.94);display:none;z-index:50;padding:36px;gap:24px;grid-template-columns:1fr 360px}
+.lightbox.on{display:grid}
+.lightbox img{max-width:100%;max-height:calc(100vh - 72px);border-radius:12px;border:1px solid var(--line);align-self:center;justify-self:center}
+.lightbox .side{align-self:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.lightbox .x{position:absolute;top:12px;right:20px;font:600 13px var(--mono);color:var(--muted);cursor:pointer}
+.viewer{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:radial-gradient(circle at 50% 40%,#10202e,#070c12);min-height:52vh}
+.viewer canvas{display:block;width:100%;height:100%}
+.viewer .hint{position:absolute;left:12px;bottom:10px;font:600 11px var(--mono);color:var(--muted)}
+.viewer .legend{position:absolute;right:12px;top:10px;font-size:12.5px;color:#cfd8e1;background:rgba(6,11,18,.7);padding:8px 10px;border-radius:8px;border:1px solid var(--line)}
+.dims{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dims .card{position:relative;padding-top:42px}
+.dims .card .badge{position:absolute;top:12px;left:16px}
+.dims .card .d{font:800 34px/1 var(--mono);color:var(--acc);position:absolute;top:10px;right:16px;opacity:.85}
+.arch{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.arch .card b{display:block;margin-bottom:6px}
+.arch code{font-family:var(--mono);font-size:12px;color:var(--acc)}
+.light{display:flex;gap:10px;align-items:center}
+.light i{width:22px;height:22px;border-radius:50%;display:inline-block;box-shadow:0 0 14px currentColor}
+nav{position:fixed;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:12px;padding:0 22px;border-top:1px solid var(--line);background:rgba(6,11,18,.94);z-index:10}
+body.present nav{opacity:0;transition:opacity .3s} body.present nav:hover{opacity:1}
+nav .brand{font:700 12px/1 var(--mono);letter-spacing:.2em}
+nav .brand i{color:var(--acc);font-style:normal}
+nav .sec{font:500 12px var(--mono);color:var(--muted)}
+nav .prog{flex:1;height:3px;background:#16202a;border-radius:2px;overflow:hidden}
+nav .prog i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+nav button{background:#101c2a;border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:7px 12px;font:600 12px var(--sans);cursor:pointer}
+nav button:hover{border-color:var(--acc)}
+.notes{position:fixed;left:22px;right:22px;bottom:66px;background:#0c1520;border:1px solid var(--acc);border-radius:12px;padding:13px 17px;font-size:15px;line-height:1.5;color:#dbe3ea;display:none;z-index:20;max-height:38vh;overflow:auto}
+.notes.on{display:block}
+.notes b{color:var(--acc);font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:6px}
+a.btn{display:inline-block;text-decoration:none;color:var(--bg);background:var(--acc);padding:9px 15px;border-radius:9px;font-weight:700;font-size:14px}
+@media (max-width:1100px){.slide{padding:26px 20px}.cols3,.cols4,.cols5,.atlas,.flow.n6,.flow.n7,.dims,.arch{grid-template-columns:1fr 1fr}.hero,.cols2{grid-template-columns:1fr}h1{font-size:42px}h2{font-size:27px}}
+@media print{body{overflow:visible}.slide{position:relative;display:flex;page-break-after:always;min-height:100vh}nav,.notes{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ============ 1. PORTADA ============ -->
+<section class="slide" data-sec="Portada" data-notes="Preséntate. Geometría de la Vida estudia con matemáticas y computación cómo cambia la forma de las estructuras durante el desarrollo embrionario, y dice para cada medida cuánto se puede confiar en ella. Aclara desde el inicio: es investigación en etapa preclínica con datos públicos de ratón; no es una herramienta clínica.">
+  <div class="grid-bg"></div>
+  <div class="hero">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <span class="eyebrow">Proyecto de investigación <i>· etapa preclínica</i></span>
+      <h1>GEOMETRÍA<br>DE LA VIDA</h1>
+      <p class="lead">Modelado computacional multiescala de las transformaciones morfológicas, topológicas y espacio-temporales durante el desarrollo embrionario y fetal.</p>
+      <div class="row"><span class="tag acc">datos reales de ratón</span><span class="tag">micro-CT · ecografía 3D · landmarks</span><span class="tag">código abierto · MIT</span><span class="tag acc2">investigación, no uso clínico</span></div>
+      <p class="muted">Fabián Trelles · Exposición del proyecto · noviembre de 2026 · teclas: ← → avanzar · G guion · P modo exposición · F pantalla completa</p>
+    </div>
+    <figure class="figure" style="justify-self:center;max-width:420px"><span class="kind real">dato real</span><img src="{{IMG:hero_0218}}" style="max-height:62vh" alt="Embrión de ratón E15.5 en micro-CT con su segmentación"><figcaption>Embrión de ratón E15.5, micro-CT a 27 µm, con su segmentación publicada. MusMorph/IMPC, FaceBase 3-JZA6, CC BY 4.0.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ============ 2. QUÉ ES ============ -->
+<section class="slide" data-sec="Qué es" data-notes="Recorre la cadena de izquierda a derecha. Lo importante: el proyecto trabaja sobre la forma. La forma es un efecto de mecanismos moleculares, celulares y mecánicos que la geometría por sí sola no explica. Termina leyendo la pregunta central: guía toda la exposición.">
+  <span class="eyebrow">¿Qué es Geometría de la Vida?</span>
+  <h2>Una plataforma para convertir imágenes del desarrollo en objetos matemáticos medibles</h2>
+  <div class="chain">
+    <div><b>Desarrollo biológico</b><span>Las estructuras cambian de forma, tamaño y organización.</span></div>
+    <div><b>Adquisición</b><span>Micro-CT, ecografía 3D, landmarks: imágenes y volúmenes.</span></div>
+    <div><b>Procesamiento digital</b><span>Lectura, calibración, segmentación.</span></div>
+    <div><b>Representación matemática</b><span>Máscaras, contornos, mallas, números de Betti.</span></div>
+    <div><b>Análisis computacional</b><span>Medidas, sensibilidad, certificado de confianza.</span></div>
+    <div><b>Interpretación</b><span>Con su incertidumbre y sus límites.</span></div>
+  </div>
+  <div class="cols2">
+    <div class="card"><h3>Lo que estudia</h3><p>La <b>forma</b>: geometría, morfometría y topología de estructuras embrionarias, y cuánto de una medida se debe al embrión y cuánto a la imagen.</p></div>
+    <div class="card"><h3>Lo que no pretende</h3><p>Explicar por sí sola los mecanismos moleculares, celulares y mecánicos que producen la forma. La geometría describe; la biología explica.</p></div>
+  </div>
+  <p class="big-q">¿Podemos describir y analizar matemáticamente las transformaciones de forma que experimentan las estructuras embrionarias durante su desarrollo?</p>
+</section>
+
+<!-- ============ 3. MUNDO ============ -->
+<section class="slide" data-sec="Importancia" data-notes="Cifras de la OMS. Unos 8 millones de bebés nacen cada año con un defecto congénito; 240 mil recién nacidos mueren por esa causa en su primer mes y 170 mil niños más antes de los 5 años. Nueve de cada diez casos graves ocurren en países de ingresos bajos y medios.">
+  <span class="eyebrow">Por qué importa · el mundo</span>
+  <h2>Las anomalías congénitas son una de las grandes causas de muerte infantil</h2>
+  <div class="cols4">
+    <div class="card"><div class="kpi acc">≈ 8 <small>millones</small></div><div class="kpi-l">de bebés nacen cada año con un defecto congénito.</div></div>
+    <div class="card"><div class="kpi">240 000</div><div class="kpi-l">recién nacidos mueren cada año por trastornos congénitos en sus primeros 28 días.</div></div>
+    <div class="card"><div class="kpi">170 000</div><div class="kpi-l">niños más mueren por esa causa entre el primer mes y los 5 años.</div></div>
+    <div class="card"><div class="kpi acc2">9 <small>de 10</small></div><div class="kpi-l">niños con un trastorno congénito grave nacen en países de ingresos bajos y medios.</div></div>
+  </div>
+  <div class="card"><p>Entre los graves más frecuentes: <b>cardiopatías congénitas</b>, <b>defectos del tubo neural</b> y <b>síndrome de Down</b>. Las anomalías estructurales se originan mientras se forman los órganos.</p></div>
+  <p class="src">OMS, nota «Congenital disorders», 27 feb 2023 · OMS, informe de junio de 2026 sobre tamizaje neonatal, citado por News-Medical (24 jun 2026).</p>
+</section>
+
+<!-- ============ 4. PERÚ ============ -->
+<section class="slide" data-sec="Importancia" data-notes="En el Perú, según la vigilancia del CDC-MINSA, hasta 2021 las malformaciones congénitas eran la tercera causa de muerte neonatal: 17 de cada 100. No se encontró un desglose nacional más reciente publicado; por eso se dice el año.">
+  <span class="eyebrow">Por qué importa · el Perú</span>
+  <h2>En el Perú, 17 de cada 100 muertes neonatales se deben a malformaciones congénitas</h2>
+  <div class="cols2" style="align-items:center">
+    <div class="card">
+      <h3>Causas de muerte neonatal (vigilancia CDC-MINSA, hasta 2021)</h3>
+      <div class="bar"><span>Prematuridad – inmadurez</span><div class="t"><i style="width:100%"></i></div><b>27 %</b></div>
+      <div class="bar"><span>Asfixia y causas del parto</span><div class="t"><i style="width:66.7%"></i></div><b>18 %</b></div>
+      <div class="bar hl"><span><b style="font-family:var(--sans);text-align:left">Malformaciones congénitas</b></span><div class="t"><i style="width:63%"></i></div><b>17 %</b></div>
+      <div class="bar"><span>Infecciones</span><div class="t"><i style="width:55.6%"></i></div><b>15 %</b></div>
+    </div>
+    <div class="card"><div class="kpi acc2">3.ª</div><div class="kpi-l">causa de muerte neonatal en el país. A diferencia de la prematuridad y la asfixia, estas anomalías se originan mientras se forman los órganos, mucho antes del parto. Para entenderlas hay que comparar la forma de embriones.</div></div>
+  </div>
+  <p class="src">CDC-MINSA, presentación en la Mesa de Concertación para la Lucha contra la Pobreza, 15 nov 2022 (dato acumulado hasta 2021).</p>
+</section>
+
+<!-- ============ 5. IMPORTANCIA CIENTÍFICA ============ -->
+<section class="slide" data-sec="Importancia" data-notes="Cinco dimensiones. Insiste en la quinta: la contribución social es una posibilidad a largo plazo, condicionada a la investigación, no un resultado. El proyecto no diagnostica ni previene enfermedades.">
+  <span class="eyebrow">Importancia y justificación</span>
+  <h2>Por qué merece la pena un proyecto así</h2>
+  <div class="cols5">
+    <div class="card"><h3>A · Biología del desarrollo</h3><p>Describir cuantitativamente la forma permite comparar etapas, estructuras y especímenes.</p></div>
+    <div class="card"><h3>B · Matemática</h3><p>Geometría, morfometría y topología aplicadas a problemas biológicos reales.</p></div>
+    <div class="card"><h3>C · Tecnología</h3><p>Lectura de imágenes, segmentación, reconstrucción 3D, visualización y medidas reproducibles.</p></div>
+    <div class="card"><h3>D · Investigación</h3><p>Trazabilidad de cada número, comparación de muestras y estabilidad de las medidas.</p></div>
+    <div class="card"><h3>E · Sociedad (a futuro)</h3><p>Herramientas educativas y de investigación biomédica. <b>No</b> diagnósticos ni tratamientos: eso exigiría validación clínica.</p></div>
+  </div>
+  <p class="quote">«Comprender la forma también es una manera de estudiar la organización de la vida.»</p>
+</section>
+
+<!-- ============ 6. OBJETIVOS ============ -->
+<section class="slide" data-sec="Objetivos" data-notes="Lee el objetivo general. Luego señala los colores: verde, abordado con evidencia; amarillo, en curso; violeta, pendiente o futuro. Esta honestidad es parte del método.">
+  <span class="eyebrow">Objetivos</span>
+  <h2>Objetivo general</h2>
+  <p class="lead">Desarrollar una plataforma computacional modular para analizar las transformaciones morfológicas y topológicas del desarrollo embrionario mediante geometría, morfometría, procesamiento de imágenes y modelado espacio-temporal.</p>
+  <div class="cols3">
+    <ul class="list">
+      <li class="st-done"><b>Procesar imágenes y volúmenes</b> reales (MINC2, NIfTI, NRRD) con huella SHA-256.</li>
+      <li class="st-done"><b>Representaciones 2D</b> de estructuras: máscaras, contornos, medidas.</li>
+      <li class="st-done"><b>Parámetros geométricos y morfométricos</b> 2D, 3D y landmarks.</li>
+    </ul>
+    <ul class="list">
+      <li class="st-done"><b>Medidas 3D</b> contrastadas con SimpleITK (140 de 140 máscaras).</li>
+      <li class="st-done"><b>Cuantificar la topología</b>: Betti y χ, contrastados con un método independiente.</li>
+      <li class="st-run"><b>Sensibilidad a la resolución y al segmentador</b> con datos reales (P3, en medición).</li>
+    </ul>
+    <ul class="list">
+      <li class="st-run"><b>Comparar muestras</b>: hecho con landmarks (ONTO-MAP); con volúmenes, en curso.</li>
+      <li class="st-done"><b>Documentar origen, calibración y procesamiento</b> (manifiestos, preregistros, erratas).</li>
+      <li class="st-fut"><b>Base para estudios 4D y 5D</b>: solo diseño y pruebas sintéticas.</li>
+    </ul>
+  </div>
+  <p class="muted"><span class="st-done">abordado con evidencia</span> &nbsp; <span class="st-run">en curso</span> &nbsp; <span class="st-fut">pendiente / futuro</span></p>
+</section>
+
+<!-- ============ 7. FUNDAMENTO BIOLÓGICO ============ -->
+<section class="slide" data-sec="Fundamento" data-notes="Las anomalías estructurales nacen mientras se forman los órganos. El ratón es el modelo estándar del consorcio IMPC. Las imágenes de abajo son reales: un embrión distinto por estadio, así que es una comparación entre especímenes, no el mismo embrión creciendo.">
+  <span class="eyebrow">Fundamento biológico</span>
+  <h2>Las anomalías estructurales se forman cuando se forman los órganos</h2>
+  <div class="cols3">
+    <div class="card"><h3>Organogénesis</h3><p>La mayoría de los defectos congénitos se producen en los primeros 3 meses del embarazo, cuando se forman los órganos.</p></div>
+    <div class="card"><h3>Modelo animal</h3><p>El ratón es el modelo estándar: el consorcio IMPC escanea embriones con micro-CT para ver qué estructura cambia.</p></div>
+    <div class="card"><h3>Estadios, no fechas</h3><p>Humano: Carnegie. Ratón: Theiler o días embrionarios (E10–E18,5). No se equiparan automáticamente.</p></div>
+  </div>
+  <figure class="figure"><span class="kind real">dato real</span><img src="{{IMG:qiu_series}}" alt="Serie de ecografías 3D E10 a E14"><figcaption>Ecografía 3D de alta frecuencia, E10 a E14: un embrión distinto por estadio (comparación transversal, no seguimiento del mismo embrión). Qiu et al. 2021, CC BY.</figcaption></figure>
+</section>
+
+<!-- ============ 8. VALOR ============ -->
+<section class="slide" data-sec="Valor" data-notes="Este es el problema que resuelve el proyecto: una diferencia en la imagen no siempre es una diferencia en el embrión. Si no sabemos cuánto pesa cada fuente técnica, podemos confundir un artefacto con biología.">
+  <span class="eyebrow">El valor del proyecto</span>
+  <h2>Una diferencia en la imagen no siempre es una diferencia en el embrión</h2>
+  <div class="cols2">
+    <ul class="list">
+      <li><b>Resolución.</b> Con datos reales, al pasar de 50 a 200 µm el volumen casi no cambia, pero el área cae 12 % y los túneles pasan de 11 a 4 (lámina 19).</li>
+      <li><b>Segmentación.</b> En la misma ecografía real, tres métodos clásicos dan 701, 309 y 317 mm³ frente a 57 mm³ de la referencia (lámina 12).</li>
+      <li><b>Registro a un atlas.</b> En datos publicados encontramos segmentaciones desplazadas medio milímetro.</li>
+      <li><b>Atlas distinto por estadio.</b> Puede crear diferencias entre edades que no son biológicas (ONTO-MAP).</li>
+    </ul>
+    <div style="display:grid;gap:14px;align-content:start">
+      <div class="card"><h3>Lo que existe</h3><p>Herramientas que segmentan y miden (3D Slicer, MEMOS, LAMA, atlas de MusMorph). Entregan el número, no cuánto confiar en él.</p></div>
+      <div class="card hl"><h3>Lo que aporta Geometría de la Vida</h3><p>Un <b>certificado por medida</b>, calibrado con objetos de respuesta conocida, y una <b>guardia de dominio</b> sin redes neuronales que se niega a certificar imágenes distintas de las de su calibración. No encontramos esa combinación en la revisión sistemática registrada (155 registros, 42 cribados).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. MÉTODO ============ -->
+<section class="slide" data-sec="Método" data-notes="Siete etapas, cada una con su estado. Todas tienen código y pruebas; lo que falta es validación externa, sobre todo en interpretación. Abre el panel de detalles si te preguntan por formatos.">
+  <span class="eyebrow">¿Cómo se desarrolló?</span>
+  <h2>Flujo metodológico, con el estado real de cada etapa</h2>
+  <div class="flow n7">
+    <div class="st"><b>Selección de datos</b><span>Conjuntos públicos con licencia verificada: MusMorph/IMPC, Qiu 2021.</span><em class="chip ok">hecho</em></div>
+    <div class="st"><b>Adquisición y organización</b><span>Descarga con MD5, manifiesto con SHA-256, datos fuera de git.</span><em class="chip ok">hecho</em></div>
+    <div class="st"><b>Preprocesamiento</b><span>Lectura MINC2/NIfTI, ejes, vóxel en mm, metadatos, unidades.</span><em class="chip ok">hecho</em></div>
+    <div class="st"><b>Segmentación</b><span>Umbral global, Otsu, Otsu suavizado; MEMOS (red externa) en P3.</span><em class="chip ok">hecho</em></div>
+    <div class="st"><b>Características</b><span>Volumen, área, ejes, Betti, χ, landmarks, descriptores 2D.</span><em class="chip ok">hecho</em></div>
+    <div class="st"><b>Análisis</b><span>Certificado, sensibilidad, bootstrap por espécimen, preregistros.</span><em class="chip mid">en curso con datos reales</em></div>
+    <div class="st"><b>Visualización e interpretación</b><span>Figuras, informes, mallas 3D, esta presentación.</span><em class="chip mid">sin revisión externa</em></div>
+  </div>
+  <details><summary>Detalles técnicos: formatos, calibración y trazabilidad</summary>
+    <p>Lectores propios para MINC2 (HDF5, con la escala por corte) y NIfTI (nibabel); el espaciado y la orientación se leen del encabezado y se registran. Cada archivo externo entra con su huella SHA-256 y su licencia en un manifiesto verificable. Cada experimento guarda commit, semilla y versiones. Los criterios se escriben en un preregistro antes de medir; las desviaciones (D1–D5 en P3, D1 en H11) se registran antes de ver resultados.</p>
+  </details>
+</section>
+
+<!-- ============ 10. ATLAS ============ -->
+<section class="slide" data-sec="Muestras reales" data-notes="Galería de muestras reales, al estilo de repositorios como FaceBase. Haz clic en una tarjeta: se amplía y aparece su ficha con especie, estadio, modalidad, fuente, licencia y huella.">
+  <span class="eyebrow">Evidencia visual · muestras embrionarias reales</span>
+  <h2>Los embriones que la plataforma leyó, verificó y midió</h2>
+  <div class="atlas" id="atlas"></div>
+  <div class="cols4">
+    <div class="card"><div class="kpi acc">80</div><div class="kpi-l">embriones E15.5 de micro-CT (20 piloto + 60 confirmatorio).</div></div>
+    <div class="card"><div class="kpi">717</div><div class="kpi-l">configuraciones de 540 landmarks de cabeza (E15.5 y E18.5).</div></div>
+    <div class="card"><div class="kpi">396</div><div class="kpi-l">casos de ecografía 3D (180 de cuerpo, 216 de ventrículos).</div></div>
+    <div class="card"><div class="kpi acc2">0</div><div class="kpi-l">datos humanos o identificables. Todo con licencia CC BY verificada.</div></div>
+  </div>
+</section>
+
+<!-- ============ 11. FICHA ============ -->
+<section class="slide" data-sec="Muestras reales" data-notes="Ficha de un espécimen real. Tres cortes con las estructuras de la segmentación publicada. La huella SHA-256 garantiza que es exactamente el archivo publicado.">
+  <span class="eyebrow">Ficha de espécimen</span>
+  <h2>IMPC E15.5 · espécimen 0218</h2>
+  <figure class="figure"><span class="kind real">dato real</span><img src="{{IMG:musmorph_0218}}" alt="Tres cortes de micro-CT del espécimen 0218"></figure>
+  <div class="cols2">
+    <dl class="meta"><dt>Especie</dt><dd>Ratón (Mus musculus), línea IMPC</dd><dt>Estadio</dt><dd>E15.5</dd><dt>Modalidad</dt><dd>Micro-CT con contraste, vóxel isótropo de 27 µm, 723×567×486</dd><dt>Segmentación</dt><dd>Atlas propagado de MusMorph, 50 etiquetas</dd></dl>
+    <dl class="meta"><dt>Fuente</dt><dd>FaceBase 3-JZA6 (Devine et al. 2022, Sci Data 9:230)</dd><dt>Licencia</dt><dd>CC BY 4.0</dd><dt>SHA-256</dt><dd>944175a49d47dfbd35744642303b5543f5efbf5d0ab6a3ec9e996bf6cec69cd2</dd><dt>Verificación</dt><dd>MD5 del catálogo y manifiesto: correctos</dd></dl>
+  </div>
+</section>
+
+<!-- ============ 12. PIPELINE REAL ============ -->
+<section class="slide" data-sec="Muestras reales" data-notes="Este es el paso de una imagen biológica a un objeto matemático, con una muestra real: el primer caso de la lista, elegido por esa regla y no por cómo salía. Panel 2: la referencia dibujada por personas. Paneles 3 a 5: lo que hacen los segmentadores clásicos de geovida. El umbral global marca casi todo el volumen, por eso no se ve contorno. Mira los números: 701, 309 y 317 mm³ frente a 57. Por eso hace falta el certificado.">
+  <span class="eyebrow">De la imagen al objeto matemático · muestra real</span>
+  <h2>Imagen → referencia → segmentaciones → medidas</h2>
+  <figure class="figure"><span class="kind real">dato real + salida del software</span><img src="{{IMG:pipeline_real}}" alt="Imagen original, referencia y segmentaciones de un embrión E11"><figcaption>Embrión de ratón E11 (Qiu et al. 2021, CC BY), primer caso del manifiesto de H11. El umbral global marca 5 608 866 de 5 608 980 vóxeles (prácticamente todo), por eso no se ve su contorno.</figcaption></figure>
+  <table>
+    <thead><tr><th>Máscara 3D</th><th>Volumen</th><th>Área (Crofton)</th><th>Betti (26/6)</th><th>χ</th><th>Fuente</th></tr></thead>
+    <tbody>
+      <tr><td>Referencia del cuerpo (personas)</td><td class="num">57,33 mm³</td><td class="num">112,9 mm²</td><td class="num">(1, 11, 1)</td><td class="num">−9</td><td><span class="kind real">real</span></td></tr>
+      <tr><td>Referencia de los ventrículos</td><td class="num">4,10 mm³</td><td class="num">25,8 mm²</td><td class="num">(1, 0, 0)</td><td class="num">1</td><td><span class="kind real">real</span></td></tr>
+      <tr><td>geovida · umbral global</td><td class="num">701,1 mm³</td><td class="num">445,1 mm²</td><td class="num">(1, 0, 0)</td><td class="num">1</td><td><span class="kind soft">software</span></td></tr>
+      <tr><td>geovida · Otsu</td><td class="num">308,9 mm³</td><td class="num">2533,5 mm²</td><td class="num">(4865, 27000, 34981)</td><td class="num">12 846</td><td><span class="kind soft">software</span></td></tr>
+      <tr><td>geovida · Otsu suavizado</td><td class="num">316,9 mm³</td><td class="num">893,6 mm²</td><td class="num">(201, 413, 235)</td><td class="num">23</td><td><span class="kind soft">software</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 13. MODELO 3D ============ -->
+<section class="slide" data-sec="Modelo 3D" data-notes="Modelo 3D real e interactivo. Arrastra para girar y usa la rueda para acercar. La malla turquesa es el cuerpo del embrión E11 y la violeta, sus ventrículos cerebrales, ambos dibujados por personas en una ecografía real. La malla se suavizó solo para verla; las medidas se calcularon sobre la máscara de vóxeles.">
+  <span class="eyebrow">Modelo tridimensional real · interactivo</span>
+  <h2>Embrión de ratón E11: cuerpo y ventrículos cerebrales en 3D</h2>
+  <div class="cols2" style="grid-template-columns:1.6fr 1fr;align-items:stretch">
+    <div class="viewer" id="viewer"><div class="legend"><span style="color:var(--acc)">■</span> cuerpo (referencia) &nbsp; <span style="color:var(--acc3)">■</span> ventrículos (referencia)</div><div class="hint">arrastrar: girar · rueda: zoom · doble clic: reiniciar</div></div>
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="card"><h3>Calibración espacial</h3><p>Vóxel isótropo de <b>50 µm</b> (0,05 mm), leído del encabezado NIfTI; volumen de 180×221×141 vóxeles. Sin el espaciado, el volumen en mm³ no tendría sentido.</p></div>
+      <dl class="meta card"><dt>Cuerpo</dt><dd>57,33 mm³ · 458 666 vóxeles · área 112,9 mm²</dd><dt>Ventrículos</dt><dd>4,10 mm³ · 32 801 vóxeles · área 25,8 mm²</dd><dt>Malla</dt><dd>Marching cubes (scikit-image), paso 3 y 2, suavizado de 0,8 vóxel solo para visualizar</dd><dt>Fuente</dt><dd>Qiu et al. 2021, IEEE DataPort, CC BY</dd></dl>
+      <span class="kind real" style="justify-self:start">referencia real · no es una reconstrucción sintética</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14. 2D-5D ============ -->
+<section class="slide" data-sec="Modelos 2D–5D" data-notes="Cuatro niveles. 2D y 3D están implementados y probados. 4D existe como banco de pruebas sintético en pseudo-tiempo: no tenemos el mismo embrión seguido en el tiempo. 5D es una propuesta de organización analítica: la c es contexto biológico, no una quinta dimensión espacial, y no es lo que los ecógrafos comerciales llaman 5D.">
+  <span class="eyebrow">Modelado matemático y computacional</span>
+  <h2>De 2D a 5D: qué significa cada nivel y en qué estado está</h2>
+  <div class="dims">
+    <div class="card"><span class="badge chip ok">implementado</span><span class="d">2D</span><h3>(x, y)</h3><p>Imágenes, máscaras y contornos: área, perímetro, Betti 2D (β₀, β₁), biometría temprana. Cuantifica un plano; no la estructura completa.</p></div>
+    <div class="card"><span class="badge chip ok">implementado</span><span class="d">3D</span><h3>(x, y, z)</h3><p>Volumen, área, ejes, Betti 3D y χ con vóxeles calibrados y anisotropía; mallas por marching cubes; contrastado con SimpleITK.</p></div>
+    <div class="card"><span class="badge chip mid">experimental</span><span class="d">4D</span><h3>(x, y, z, t)</h3><p>Crecimiento y trayectorias en un banco sintético de <b>pseudo-tiempo</b>. Especímenes distintos ≠ el mismo embrión seguido: no hay serie longitudinal real validada.</p></div>
+    <div class="card"><span class="badge chip fut">propuesta</span><span class="d">5D</span><h3>(x, y, z, t, c)</h3><p><b>c</b> = contexto biológico (especie, estadio, genotipo, condición). Variable categórica, no espacial. No equivale al «5D» comercial de ecografía.</p></div>
+  </div>
+  <details><summary>¿Por qué no se avanza ya a 5D?</summary><p>ONTO-MAP mostró que, con un atlas distinto por estadio, una diferencia de contexto puede ser técnica. Hasta medir ese efecto (MORPHO-TRACE), añadir contexto confundiría más de lo que aclara. Es una decisión documentada en el informe de progreso.</p></details>
+</section>
+
+<!-- ============ 15. TOPOLOGÍA ============ -->
+<section class="slide" data-sec="Topología" data-notes="La topología estudia lo que no cambia al deformar sin romper ni pegar: cuántas piezas, túneles y cavidades. Explica la fórmula con los dibujos: una región, dos componentes, un anillo, un toro y una cáscara. Los dibujos son sintéticos, pero los números los calculó el software.">
+  <span class="eyebrow">Topología y característica de Euler</span>
+  <h2>Contar piezas, túneles y cavidades</h2>
+  <div class="cols3">
+    <div class="card"><div class="eq">χ = Σ<sub>k</sub> (−1)<sup>k</sup> β<sub>k</sub><small>forma general</small></div></div>
+    <div class="card"><div class="eq">χ = β<sub>0</sub> − β<sub>1</sub><small>imagen 2D</small></div></div>
+    <div class="card"><div class="eq">χ = β<sub>0</sub> − β<sub>1</sub> + β<sub>2</sub><small>objeto 3D en el espacio (β<sub>3</sub> = 0)</small></div></div>
+  </div>
+  <p><b>β₀</b> componentes conexas · <b>β₁</b> ciclos o túneles · <b>β₂</b> cavidades cerradas · <b>χ</b> característica de Euler.</p>
+  <figure class="figure"><span class="kind syn">ilustración sintética</span><img src="{{IMG:euler_examples}}" alt="Ejemplos de números de Betti"><figcaption>Formas sintéticas (no son embriones); valores calculados por geovida (twod.betti_2d y topology.betti_numbers).</figcaption></figure>
+  <details><summary>¿De qué depende el resultado en una imagen?</summary><p>De la <b>conectividad</b>: dos vóxeles que se tocan por un vértice forman una pieza con vecindad 26 y dos con vecindad 6 (geovida usa los pares complementarios 26/6 y 6/26). También de la resolución, de los límites de la región y de los errores de segmentación: un hueco de un vóxel puede crear o borrar un túnel.</p></details>
+</section>
+
+<!-- ============ 16. TOPOLOGÍA APLICADA ============ -->
+<section class="slide" data-sec="Topología" data-notes="Topología de datos reales. La referencia del cuerpo, dibujada por personas, no es una bola: tiene 11 túneles y una cavidad con vecindad 26, y otros números con vecindad 6. La convención importa. Los segmentadores clásicos dan miles de piezas: es ruido de la ecografía. Por eso un cambio de χ no demuestra por sí solo una transformación biológica.">
+  <span class="eyebrow">Topología aplicada · muestra real E11</span>
+  <h2>Dos máscaras de aspecto parecido pueden tener topologías muy distintas</h2>
+  <table>
+    <thead><tr><th>Máscara</th><th>Conectividad 26/6</th><th>χ</th><th>Conectividad 6/26</th><th>χ</th><th>Lectura</th></tr></thead>
+    <tbody>
+      <tr><td>Cuerpo · referencia</td><td class="num">(1, 11, 1)</td><td class="num">−9</td><td class="num">(2, 6, 0)</td><td class="num">−4</td><td>Una pieza con túneles finos: el trazado manual no es un sólido simple</td></tr>
+      <tr><td>Ventrículos · referencia</td><td class="num">(1, 0, 0)</td><td class="num">1</td><td class="num">(1, 0, 0)</td><td class="num">1</td><td>Un sólido simple con las dos convenciones</td></tr>
+      <tr><td>Cuerpo · Otsu</td><td class="num">(4865, 27000, 34981)</td><td class="num">12 846</td><td class="num">(18065, 36080, 7280)</td><td class="num">−10 735</td><td>El moteado de la ecografía fragmenta la máscara</td></tr>
+      <tr><td>Cuerpo · Otsu suavizado</td><td class="num">(201, 413, 235)</td><td class="num">23</td><td class="num">(253, 429, 143)</td><td class="num">−33</td><td>Suavizar reduce, pero no elimina, la fragmentación</td></tr>
+    </tbody>
+  </table>
+  <div class="cols3">
+    <div class="card"><h3>Comprobación independiente</h3><p>χ de geovida = χ por conteo de celdas (V − E + F − C) en <b>140 de 140</b> máscaras, con las dos conectividades.</p></div>
+    <div class="card"><h3>Interpretación</h3><p>χ es un descriptor: se lee junto al volumen, el área y el contexto. Por sí solo no demuestra una transformación biológica.</p></div>
+    <div class="card"><h3>Límite</h3><p>La referencia es un trazado humano, no la verdad: sus túneles pueden ser del trazado y no del embrión.</p></div>
+  </div>
+</section>
+
+<!-- ============ 17. MORFOMETRÍA ============ -->
+<section class="slide" data-sec="Morfometría" data-notes="Descriptores medidos en el corte real del panel 2 de la lámina 12. Di qué mide cada uno con una frase. Aclara qué los calcula: área, perímetro y Betti, geovida; circularidad, solidez, excentricidad y momentos de Hu, scikit-image.">
+  <span class="eyebrow">Morfometría y descriptores de forma · corte real</span>
+  <h2>Cómo se cuantifica la forma de una estructura</h2>
+  <div class="cols4">
+    <div class="card"><h3>Geométricos</h3><table><tr><td>Área</td><td class="num">20,03 mm²</td></tr><tr><td>Perímetro (Crofton)</td><td class="num">24,33 mm</td></tr><tr><td>Longitud × anchura</td><td class="num">8,05 × 3,23 mm</td></tr></table><p class="muted">Volumen y área 3D: lámina 12.</p></div>
+    <div class="card"><h3>Proporción y forma</h3><table><tr><td>Circularidad 4πA/P²</td><td class="num">0,43</td></tr><tr><td>Solidez A/A<sub>convexa</sub></td><td class="num">0,93</td></tr><tr><td>Relación de aspecto</td><td class="num">2,49</td></tr><tr><td>Excentricidad</td><td class="num">0,92</td></tr></table></div>
+    <div class="card"><h3>Distribución (momentos)</h3><table><tr><td>Hu φ₁</td><td class="num">0,242</td></tr><tr><td>Hu φ₂</td><td class="num">0,0306</td></tr><tr><td>Hu φ₃</td><td class="num">2,3·10⁻⁶</td></tr></table><p class="muted">Invariantes a traslación, escala y rotación.</p></div>
+    <div class="card"><h3>Topológicos</h3><table><tr><td>β₀ (componentes)</td><td class="num">2</td></tr><tr><td>β₁ (huecos)</td><td class="num">0</td></tr><tr><td>χ</td><td class="num">2</td></tr></table><p class="muted">En el corte, el cuerpo y una pieza separada.</p></div>
+  </div>
+  <details><summary>Qué mide cada descriptor y qué módulo lo calcula</summary><p><b>Circularidad</b>: 1 para un círculo, menor cuanto más alargado o irregular. <b>Solidez</b>: qué fracción ocupa del polígono convexo que la envuelve (1 = sin entrantes). <b>Relación de aspecto y excentricidad</b>: cuánto se alarga la elipse equivalente. <b>Momentos de Hu</b>: combinaciones de momentos invariantes a traslación, escala y rotación. Área, perímetro (Crofton) y Betti 2D: <code>geovida.twod</code>. Circularidad (con el perímetro de geovida), solidez, excentricidad, ejes y Hu: <code>scikit-image regionprops</code>.</p></details>
+  <p class="src">Corte z = 77 de la referencia del cuerpo, embrión E11, Qiu et al. 2021 (CC BY). Cálculo: scripts/figure_final.py.</p>
+</section>
+
+<!-- ============ 18. SEMÁFORO ============ -->
+<section class="slide" data-sec="Semáforo" data-notes="El semáforo es exactamente esto: la probabilidad estimada de que el error de volumen sea de 5 % o menos, calculada solo con la máscara y el tamaño del vóxel. Umbrales preregistrados: verde desde 0,90, rojo por debajo de 0,50. Luego el caso real: sin guardia habría dado verde a medidas con más de 400 % de error; la guardia detecta que la ecografía real está fuera de su calibración y no da verde. No es un juicio de salud del embrión.">
+  <span class="eyebrow">El semáforo · qué significa de verdad</span>
+  <h2>Una luz para cada medida: ¿cuánto creerle al volumen?</h2>
+  <div class="cols2" style="grid-template-columns:1fr 1.25fr">
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="card"><div class="eq" style="font-size:21px">p = Pr( |error de V| ≤ 5 % )<br>= expit( a + b · ln( d̄ / h ) )<small>d̄: profundidad media interior de la máscara · h: tamaño del vóxel · a, b congelados por segmentador (H6)</small></div></div>
+      <div class="card">
+        <div class="light" style="color:var(--ok)"><i style="background:var(--ok)"></i><b style="color:var(--fg)">Verde</b> p ≥ 0,90</div>
+        <div class="light" style="color:var(--mid);margin-top:8px"><i style="background:var(--mid)"></i><b style="color:var(--fg)">Amarillo</b> 0,50 ≤ p &lt; 0,90</div>
+        <div class="light" style="color:var(--bad);margin-top:8px"><i style="background:var(--bad)"></i><b style="color:var(--fg)">Rojo</b> p &lt; 0,50 o medida imposible</div>
+        <p class="muted" style="margin-top:10px">Umbrales preregistrados en H6 (<code>geovida.budget</code>). La <b>guardia de dominio</b> (H10) impide el verde si el ruido o el desenfoque de la imagen no se parecen a los de la calibración.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Caso real: primer caso de H11 (ecografía E11) · un caso, no un veredicto</h3>
+      <table>
+        <thead><tr><th>Estructura · segmentador</th><th>Error de V</th><th>Dice</th><th>Sin guardia</th><th>Con guardia</th></tr></thead>
+        <tbody>
+          <tr><td>Cuerpo · global</td><td class="num">+1123 %</td><td class="num">0,15</td><td><span class="chip ok">verde</span></td><td><span class="chip mid">amarillo</span></td></tr>
+          <tr><td>Cuerpo · Otsu</td><td class="num">+439 %</td><td class="num">0,20</td><td><span class="chip ok">verde</span></td><td><span class="chip mid">amarillo</span></td></tr>
+          <tr><td>Cuerpo · Otsu suavizado</td><td class="num">+453 %</td><td class="num">0,22</td><td><span class="chip ok">verde</span></td><td><span class="chip mid">amarillo</span></td></tr>
+          <tr><td>Ventrículos · global</td><td class="num">+3113 %</td><td class="num">0,06</td><td><span class="chip ok">verde</span></td><td><span class="chip mid">amarillo</span></td></tr>
+          <tr><td>Ventrículos · Otsu</td><td class="num">+1353 %</td><td class="num">&lt; 0,01</td><td><span class="chip mid">amarillo</span></td><td><span class="chip mid">amarillo</span></td></tr>
+          <tr><td>Ventrículos · Otsu suavizado</td><td class="num">+1432 %</td><td class="num">&lt; 0,01</td><td><span class="chip ok">verde</span></td><td><span class="chip mid">amarillo</span></td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:8px">Sin guardia: 5 verdes falsos de 6. Con guardia: ninguno. El veredicto preregistrado de H11 aún no existe.</p>
+    </div>
+  </div>
+  <p class="src">results/h11/cache_v04.jsonl (salida real de scripts/run_h11.py) · El semáforo evalúa la medida, nunca la salud, la viabilidad ni la normalidad del embrión.</p>
+</section>
+
+<!-- ============ 19. MORPHO-TRACE ============ -->
+<section class="slide" data-sec="MORPHO-TRACE" data-notes="MORPHO-TRACE estudia cuánto de una medida depende de decisiones técnicas. Ejemplo real: la misma referencia del cuerpo medida a 50, 100, 150 y 200 micras. Lo único que cambia es el tamaño del vóxel. El volumen se mantiene dentro de 1,5 %, el área cae 12 % y los túneles pasan de 11 a 4. Unas medidas son robustas y otras no.">
+  <span class="eyebrow">MORPHO-TRACE · robustez de las medidas</span>
+  <h2>Otra resolución: unas medidas aguantan y otras no</h2>
+  <div class="cols2" style="grid-template-columns:1.1fr 1fr;align-items:center">
+    <figure class="figure"><span class="kind real">dato real + salida del software</span><img src="{{IMG:resolution_real}}" style="max-height:33vh" alt="Sensibilidad a la resolución en la referencia real"><figcaption>Referencia del cuerpo E11 remuestreada por mayoría de bloques ×1…×4. Se mantuvo constante la máscara; cambió solo el vóxel.</figcaption></figure>
+    <table>
+      <thead><tr><th>Vóxel</th><th>Volumen</th><th>Área</th><th>Betti (26/6)</th></tr></thead>
+      <tbody>
+        <tr><td class="num">50 µm</td><td class="num">57,33 mm³</td><td class="num">112,9 mm²</td><td class="num">(1, 11, 1)</td></tr>
+        <tr><td class="num">100 µm</td><td class="num">−1,5 %</td><td class="num">−7,3 %</td><td class="num">(1, 5, 0)</td></tr>
+        <tr><td class="num">150 µm</td><td class="num">−0,1 %</td><td class="num">−9,8 %</td><td class="num">(1, 4, 0)</td></tr>
+        <tr><td class="num">200 µm</td><td class="num">−0,7 %</td><td class="num">−12,4 %</td><td class="num">(1, 4, 0)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cols3">
+    <div class="card"><h3>Qué se busca</h3><p>Separar la variación del espécimen de la debida a la resolución, al segmentador o al registro (P3, preregistrado; confirmatorio de 60 especímenes en medición).</p></div>
+    <div class="card"><h3>Qué ya se encontró</h3><p>En datos publicados: segmentaciones interpoladas (28–32 % de vóxeles) y 4 de 20 desplazadas 0,5–0,6 mm.</p></div>
+    <div class="card"><h3>Qué no es</h3><p>Un índice de robustez no es una probabilidad ni una medida de exactitud anatómica. Este ejemplo es una ilustración con un caso, no un resultado de P3.</p></div>
+  </div>
+</section>
+
+<!-- ============ 20. HALLAZGO P3 ============ -->
+<section class="slide" data-sec="Resultados reales" data-notes="Primer hallazgo con datos reales. Muestra el 0218 bien alineado y el 0040, cuya segmentación publicada no coincide con su propia imagen: los pulmones y la columna no calzan. Si alguien mide sin revisar, mide mal.">
+  <span class="eyebrow">Resultado con datos reales · P3 piloto</span>
+  <h2>La plataforma detectó problemas en datos publicados antes de medir</h2>
+  <figure class="figure"><span class="kind real">dato real</span><img src="{{IMG:musmorph_0040}}" alt="Segmentación alineada frente a desplazada"></figure>
+  <div class="cols3">
+    <div class="card"><div class="kpi acc2">28–32 %</div><div class="kpi-l">de los vóxeles etiquetados tienen valores interpolados, en los 20 especímenes del piloto.</div></div>
+    <div class="card"><div class="kpi acc2">4 de 20</div><div class="kpi-l">segmentaciones desplazadas 0,5–0,6 mm respecto a su imagen.</div></div>
+    <div class="card"><div class="kpi">40 / 40</div><div class="kpi-l">archivos con su huella comprobada; flujo completo de principio a fin.</div></div>
+  </div>
+</section>
+
+<!-- ============ 21. ONTO-MAP ============ -->
+<section class="slide" data-sec="Resultados reales" data-notes="ONTO-MAP: 717 cabezas reales. Los estadios se separan, pero cada uno se registró a su propio atlas. Las tres hipótesis escritas antes salieron contrarias. Un resultado negativo bien medido también es ciencia, y apunta justo a la pregunta de MORPHO-TRACE.">
+  <span class="eyebrow">Resultado con datos reales · ONTO-MAP</span>
+  <h2>Mapa de formas de 717 cabezas de embrión: un resultado negativo honesto</h2>
+  <figure class="figure"><span class="kind real">dato real + salida del software</span><img src="{{IMG:ontomap_map}}" alt="Mapa de forma de landmarks"></figure>
+  <div class="cols3">
+    <div class="card"><h3>Hipótesis</h3><p>La variación dentro de un estadio apunta hacia el cambio entre estadios (ángulo menor de 45°).</p></div>
+    <div class="card"><h3>Resultado</h3><p>84,5° (IC 95 %: 79,3°–89,5°). <span class="chip bad">3 de 3 contrarias</span></p></div>
+    <div class="card"><h3>Lectura</h3><p>Atlas distinto por estadio: la separación no se atribuye al desarrollo. El método ya existía; el aporte es la réplica.</p></div>
+  </div>
+</section>
+
+<!-- ============ 22. PRUEBAS ============ -->
+<section class="slide" data-sec="Validación" data-notes="Seis categorías de pruebas, con su evidencia. Lee la frase final en voz alta: superar una prueba no es validación biológica. Las sintéticas comprueban el algoritmo, no la anatomía.">
+  <span class="eyebrow">Pruebas y validación del sistema</span>
+  <h2>Qué se probó, con qué datos y qué demuestra</h2>
+  <table>
+    <thead><tr><th>Categoría</th><th>Datos</th><th>Resultado</th><th>Evidencia</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td><b>A · Funcionamiento</b></td><td>Lectura, formatos, manifiestos, módulos</td><td>718 funciones de prueba en 62 archivos; CI en Python 3.12 y 3.13</td><td class="num">tests/, CI de la PR #3</td><td><span class="chip ok">superada</span></td></tr>
+      <tr><td><b>B · Geométricas</b></td><td>Fantomas con verdad analítica; 20 máscaras reales</td><td>Volumen y componentes = SimpleITK 2.5.7 en 140/140; área: sesgo de area_sdf ≈ +3 % a resolución fina</td><td class="num">COMPARACION_REFERENCIA.md</td><td><span class="chip ok">comparada con ITK</span></td></tr>
+      <tr><td><b>C · Topológicas</b></td><td>Casos a mano y máscaras aleatorias</td><td>χ = conteo de celdas independiente en 140/140</td><td class="num">tests/test_reference.py</td><td><span class="chip ok">superada</span></td></tr>
+      <tr><td><b>D · Resolución y sensibilidad</b></td><td>Fantomas (H1, H6, H9, H10)</td><td>Semáforo de volumen: en verde, 0,4–2,6 % de error en 50 400 imágenes nuevas</td><td class="num">RESULTADOS_V03/V04.md</td><td><span class="chip ok">confirmada en sintético</span></td></tr>
+      <tr><td><b>E · Imágenes biológicas</b></td><td>MusMorph (80), landmarks (717), ecografía (396)</td><td>P3 piloto completo; ONTO-MAP negativo; P3 y H11 midiendo</td><td class="num">p3/, onto_map/, H11</td><td><span class="chip mid">en curso</span></td></tr>
+      <tr><td><b>F · Integración</b></td><td>Datos reales de principio a fin</td><td>Lectura → segmentación → medida → certificado → informe, sin intervención manual</td><td class="num">P3 piloto, run_h11.py</td><td><span class="chip ok">superada</span></td></tr>
+    </tbody>
+  </table>
+  <p class="quote" style="font-size:22px">Prueba superada ≠ validación biológica.</p>
+  <div class="row"><span class="muted">Demostraciones en vivo con objetos sintéticos (semáforo, 200 objetos al azar, eje de escala):</span><a class="btn" href="exposicion-geovida.html" target="_blank">Abrir el laboratorio interactivo</a></div>
+</section>
+
+<!-- ============ 23. ARQUITECTURA ============ -->
+<section class="slide" data-sec="Arquitectura" data-notes="Arquitectura real, construida a partir de los módulos del código. Cada caja nombra los archivos que existen. Nada de lo que aparece aquí es un plan: todo está en el repositorio con pruebas.">
+  <span class="eyebrow">Arquitectura del sistema (módulos reales de src/geovida)</span>
+  <h2>Cómo fluye la información dentro del programa</h2>
+  <div class="arch">
+    <div class="card"><b>1 · Entrada y trazabilidad</b><code>realdata · minc · manifest · provenance</code><p class="muted">Lectura, huellas, licencias, commit y semilla.</p></div>
+    <div class="card"><b>2 · Imagen y simulación</b><code>imaging · phantoms · twod · printchain</code><p class="muted">Fantomas analíticos y simulador de adquisición.</p></div>
+    <div class="card"><b>3 · Segmentación</b><code>segment · twod.segment2d</code><p class="muted">Umbral global, Otsu, Otsu suavizado.</p></div>
+    <div class="card"><b>4 · Medida</b><code>measure · twod · landmarks · reference</code><p class="muted">Volumen, área, Procrustes, Crofton.</p></div>
+    <div class="card"><b>5 · Topología</b><code>topology · topomargin</code><p class="muted">Betti, χ, margen de persistencia.</p></div>
+    <div class="card"><b>6 · Certificado</b><code>budget · certificate · domain · scaleaxis · chainguard</code><p class="muted">Semáforo, guardia de dominio, eje de escala.</p></div>
+    <div class="card"><b>7 · Estudios preregistrados</b><code>h3…h16 · h11 · p3 · onto_map · growth · traj4d</code><p class="muted">Cada hipótesis, con su análisis.</p></div>
+    <div class="card"><b>8 · Salida</b><code>cli · agreement · trajectory · scripts/*_report.py</code><p class="muted">Informes, acuerdo, figuras.</p></div>
+  </div>
+  <p class="src">Licencia MIT · repositorio fabiantrelles593-arch/Estudio-Embrionario, rama geovida/v0.1-desde-cero.</p>
+</section>
+
+<!-- ============ 24. RUTA CLÍNICA ============ -->
+<section class="slide" data-sec="Futuro" data-notes="El destino puede ser clínico, pero el camino es largo y regulado. Hoy: preclínica. En el Perú el software autónomo es dispositivo médico activo: un uso clínico exigiría registro sanitario ante DIGEMID. La ecografía prenatal es una línea de investigación independiente, no una función implementada.">
+  <span class="eyebrow">Ruta hacia una posible traslación</span>
+  <h2>Camino regulado: dónde estamos y qué falta</h2>
+  <div class="cols5">
+    <div class="card hl"><span class="chip ok">hoy</span><h3 style="margin-top:8px">Preclínica</h3><p>Certificado validado en sintético; datos reales de ratón en medición.</p></div>
+    <div class="card"><span class="chip">siguiente</span><h3 style="margin-top:8px">Revisión experta</h3><p>Embriólogos, ecografistas y morfometristas.</p></div>
+    <div class="card"><span class="chip fut">después</span><h3 style="margin-top:8px">Datos humanos</h3><p>Solo anonimizados, con consentimiento y comité de ética.</p></div>
+    <div class="card"><span class="chip fut">después</span><h3 style="margin-top:8px">Validación externa</h3><p>Varios centros, sesgos, calibración.</p></div>
+    <div class="card"><span class="chip fut">final</span><h3 style="margin-top:8px">Registro sanitario</h3><p>DIGEMID: el software autónomo es dispositivo médico activo.</p></div>
+  </div>
+  <p class="src">DIGEMID, DS 003-2020-SA (Ley 29459). Biblioteca de anomalías congénitas con fuentes verificadas: docs/prenatal/BIBLIOTECA_ANOMALIAS.md.</p>
+</section>
+
+<!-- ============ 25. LÍMITES Y FUTURO ============ -->
+<section class="slide" data-sec="Futuro" data-notes="Di primero los límites, luego el futuro. Los límites dan credibilidad: pocas especies, referencias humanas que no son la verdad, ningún veredicto con datos reales todavía, sin revisión externa.">
+  <span class="eyebrow">Alcances, limitaciones y futuro</span>
+  <h2>Lo que falta, dicho con claridad</h2>
+  <div class="cols2">
+    <ul class="list">
+      <li><b>Muestras:</b> solo ratón; ecografía E10–E14 y micro-CT E15.5/E18.5.</li>
+      <li><b>Referencias:</b> trazados humanos o atlas propagados, no la verdad anatómica.</li>
+      <li><b>Veredictos reales:</b> P3 y H11 aún midiendo; el semáforo solo está confirmado en sintético.</li>
+      <li><b>Validación:</b> sin revisión científica externa; código escrito con asistencia de IA, declarado.</li>
+      <li><b>Generalización:</b> ninguna a otros equipos, especies ni a humanos.</li>
+    </ul>
+    <ol class="list" style="counter-reset:none">
+      <li>1 · Ampliar y diversificar los datos · 2 · Mejorar la segmentación</li>
+      <li>3 · Fortalecer la reconstrucción 3D · 4 · Topología persistente frente a métricas simples</li>
+      <li>5 · Comparación entre estadios con el efecto del atlas medido (MORPHO-TRACE)</li>
+      <li>6 · 4D con series longitudinales reales · 7 · Contexto 5D</li>
+      <li>8 · Reproducibilidad y validación externa · 9 · Educación e investigación biomédica</li>
+      <li><span class="chip fut">línea independiente</span> Ecografía prenatal y crecimiento fetal, sin funciones clínicas</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 26. CONCLUSIONES ============ -->
+<section class="slide" data-sec="Conclusiones" data-notes="Cierra despacio. Lee la cita final. Ofrece el repositorio y pide lo que necesitas: revisión experta y un laboratorio o servicio de ecografía aliado.">
+  <div class="grid-bg"></div>
+  <span class="eyebrow">Conclusiones</span>
+  <div class="row" style="gap:10px"><span class="tag acc">Biología</span>+<span class="tag acc">Matemáticas</span>+<span class="tag acc">Topología</span>+<span class="tag acc">Computación</span>+<span class="tag acc">Visualización científica</span></div>
+  <div class="cols3">
+    <div class="card"><h3>Qué se construyó</h3><p>Un método organizado para convertir imágenes biológicas en información cuantitativa, con su confianza y su trazabilidad, contrastado con SimpleITK.</p></div>
+    <div class="card"><h3>Qué se demostró</h3><p>En sintético, el certificado acierta y la guardia se niega cuando debe. Con datos reales: problemas detectados en datos publicados y un resultado negativo honesto.</p></div>
+    <div class="card"><h3>Qué no se afirma</h3><p>Que el desarrollo embrionario quede modelado, ni ningún uso clínico.</p></div>
+  </div>
+  <p class="quote">La vida cambia de forma, se organiza en el espacio y se desarrolla en el tiempo. Geometría de la Vida busca convertir parte de esa complejidad biológica en estructuras matemáticas que podamos estudiar, cuantificar y comprender.</p>
+  <p style="text-align:center;max-width:none" class="lead"><b>GEOMETRÍA DE LA VIDA</b> — Modelado computacional multiescala de las transformaciones morfológicas, topológicas y espacio-temporales durante el desarrollo embrionario y fetal.</p>
+  <p class="src" style="text-align:center">github.com/fabiantrelles593-arch/Estudio-Embrionario · rama geovida/v0.1-desde-cero · MIT</p>
+</section>
+
+<!-- ============ 27. FUENTES ============ -->
+<section class="slide" data-sec="Fuentes" data-notes="Lámina de respaldo para el turno de preguntas: fuentes de datos, de cifras y de métodos.">
+  <span class="eyebrow">Anexo · Fuentes y procedencia</span>
+  <h2>Datos, cifras y métodos citados</h2>
+  <div class="cols2">
+    <ul class="list">
+      <li><span class="kind real">dato</span> MusMorph/IMPC, FaceBase 3-JZA6 — Devine et al. 2022, <i>Sci Data</i> 9:230, doi:10.1038/s41597-022-01338-x — CC BY 4.0</li>
+      <li><span class="kind real">dato</span> Qiu et al. 2021, ecografía 3D de alta frecuencia de embrión de ratón, IEEE DataPort — CC BY</li>
+      <li><span class="kind soft">referencia</span> SimpleITK 2.5.7 (Apache 2.0); scikit-image (BSD); método de Crofton: Lehmann y Legland 2012, The Insight Journal</li>
+      <li><span class="kind soft">referencia</span> Norris et al. 2012, <i>Magn Reson Med</i>, doi:10.1002/mrm.24306 (antecedente más cercano de P3)</li>
+    </ul>
+    <ul class="list">
+      <li><span class="kind concept">cifra</span> OMS, «Congenital disorders», 27 feb 2023; informe de tamizaje neonatal, jun 2026</li>
+      <li><span class="kind concept">cifra</span> CDC-MINSA en la MCLCP, 15 nov 2022 (Perú, hasta 2021)</li>
+      <li><span class="kind concept">norma</span> DIGEMID, DS 003-2020-SA, reglamento de dispositivos médicos</li>
+      <li><span class="kind concept">guías</span> ISUOG 2022 y 2023 (doi:10.1002/uog.24888, 10.1002/uog.26106, 10.1002/uog.26224)</li>
+    </ul>
+  </div>
+  <p class="muted"><span class="kind real">dato real</span> datos publicados · <span class="kind soft">software</span> resultados del software · <span class="kind syn">sintético</span> ejemplos sintéticos · <span class="kind concept">concepto</span> ilustraciones y propuestas</p>
+</section>
+
+<div class="lightbox" id="lb"><span class="x" id="lbx">CERRAR · ESC</span><img id="lbimg" alt=""><div class="side"><h3 id="lbt"></h3><dl class="meta" id="lbm"></dl></div></div>
+<div class="notes" id="notes"><b>Guion de esta lámina</b><span id="notesText"></span></div>
+<nav><span class="brand">GEOMETRÍA <i>DE LA</i> VIDA</span><span class="sec" id="sec"></span><div class="prog"><i id="prog"></i></div><span class="sec" id="where"></span>
+<button id="nb" type="button">Guion (G)</button><button id="pm" type="button">Exposición (P)</button><button id="fs" type="button">⛶ (F)</button><button id="pv" type="button">←</button><button id="nx" type="button">→</button></nav>
+
+<script>{{THREE}}</script>
+<script>window.MESH_BODY = {{JSON:mesh_body}}; window.MESH_VEN = {{JSON:mesh_ventricle}};</script>
+<script>
+const ATLAS = [
+  {img:"{{IMG:musmorph_0218}}", t:"IMPC E15.5 · 0218", s:"micro-CT · 27 µm", m:[["Especie","Ratón, línea IMPC"],["Estadio","E15.5"],["Modalidad","Micro-CT con contraste"],["Vóxel","27 µm isótropo"],["Segmentación","Atlas MusMorph propagado (alineada)"],["Fuente","FaceBase 3-JZA6"],["Licencia","CC BY 4.0"],["SHA-256","944175a49d47dfbd35744642303b5543f5efbf5d0ab6a3ec9e996bf6cec69cd2"]]},
+  {img:"{{IMG:musmorph_0040}}", t:"IMPC E15.5 · 0040", s:"segmentación desplazada", m:[["Especie","Ratón, línea IMPC"],["Estadio","E15.5"],["Hallazgo","Segmentación publicada desplazada ≈ 0,47 mm (D3)"],["Fuente","FaceBase 3-JZA6"],["Licencia","CC BY 4.0"],["SHA-256","725f0d093be1574d67752ee34d638e4f398ce9aaca0adac45203468dac6f7f71"]]},
+  {img:"{{IMG:pipeline_real}}", t:"Ecografía 3D · E11", s:"original → referencia → geovida", m:[["Especie","Ratón"],["Estadio","E11"],["Modalidad","Ecografía 3D de alta frecuencia, vóxel 50 µm"],["Muestra","20170320_En1_E11_E1a (primer caso de H11)"],["Referencia","Cuerpo y ventrículos dibujados por personas"],["Fuente","Qiu et al. 2021, IEEE DataPort"],["Licencia","CC BY"]]},
+  {img:"{{IMG:qiu_series}}", t:"Ecografía 3D · E10–E14", s:"un embrión por estadio", m:[["Especie","Ratón"],["Estadios","E10 a E14 (especímenes distintos)"],["Modalidad","Ecografía 3D de alta frecuencia"],["Casos","180 de cuerpo, 216 de ventrículos"],["Fuente","Qiu et al. 2021, IEEE DataPort"],["Licencia","CC BY"]]},
+  {img:"{{IMG:ontomap_map}}", t:"Landmarks · E15.5 / E18.5", s:"717 especímenes", m:[["Especie","Ratón, línea IMPC"],["Estadios","E15.5 (259) y E18.5 (458)"],["Datos","540 landmarks de cabeza"],["Análisis","Procrustes y componentes principales"],["Fuente","MusMorph, FaceBase 3-JZA6"],["Licencia","CC BY 4.0"]]},
+  {img:"{{IMG:resolution_real}}", t:"Sensibilidad a la resolución", s:"referencia real ×1…×4", m:[["Muestra","Cuerpo E11 (referencia)"],["Qué cambia","Solo el tamaño del vóxel: 50, 100, 150, 200 µm"],["Resultado","Volumen ±1,5 %; área −12 %; túneles de 11 a 4"],["Tipo","Ilustración con un caso, no un resultado de P3"]]}
+];
+const $ = id => document.getElementById(id);
+$("atlas").innerHTML = ATLAS.map((a,i)=>`<div class="spec" data-i="${i}"><div class="th" style="background-image:url('${a.img}')"></div><div class="bd"><b>${a.t}</b><span>${a.s}</span></div></div>`).join("");
+const openLb=(img,t,m)=>{$("lbimg").src=img;$("lbt").textContent=t;$("lbm").innerHTML=(m||[]).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");$("lb").classList.add("on");};
+document.querySelectorAll(".spec").forEach(el=>el.addEventListener("click",()=>{const a=ATLAS[+el.dataset.i];openLb(a.img,a.t,a.m);}));
+document.querySelectorAll(".figure img").forEach(im=>im.addEventListener("click",()=>{const cap=im.closest("figure").querySelector("figcaption");openLb(im.src,im.alt,cap?[["Pie",cap.textContent]]:[]);}));
+const closeLb=()=>$("lb").classList.remove("on");
+$("lbx").onclick=closeLb; $("lb").addEventListener("click",e=>{if(e.target.id==="lb")closeLb();});
+
+// ---- visor 3D (three.js r128 incrustado; sin internet) ----
+let V=null;
+function initViewer(){
+  if(V||typeof THREE==="undefined") return;
+  const host=$("viewer"); const w=host.clientWidth, h=Math.max(host.clientHeight,360);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2)); renderer.setSize(w,h);
+  host.prepend(renderer.domElement);
+  const scene=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(35,w/h,0.01,1000);
+  scene.add(new THREE.AmbientLight(0xffffff,0.45)); const dl=new THREE.DirectionalLight(0xffffff,0.85); dl.position.set(3,4,5); scene.add(dl);
+  const dl2=new THREE.DirectionalLight(0x88ccff,0.35); dl2.position.set(-4,-2,-3); scene.add(dl2);
+  const mk=(M,color,opacity)=>{const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(M.vertices,3)); g.setIndex(M.faces); g.computeVertexNormals();
+    const mat=new THREE.MeshPhongMaterial({color,transparent:opacity<1,opacity,shininess:40,side:THREE.DoubleSide,depthWrite:opacity>=1}); return new THREE.Mesh(g,mat);};
+  const grp=new THREE.Group(); const body=mk(window.MESH_BODY,0x3fd0c9,0.32), ven=mk(window.MESH_VEN,0xb69cff,1.0);
+  // ambas mallas comparten el sistema de coordenadas (centroide del cuerpo, en mm): posición relativa real
+  grp.add(body); grp.add(ven); scene.add(grp);
+  body.geometry.computeBoundingSphere(); const R=body.geometry.boundingSphere.radius; const D0=R*4.0; cam.position.set(0,0,D0);
+  let rx=-0.5, ry=0.6, dist=D0, drag=null;
+  const draw=()=>{grp.rotation.set(rx,ry,0); cam.position.set(0,0,dist); cam.lookAt(0,0,0); renderer.render(scene,cam);};
+  const c=renderer.domElement;
+  c.addEventListener("pointerdown",e=>{drag=[e.clientX,e.clientY];c.setPointerCapture(e.pointerId);});
+  c.addEventListener("pointermove",e=>{if(!drag)return; ry+=(e.clientX-drag[0])*0.01; rx+=(e.clientY-drag[1])*0.01; drag=[e.clientX,e.clientY]; draw();});
+  c.addEventListener("pointerup",()=>{drag=null;});
+  c.addEventListener("wheel",e=>{e.preventDefault(); dist=Math.min(R*8,Math.max(R*1.2,dist*(1+Math.sign(e.deltaY)*0.08))); draw();},{passive:false});
+  c.addEventListener("dblclick",()=>{rx=-0.5;ry=0.6;dist=D0;draw();});
+  let auto=true; c.addEventListener("pointerdown",()=>{auto=false;});
+  const spin=()=>{if(auto&&slides[idx]&&slides[idx].contains(host)){ry+=0.004;draw();} requestAnimationFrame(spin);};
+  V={renderer,draw,host,cam}; draw(); spin();
+  window.addEventListener("resize",()=>{const w2=host.clientWidth,h2=Math.max(host.clientHeight,360); renderer.setSize(w2,h2); cam.aspect=w2/h2; cam.updateProjectionMatrix(); draw();});
+}
+
+const slides=[...document.querySelectorAll(".slide")]; let idx=0, notesOn=false;
+function show(i){idx=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle("on",k===idx));
+  const s=slides[idx];$("sec").textContent=s.dataset.sec||"";$("where").textContent=`${idx+1} / ${slides.length}`;
+  $("prog").style.width=`${100*(idx+1)/slides.length}%`;$("notesText").textContent=s.dataset.notes||"";
+  if(s.contains($("viewer"))) requestAnimationFrame(()=>{initViewer(); if(V){V.draw();}});
+  try{history.replaceState(null,"","#"+(idx+1));}catch(e){}}
+$("pv").onclick=()=>show(idx-1); $("nx").onclick=()=>show(idx+1);
+$("nb").onclick=()=>{notesOn=!notesOn;$("notes").classList.toggle("on",notesOn);};
+$("pm").onclick=()=>document.body.classList.toggle("present");
+$("fs").onclick=()=>{if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}else{document.exitFullscreen&&document.exitFullscreen();}};
+document.addEventListener("keydown",e=>{if($("lb").classList.contains("on")){if(e.key==="Escape")closeLb();return;}
+  if(e.target.closest&&e.target.closest("details")&&e.key===" ")return;
+  if(["ArrowRight","PageDown"," "].includes(e.key)){e.preventDefault();show(idx+1);}
+  else if(["ArrowLeft","PageUp"].includes(e.key)){e.preventDefault();show(idx-1);}
+  else if(e.key==="Home")show(0); else if(e.key==="End")show(slides.length-1);
+  else if(e.key.toLowerCase()==="g")$("nb").click(); else if(e.key.toLowerCase()==="p")$("pm").click(); else if(e.key.toLowerCase()==="f")$("fs").click();});
+show((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
