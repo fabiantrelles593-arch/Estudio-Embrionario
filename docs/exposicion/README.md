@@ -1,6 +1,13 @@
 # Exposición interactiva de geovida
 
-**Presentación principal (v2, 16 nov 2026):** `geovida-presentacion.html`, 17 láminas con
+**Presentación final (17 nov 2026):** `geovida-presentacion-final.html`, 27 láminas con el orden
+problema → importancia → objetivos → método → evidencia real → modelos 2D–5D → topología → morfometría →
+semáforo → MORPHO-TRACE → pruebas → arquitectura → futuro → conclusiones. Incluye un modelo 3D real
+interactivo y medidas reales de un embrión E11 (Qiu 2021). Fuente en `final/deck.html` y
+`final/build.py`; figuras y datos con `scripts/figure_final.py` (valores en `img/final_data.json`).
+Cómo abrirla, cambios y funcionalidades: `README_FINAL.md`. Guion: `GUION_FINAL.md`.
+
+**Presentación anterior (v2, 16 nov 2026):** `geovida-presentacion.html`, 17 láminas con
 propósito, cifras de anomalías congénitas (OMS, CDC-MINSA), atlas de especímenes reales de ratón,
 resultados con datos reales y ruta clínica. Fuente en `v2/deck.html`; se ensambla con
 `python docs/exposicion/v2/build.py` a partir de las figuras de `scripts/figure_atlas.py` (figuras y
