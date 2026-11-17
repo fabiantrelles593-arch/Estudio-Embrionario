@@ -67,11 +67,39 @@ En 20 máscaras de ventrículos (8760 a 39 875 vóxeles), `area_sdf` difiere de 
 **+1,0 %** (de −5,2 % a +2,3 %), y χ coincide en las 20 [HV]. Coherente con el sesgo positivo de `area_sdf`
 visto en fantomas, pero con datos reales no hay verdad para decidir cuál está más cerca.
 
+### Comparación con una herramienta externa establecida: SimpleITK 2.5.7 (17 nov 2026)
+
+Con el permiso del autor se instaló SimpleITK 2.5.7 desde PyPI (Apache 2.0; dependencia opcional
+`geovida[reference]`, que la CI no exige). `scripts/compare_sitk.py` usa las mismas 140 máscaras y fija sus
+criterios en el docstring antes de ejecutar. De ITK se usan `LabelShapeStatisticsImageFilter` (`PhysicalSize`,
+`Perimeter`) y `ConnectedComponentImageFilter`.
+
+| Criterio | Resultado |
+|---|---|
+| S1 · volumen de geovida = `PhysicalSize` de ITK | **Se cumple:** 140 de 140 [HV] |
+| S2 · b0 de geovida = componentes de ITK (conectividad 6 y 26) | **Se cumple:** 140 de 140 [HV] |
+| S3 · `Perimeter` de ITK a ≤ 1 punto porcentual de nuestro Crofton (mediana por t/h) | **Se cumple:** diferencia máxima 0,004 puntos [HV] |
+
+Mediana del error relativo absoluto de área frente a la verdad:
+
+| t/h | ITK `Perimeter` | Crofton propio | `area_sdf` |
+|---|---|---|---|
+| 4 | 2,6 % | 2,6 % | 3,9 % |
+| 8 | 0,4 % | 0,4 % | 1,9 % |
+| 16 | 0,3 % | 0,3 % | 2,7 % |
+
+En las 20 máscaras reales, ITK y el Crofton propio difieren a lo sumo en 0,002 %; `area_sdf` queda una
+mediana de +1,0 % por encima de ITK (de −5,2 % a +2,3 %) [HV].
+
+**Lectura:** la reimplementación de Crofton reproduce a ITK casi exactamente, lo que la valida como
+referencia. Una herramienta externa reconocida confirma el sesgo de `area_sdf` a resolución fina. Volumen y
+componentes conexas coinciden exactamente.
+
 ## 3. Consecuencias
 
-1. **Puerta de la fase 4:** χ queda contrastado con un método independiente. El área queda caracterizada
-   con un sesgo conocido de `area_sdf` (≈ +3 % a resolución fina). Falta la comparación con una herramienta
-   externa establecida (SimpleITK o VTK), que necesita permiso para instalarla [PV].
+1. **Puerta de la fase 4: cerrada en la parte de comparación externa.** El volumen, las componentes conexas
+   y el área se contrastaron con SimpleITK; χ, con un método independiente (ITK no calcula χ). El área queda
+   caracterizada con un sesgo conocido de `area_sdf` (≈ +3 % a resolución fina).
 2. **No se cambia ningún estimador ahora.** `area_sdf` se evaluó y se adoptó en H4 (`docs/RESULTADOS_V02.md`) a
    resoluciones bajas, donde su sesgo es pequeño y menor que el de `area_mc`. Cambiar el estimador principal
    exige un preregistro [PROP]: por ejemplo, evaluar Crofton como estimador principal de área con semillas y
@@ -83,7 +111,11 @@ visto en fantomas, pero con datos reales no hay verdad para decidir cuál está 
 
 ```
 python scripts/compare_reference.py --out results/summary/reference_comparison
+pip install "geovida[reference]"
+python scripts/compare_sitk.py --out results/summary/sitk_comparison
 ```
+
+Resumen de ITK: `results/summary/sitk_comparison.json`; prueba: `tests/test_compare_sitk.py` (se omite sin SimpleITK).
 
 Salidas: `results/summary/reference_comparison.json` (resumen), `..._phantoms.csv` y `..._real.csv`
 (fila por máscara). Los CSV no se suben a git; el resumen JSON sí.
