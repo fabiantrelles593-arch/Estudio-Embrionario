@@ -1,5 +1,12 @@
 # Exposición interactiva de geovida
 
+**Presentación principal (v2, 16 nov 2026):** `geovida-presentacion.html`, 17 láminas con
+propósito, cifras de anomalías congénitas (OMS, CDC-MINSA), atlas de especímenes reales de ratón,
+resultados con datos reales y ruta clínica. Fuente en `v2/deck.html`; se ensambla con
+`python docs/exposicion/v2/build.py` a partir de las figuras de `scripts/figure_atlas.py` (figuras y
+HTML ensamblado se generan en local con los datos reales; no están en git). Guion y
+fuentes de cada cifra: `GUION_V2.md`. El mazo de abajo queda como laboratorio interactivo.
+
 Un mazo de 20 láminas (la 13, «Datos reales», resume P3, ONTO-MAP y H11 al 16 nov 2026) que se maneja con el teclado (←/→; **G** muestra el guion del expositor) y
 que incluye cinco demostraciones en vivo, una prueba de «¿funciona?» con 200 objetos al azar, un
 cuestionario de aprendizaje y las preguntas probables del jurado, con respuesta.
