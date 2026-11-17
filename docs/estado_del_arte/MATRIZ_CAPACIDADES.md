@@ -28,6 +28,8 @@
 | Conjunto | Especie / estructura | Modalidad | Segmentación de referencia | Licencia verificada | Uso propuesto |
 |---|---|---|---|---|---|
 | MusMorph IMPC E15.5 | Ratón, embrión | μCT 0,027 mm | 48 estructuras, probablemente atlas propagado [EI] | CC BY 4.0 [HV] | **Piloto P3** (ADR-005) |
+| MusMorph landmarks de cabeza (FaceBase 3-JZA6) | Ratón, cabeza E15.5 y E18.5 | 540 landmarks por registro automático | Sin anotación experta [HV] | CC BY 4.0 [HV] | **ONTO-MAP P4** (717 especímenes, `docs/onto_map/RESULTADOS_P4.md`) |
+| Qiu et al. 2021 (IEEE DataPort) | Ratón, embrión E10–E14 | Ecografía 3D de alta frecuencia | Cuerpo y ventrículos cerebrales, dibujados por personas [HV] | CC BY [HV] | **H11 / H12R** (desviación D1 en `docs/PREREGISTRO_H11.md`; medición en curso) |
 | Matula 2021 (GigaDB 10.5524/100862) | Ratón, cabeza E12.5–E18.5 | μCT | **Manual** (cápsula nasal) [HV] | **CC0 1.0** [HV] | Banco técnico: efecto de la resolución sobre una segmentación experta |
 | LAMA atlas E14.5 (Zenodo 4559800) | Ratón, embrión | μCT 14 µm | Atlas de 184 etiquetas [HV] | CC BY 4.0 [HV] | Referencia si se trabaja a E14.5 |
 | Dalmasso S-BIAD441 | Ratón, miembro y corazón | OPT | [PV] | Sin licencia en el registro [HV] → [PV] | Fase 6, tras aclarar la licencia |
@@ -53,7 +55,7 @@ Diseño propuesto: modelo de componentes de varianza `descriptor ~ (1 | espécim
 ## 4. Qué queda pendiente de la Fase 1
 
 - Revisión sistemática formal de antecedentes (PubMed + Europe PMC con estrategia registrada) antes de afirmar novedad.
-- Lista exacta de estructuras comunes entre MusMorph E15.5 y MEMOS.
+- ~~Lista exacta de estructuras comunes entre MusMorph E15.5 y MEMOS.~~ Resuelto en el piloto de P3: las etiquetas 1–48 coinciden; la 102 y la 103 de MusMorph no se corresponden con la 49 y la 50 de KOMP2 (`docs/p3/RESULTADOS_PILOTO.md` §4).
 - Licencia de S-BIAD441, del portal IMPC y de los datos de UniCoN.
 - Herramientas de morfometría geométrica y análisis de superficies: solo se verificaron licencias, no se compararon métodos.
-- Línea prenatal: PSFHS y FETAL_PLANES_DB sin ficha todavía.
+- Línea prenatal: PSFHS y FETAL_PLANES_DB sin ficha todavía. Biblioteca de anomalías congénitas iniciada (4 registros con fuente): `docs/prenatal/BIBLIOTECA_ANOMALIAS.md`.
