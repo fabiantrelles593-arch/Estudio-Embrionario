@@ -329,11 +329,23 @@ Topología  [ROJO]      p = 0.06   Betti = (3, 0, 0)</pre>
 
     <section class="slide" data-title="Resultados" data-notes="No leas toda la tabla. Señala cuatro filas: H6, el semáforo de volumen, cinco de cinco; H8, el crecimiento, tres de tres; H7, que salió mal, uno de tres; y las dos últimas, H9 y H10, que se confirmaron hoy con el modelo congelado de antemano: la topología en verde falla como máximo 7 % de las veces, y la guardia impide los verdes falsos de volumen casi siempre. Di que la tabla incluye lo que no funcionó porque así se hizo el proyecto.">
       <span class="eyebrow">Resultados</span>
-      <h2>Diez pruebas, con sus aciertos y sus fallos</h2>
+      <h2>Diez pruebas sintéticas, con sus aciertos y sus fallos</h2>
       <div class="scroll"><table>
         <thead><tr><th>Prueba</th><th>Pregunta</th><th>Resultado</th><th>Lo que deja</th></tr></thead>
         <tbody id="scoreRows"></tbody>
       </table></div>
+    </section>
+
+    <section class="slide" data-title="Datos reales" data-notes="Esta lámina es lo nuevo desde la versión sintética. Di primero la regla: con datos reales no se conoce la verdad, así que se mide acuerdo y estabilidad, no exactitud. Luego las tres columnas. P3: los 40 archivos llegaron con su huella comprobada, el flujo corre de principio a fin, y el piloto ya encontró dos problemas en los datos publicados: segmentaciones interpoladas y 4 de 20 desplazadas medio milímetro. El confirmatorio de 60 especímenes está midiendo ahora mismo; su veredicto no existe todavía. ONTO-MAP: 717 especímenes, las tres hipótesis salieron contrarias, y no lo vendo como hallazgo biológico porque cada estadio tiene su propio atlas. H11: ecografía 3D real de ratón, reglas escritas antes de medir, medición en curso. Ningún dato humano.">
+      <span class="eyebrow">Del simulador a datos reales</span>
+      <h2>Primeros datos reales: embriones de ratón publicados</h2>
+      <p class="muted">Datos animales públicos con licencia CC BY verificada. Ningún dato humano ni clínico. Con datos reales no se conoce la verdad: se mide acuerdo y estabilidad, no exactitud.</p>
+      <div class="cols3">
+        <div class="idea"><b>P3 · micro-CT (MusMorph, IMPC, E15.5)</b>¿Cuánta variación de una estructura es técnica y cuánta del espécimen? Piloto de 20 especímenes: 40 de 40 archivos con su huella MD5 comprobada y el flujo completo funciona. El piloto halló que las segmentaciones publicadas están interpoladas (28–32 % de vóxeles mezclados) y que 4 de 20 están desplazadas 0,5–0,6 mm. <span class="chip mid">confirmatorio de 60 en curso</span></div>
+        <div class="idea"><b>ONTO-MAP · landmarks de cabeza (E15.5 → E18.5)</b>¿La variación de forma dentro de un estadio apunta hacia el cambio entre estadios? Con 259 + 458 especímenes, las tres hipótesis salieron <strong>contrarias</strong> (84,5°, IC 79,3°–89,5°; 45° era el límite). Cada estadio tiene su propio atlas, así que no se atribuye a la biología. El método ya existía: es una réplica con un resultado negativo. <span class="chip bad">3 de 3 contrarias</span></div>
+        <div class="idea"><b>H11 · ecografía 3D real de ratón (Qiu et al. 2021)</b>¿Funciona el semáforo congelado fuera del simulador? Se compara con la referencia dibujada por personas: 180 casos de cuerpo (170 embriones) y 216 de ventrículo (203). Las reglas, incluida la desviación D1, se escribieron antes de medir. <span class="chip mid">medición en curso</span></div>
+      </div>
+      <p class="muted">Etiquetas del proyecto: verificado, evidencia indirecta, hipótesis, pendiente de validación. Detalle: docs/p3/RESULTADOS_PILOTO.md, docs/onto_map/RESULTADOS_P4.md, docs/PREREGISTRO_H11.md.</p>
     </section>
 
     <section class="slide" data-title="Lo que salió mal" data-notes="Esta lámina da credibilidad. Un proyecto que solo muestra aciertos no convence. Cuenta el hallazgo más importante: mi propio semáforo, que había pasado sus cinco pruebas, falla cuando la imagen tiene más ruido o más desenfoque que las de su calibración. Lo descubrí probándolo donde podía fallar, y por eso ahora lleva una guardia que se niega a certificar. La guardia se confirmó, pero no es perfecta: en un caso dejó pasar 28 luces verdes y 21 % eran falsas. Y la topología, sin guardia, falla con imágenes desenfocadas.">
@@ -345,17 +357,18 @@ Topología  [ROJO]      p = 0.06   Betti = (3, 0, 0)</pre>
           <li><b>La limpieza de imágenes 2D cumplió 1 de 3.</b> Ayuda menos de lo que predije.</li>
           <li><b>Mi propio semáforo falla fuera de su calibración.</b> Con el doble de ruido dio hasta 97 % de luces verdes falsas, y la confirmación lo repitió con 12 600 medidas.</li>
           <li><b>La guardia no es perfecta.</b> En un caso dejó pasar 28 luces verdes y 6 eran falsas. Y la topología, sin guardia, supera 10 % de verdes falsos con imágenes desenfocadas.</li>
-          <li><b>23 errores míos</b> están documentados, cada uno con su causa y cómo se evita.</li>
+          <li><b>ONTO-MAP salió negativo.</b> Con 717 especímenes reales, las tres hipótesis fueron contrarias, y el método resultó no ser original. Se publica tal cual.</li>
+          <li><b>27 errores míos</b> están documentados, cada uno con su causa y cómo se evita.</li>
         </ul>
         <div class="callout"><p class="big">Un resultado negativo bien medido también es un resultado.</p><p style="margin-top:8px">De ese fallo salió la pieza más nueva: una <b>guardia de dominio</b> que mide en la propia imagen el ruido y el desenfoque y, si no se parecen a los de la calibración, se niega a dar luz verde. En la confirmación, 10 de 12 casos quedaron sin ninguna luz verde falsa.</p></div>
       </div>
     </section>
 
-    <section class="slide" data-title="Límites" data-notes="Dilo tú antes de que te lo pregunten. Lo más importante: no se ha medido ningún embrión real y nadie externo ha revisado el trabajo. No es una herramienta médica.">
+    <section class="slide" data-title="Límites" data-notes="Dilo tú antes de que te lo pregunten. Lo más importante: el semáforo solo está confirmado en imágenes sintéticas; con datos reales de ratón hay un piloto, un resultado negativo y dos mediciones que aún no terminan. Ningún dato humano, y nadie externo ha revisado el trabajo. No es una herramienta médica.">
       <span class="eyebrow">Límites</span>
       <h2>Lo que este proyecto no afirma</h2>
       <ul class="limits">
-        <li>No mide embriones reales. Todo sale de formas matemáticas y de un simulador de imagen.</li>
+        <li>El semáforo solo está confirmado en imágenes sintéticas. Con datos reales de ratón hay un piloto, un resultado negativo y dos veredictos que aún no existen (P3 y H11). Ningún dato humano.</li>
         <li>«4D» es pseudo-tiempo: cada etapa es un espécimen distinto, no el mismo seguido en el tiempo.</li>
         <li>El semáforo vale para imágenes parecidas a las de su calibración. La guardia avisa cuando no se parecen, casi siempre pero no siempre.</li>
         <li>Un rasgo que la imagen ya perdió por completo no deja rastro: ningún semáforo lo detecta. De las topologías incorrectas, 6,6 % recibieron luz verde.</li>
@@ -369,8 +382,8 @@ Topología  [ROJO]      p = 0.06   Betti = (3, 0, 0)</pre>
       <h2>A quién sirve y qué sigue</h2>
       <div class="cols3">
         <div class="idea"><b>A quién sirve</b>A laboratorios que miden embriones de ratón o pez cebra y cultivos de células madre, a quienes validan programas de segmentación y a docentes de biología y computación.</div>
-        <div class="idea"><b>Qué entrega</b>Un programa abierto en Python con 351 pruebas automáticas, una tabla de resolución mínima para planificar y un certificado para cada medida.</div>
-        <div class="idea"><b>Qué sigue</b>Imágenes públicas con licencia verificada, empezando por 2D. Fantomas físicos o un laboratorio aliado. Revisión científica externa.</div>
+        <div class="idea"><b>Qué entrega</b>Un programa abierto en Python con más de 700 funciones de prueba automáticas, una tabla de resolución mínima para planificar, un certificado para cada medida y un flujo que ya lee datos reales publicados con su huella comprobada.</div>
+        <div class="idea"><b>Qué sigue</b>Publicar los veredictos de P3 y H11 tal como salgan. Medir cuánto de una diferencia de forma se debe al atlas (MORPHO-TRACE). Revisión científica externa.</div>
       </div>
       <div class="scroll"><table>
         <thead><tr><th>Antes de tomar la imagen: tamaño mínimo para luz verde</th><th>Bola</th><th>Cilindro</th><th>Lámina</th></tr></thead>
@@ -407,14 +420,15 @@ Topología  [ROJO]      p = 0.06   Betti = (3, 0, 0)</pre>
 
     <section class="slide" data-title="Preguntas del jurado" data-notes="Ensaya estas respuestas en voz alta. Son cortas y dicen la verdad, que es lo que mejor resiste una segunda pregunta.">
       <span class="eyebrow">Preparación</span>
-      <h2>Seis preguntas que te pueden hacer</h2>
+      <h2>Siete preguntas que te pueden hacer</h2>
       <div class="stack">
-        <details><summary>¿Lo probaste con embriones reales?</summary><p>No. Todo se probó con formas matemáticas y un simulador de imagen, porque solo así se conoce la respuesta correcta. El siguiente paso son imágenes públicas con licencia. Una imagen de una persona solo se usaría con consentimiento, anonimización y aprobación ética.</p></details>
+        <details><summary>¿Lo probaste con embriones reales?</summary><p>El semáforo se confirmó con formas matemáticas y un simulador, porque solo así se conoce la respuesta correcta. Con embriones reales de ratón, de bases públicas con licencia, hay tres estudios: un piloto de micro-CT que funcionó de principio a fin, un análisis de forma con 717 especímenes que salió negativo, y dos mediciones en curso cuyos veredictos todavía no existen. Ningún dato humano: eso exigiría consentimiento, anonimización y aprobación ética.</p></details>
         <details><summary>¿Cómo sabes que el semáforo funciona?</summary><p>Se calibró con unas imágenes y se comprobó con otras 50 400 que no había visto, con el criterio escrito antes. Cuando dio luz verde se equivocó entre 0,4 % y 2,6 % de las veces. El de topología se comprobó con otras 18 900 medidas con el modelo congelado de antemano: en verde se equivocó como máximo 7,0 % de las veces. La demostración 2 repite el de volumen en vivo con objetos nuevos.</p></details>
         <details><summary>¿Qué tiene de nuevo?</summary><p>Las ideas sueltas ya existen en otros campos. Lo que no encontré en la literatura es la combinación: una probabilidad para cada medida, calibrada contra una verdad conocida, que además se niega a certificar imágenes distintas de las de su calibración. Esa negativa se probó con 12 600 medidas de imágenes más ruidosas o más desenfocadas: evitó los verdes falsos de volumen en 10 de 12 casos, y no es perfecta. Es una ausencia en mi búsqueda, no una prueba de que nadie lo haya hecho.</p></details>
         <details><summary>¿Para qué sirve si no diagnostica?</summary><p>Para que quien investiga sepa si puede fiarse de sus medidas y qué resolución necesita antes de tomar la imagen. Mejora la herramienta de investigación; no sustituye a un médico.</p></details>
         <details><summary>¿Lo hiciste tú?</summary><p>Yo planteé el problema, dirigí las decisiones y revisé los resultados. El código se desarrolló con asistencia de inteligencia artificial (Claude), y está declarado así en el repositorio. Todavía no tiene revisión científica externa.</p></details>
-        <details><summary>¿Cuál es la parte más débil?</summary><p>Que aún no hay datos reales ni revisión externa, y que un rasgo que la imagen pierde por completo no se puede detectar. Lo digo en el propio proyecto.</p></details>
+        <details><summary>¿Cuál es la parte más débil?</summary><p>Que con datos reales todavía no hay ningún veredicto del semáforo, que no hay revisión externa, y que un rasgo que la imagen pierde por completo no se puede detectar. Lo digo en el propio proyecto.</p></details>
+        <details><summary>¿Por qué presentas un resultado negativo?</summary><p>Porque las hipótesis de ONTO-MAP se escribieron antes de mirar los datos y salieron contrarias. Ocultarlo sería elegir los resultados. Además enseñó algo útil: con un atlas distinto por estadio no se puede separar la biología del procesamiento, y esa es justo la pregunta de MORPHO-TRACE.</p></details>
       </div>
     </section>
 
@@ -423,7 +437,7 @@ Topología  [ROJO]      p = 0.06   Betti = (3, 0, 0)</pre>
       <h1>Medir bien es saber cuánto no se sabe.</h1>
       <p class="big">Geometría de la Vida no promete ver más de lo que la imagen permite. Promete decir, para cada medida, si hay que creerle.</p>
       <p class="muted">Código, preregistros, resultados y erratas: github.com/fabiantrelles593-arch/Estudio-Embrionario (rama geovida/v0.1-desde-cero). Licencia MIT.</p>
-      <div class="tags"><span class="tag">351 pruebas automáticas</span><span class="tag">10 pruebas preregistradas</span><span class="tag">23 erratas publicadas</span></div>
+      <div class="tags"><span class="tag">más de 700 funciones de prueba</span><span class="tag">19 preregistros</span><span class="tag">27 erratas publicadas</span><span class="tag">3 estudios con datos reales de ratón</span></div>
     </section>
   </div>
 
