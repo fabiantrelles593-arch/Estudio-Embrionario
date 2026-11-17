@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geometría de la Vida</title>
+<style>
+:root{
+  --bg:#070b10; --panel:#0e151d; --panel2:#121b25; --line:#1f2b37; --fg:#e8eef4; --muted:#8d9aa7;
+  --acc:#3fd0c9; --acc2:#f2a541; --bad:#ff6b6b; --ok:#5ad37f; --mid:#f2c94c;
+  --sans:"Segoe UI",Inter,system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --mono:"Cascadia Mono",Consolas,"SFMono-Regular",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:var(--sans)}
+body{overflow:hidden}
+.slide{position:absolute;inset:0 0 56px 0;padding:44px 64px 24px;display:none;flex-direction:column;gap:18px;overflow:auto;
+  background:radial-gradient(1200px 600px at 85% -10%,rgba(63,208,201,.08),transparent 60%),
+             radial-gradient(900px 500px at -10% 110%,rgba(242,165,65,.06),transparent 60%),var(--bg)}
+.slide.on{display:flex}
+.grid-bg{position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:48px 48px;mask-image:radial-gradient(ellipse at 70% 30%,#000 10%,transparent 70%)}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--acc)}
+.eyebrow i{color:var(--muted);font-style:normal}
+h1{font-size:64px;line-height:1.02;margin:0;letter-spacing:-.02em;font-weight:700}
+h2{font-size:38px;line-height:1.1;margin:0;letter-spacing:-.01em;font-weight:650;max-width:1100px}
+h3{font-size:16px;margin:0 0 8px;color:var(--acc);font-weight:600;letter-spacing:.02em}
+p{margin:0;line-height:1.5;font-size:18px;color:#cdd6df;max-width:1050px}
+.lead{font-size:22px;color:var(--fg)}
+.muted{color:var(--muted);font-size:14px}
+.src{color:var(--muted);font-size:12px;font-family:var(--mono);margin-top:auto}
+.src a{color:var(--muted)}
+.row{display:flex;gap:18px;flex-wrap:wrap}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.card p{font-size:15.5px}
+.kpi{font:700 46px/1 var(--sans);color:var(--fg);letter-spacing:-.02em}
+.kpi small{font-size:18px;color:var(--muted);font-weight:500}
+.kpi.acc{color:var(--acc)} .kpi.acc2{color:var(--acc2)}
+.kpi-l{margin-top:8px;font-size:15px;color:#cdd6df;line-height:1.4}
+.tag{display:inline-block;font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.tag.acc{color:var(--acc);border-color:rgba(63,208,201,.4)} .tag.acc2{color:var(--acc2);border-color:rgba(242,165,65,.4)}
+.tag.bad{color:var(--bad);border-color:rgba(255,107,107,.4)}
+.chip{font:600 11px/1 var(--mono);padding:5px 8px;border-radius:6px;background:#1a2430;color:var(--muted)}
+.chip.ok{color:var(--ok)} .chip.mid{color:var(--mid)} .chip.bad{color:var(--bad)}
+.hv{font:700 10px/1 var(--mono);color:var(--acc);border:1px solid rgba(63,208,201,.35);padding:3px 5px;border-radius:4px;vertical-align:2px;margin-left:6px}
+.hv.ei{color:var(--acc2);border-color:rgba(242,165,65,.35)} .hv.hip{color:#b69cff;border-color:rgba(182,156,255,.35)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td.num{font-family:var(--mono);white-space:nowrap}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;height:100%}
+.hero img{width:100%;border-radius:16px;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.figure{border-radius:14px;border:1px solid var(--line);overflow:hidden;background:#0b1016}
+.figure img{display:block;width:100%;max-height:42vh;object-fit:contain;background:#0b1016}
+.figure figcaption{padding:10px 14px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+.bar{display:grid;grid-template-columns:230px 1fr 60px;gap:12px;align-items:center;margin:10px 0;font-size:16px}
+.bar .t{height:22px;background:#16202a;border-radius:6px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:linear-gradient(90deg,#2a3a48,#3c5266)}
+.bar.hl .t i{background:linear-gradient(90deg,var(--acc2),#ffcf7a)}
+.bar b{font-family:var(--mono);text-align:right}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;counter-reset:s}
+.flow .st{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;min-height:150px}
+.flow .st:before{counter-increment:s;content:"0" counter(s);font:700 12px/1 var(--mono);color:var(--acc);display:block;margin-bottom:10px}
+.flow .st b{display:block;font-size:16px;margin-bottom:6px}
+.flow .st span{font-size:13.5px;color:#b9c4ce;line-height:1.45}
+.flow .st:not(:last-child):after{content:"";position:absolute;right:-9px;top:50%;width:8px;height:2px;background:var(--acc)}
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.timeline .ph{border-top:3px solid var(--line);padding-top:12px}
+.timeline .ph.now{border-color:var(--acc)}
+.timeline .ph b{display:block;font-size:16px;margin:6px 0}
+.timeline .ph span{font-size:13.5px;color:#b9c4ce;line-height:1.45}
+.list{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.list li{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:15.5px;line-height:1.45;color:#d3dbe3}
+.list li b{color:var(--fg)}
+.atlas{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.spec{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:transform .15s,border-color .15s}
+.spec:hover{transform:translateY(-3px);border-color:var(--acc)}
+.spec .th{height:150px;background-size:cover;background-position:center}
+.spec .bd{padding:12px 14px}
+.spec .bd b{display:block;font-size:15px}
+.spec .bd span{font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+.meta{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:13.5px}
+.meta dt{color:var(--muted);font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.meta dd{margin:0;color:#d3dbe3;word-break:break-all}
+.lightbox{position:fixed;inset:0;background:rgba(3,6,9,.92);display:none;z-index:50;padding:40px;gap:26px;grid-template-columns:1fr 380px}
+.lightbox.on{display:grid}
+.lightbox img{max-width:100%;max-height:calc(100vh - 80px);border-radius:12px;border:1px solid var(--line);align-self:center;justify-self:center}
+.lightbox .side{align-self:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.lightbox .x{position:absolute;top:14px;right:22px;font:600 13px var(--mono);color:var(--muted);cursor:pointer}
+nav{position:fixed;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:14px;padding:0 24px;border-top:1px solid var(--line);background:rgba(7,11,16,.92);z-index:10}
+nav .brand{font:700 12px/1 var(--mono);letter-spacing:.2em;color:var(--fg)}
+nav .brand i{color:var(--acc);font-style:normal}
+nav .sec{font:500 12px var(--mono);color:var(--muted)}
+nav .prog{flex:1;height:3px;background:#16202a;border-radius:2px;overflow:hidden}
+nav .prog i{display:block;height:100%;background:var(--acc);width:0}
+nav button{background:#121b25;border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:8px 14px;font:600 12px var(--sans);cursor:pointer}
+nav button:hover{border-color:var(--acc)}
+.notes{position:fixed;left:24px;right:24px;bottom:66px;background:#0e151d;border:1px solid var(--acc);border-radius:12px;padding:14px 18px;font-size:15px;line-height:1.5;color:#dbe3ea;display:none;z-index:20;max-height:40vh;overflow:auto}
+.notes.on{display:block}
+.notes b{color:var(--acc);font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:6px}
+.big-q{font-size:30px;line-height:1.3;color:var(--fg);max-width:1000px;border-left:3px solid var(--acc);padding-left:22px}
+a.btn{display:inline-block;text-decoration:none;color:var(--bg);background:var(--acc);padding:10px 16px;border-radius:9px;font-weight:700;font-size:14px}
+@media (max-width:1100px){.slide{padding:28px 22px}.cols3,.cols4,.atlas,.flow,.timeline{grid-template-columns:1fr 1fr}.hero,.cols2{grid-template-columns:1fr}h1{font-size:44px}h2{font-size:28px}}
+@media print{body{overflow:visible}.slide{position:relative;display:flex;page-break-after:always;min-height:100vh}nav,.notes{display:none}}
+</style>
+</head>
+<body>
+
+<!-- 1 ─────────────────────────────── PORTADA -->
+<section class="slide" data-sec="Portada" data-notes="Preséntate. Una frase: Geometría de la Vida es una plataforma para medir con rigor la forma de embriones en imágenes y decir, para cada medida, cuánto se puede confiar en ella. Su destino es servir a la investigación de las anomalías congénitas y, a futuro, a la clínica; hoy está en etapa preclínica, con datos reales de ratón.">
+  <div class="grid-bg"></div>
+  <div class="hero">
+    <div style="display:flex;flex-direction:column;gap:22px">
+      <span class="eyebrow">Plataforma de investigación biomédica <i>· v0.x preclínica</i></span>
+      <h1>GEOMETRÍA<br>DE LA VIDA</h1>
+      <p class="lead">Morfometría embrionaria 2D · 3D · 4D con un certificado de confianza para cada medida.</p>
+      <div class="row"><span class="tag acc">datos reales de ratón</span><span class="tag">micro-CT · ecografía 3D · landmarks</span><span class="tag">código abierto · MIT</span><span class="tag acc2">etapa preclínica</span></div>
+      <p class="muted">Fabián Trelles · Exposición del proyecto · noviembre de 2026</p>
+    </div>
+    <figure class="figure" style="margin:0;justify-self:center;max-width:430px"><img src="{{IMG:hero_0218}}" style="max-height:60vh;object-fit:contain" alt="Embrión de ratón E15.5 en micro-CT con su segmentación"><figcaption>Embrión de ratón real, día 15,5, micro-CT a 27 µm, con 50 estructuras segmentadas. MusMorph/IMPC, CC BY 4.0.</figcaption></figure>
+  </div>
+</section>
+
+<!-- 2 ─────────────────────────────── PROPÓSITO -->
+<section class="slide" data-sec="Propósito" data-notes="Explica el propósito en tres partes. Medir: convertir una imagen en números físicos (milímetros, volumen, número de cavidades). Certificar: decir si esa medida es fiable o no, sin conocer la respuesta. Rastrear: cada número vuelve a su archivo original con su huella digital. Termina con la pregunta central.">
+  <span class="eyebrow">01 · Qué busca el proyecto</span>
+  <h2>Medir la forma del desarrollo embrionario y saber cuándo creerle a la medida</h2>
+  <div class="cols3">
+    <div class="card"><h3>Medir</h3><p>Volumen, superficie, longitudes, forma y topología (piezas, túneles y cavidades) de estructuras embrionarias en imágenes 2D, 3D y series en el tiempo, en unidades físicas calibradas.</p></div>
+    <div class="card"><h3>Certificar</h3><p>Un semáforo por medida —verde, amarillo o rojo— que estima si el error es aceptable usando solo la imagen, y que se niega a dar verde a imágenes distintas de las que lo calibraron.</p></div>
+    <div class="card"><h3>Rastrear</h3><p>Cada número vuelve a su archivo original (huella SHA-256), su licencia, sus parámetros y la versión del código. Los criterios se escriben antes de cada experimento.</p></div>
+  </div>
+  <p class="big-q">¿Puede un programa saber, sin conocer la respuesta correcta, si su propia medida de un embrión es fiable?</p>
+</section>
+
+<!-- 3 ─────────────────────────────── MUNDO -->
+<section class="slide" data-sec="Importancia" data-notes="Estas son cifras de la Organización Mundial de la Salud. Di despacio: unos 8 millones de bebés nacen cada año con un defecto congénito; 240 mil recién nacidos mueren cada año por esa causa en su primer mes, y 170 mil niños más entre el mes y los 5 años. Y nueve de cada diez casos graves ocurren en países de ingresos bajos y medios, como el nuestro.">
+  <span class="eyebrow">02 · Por qué importa · el mundo</span>
+  <h2>Las anomalías congénitas son una de las grandes causas de muerte infantil</h2>
+  <div class="cols4">
+    <div class="card"><div class="kpi acc">≈ 8 <small>millones</small></div><div class="kpi-l">de bebés nacen cada año con un defecto congénito.</div></div>
+    <div class="card"><div class="kpi">240 000</div><div class="kpi-l">recién nacidos mueren cada año por trastornos congénitos en sus primeros 28 días.</div></div>
+    <div class="card"><div class="kpi">170 000</div><div class="kpi-l">niños más mueren por esa causa entre el primer mes y los 5 años.</div></div>
+    <div class="card"><div class="kpi acc2">9 <small>de 10</small></div><div class="kpi-l">niños con un trastorno congénito grave nacen en países de ingresos bajos y medios.</div></div>
+  </div>
+  <div class="card"><p>Los más frecuentes entre los graves son las <b>cardiopatías congénitas</b>, los <b>defectos del tubo neural</b> y el <b>síndrome de Down</b>. Las anomalías estructurales se originan mientras se forman los órganos, en el periodo embrionario: medir bien la forma del embrión es medir dónde empieza el problema.</p></div>
+  <p class="src">OMS, nota descriptiva «Congenital disorders», 27 feb 2023 (240 000; 170 000; 9 de 10; tipos más frecuentes) · OMS, informe técnico de junio de 2026 sobre tamizaje neonatal, citado por News-Medical 24 jun 2026 (≈ 8 millones; casi 8 % de las muertes de menores de 5 años).</p>
+</section>
+
+<!-- 4 ─────────────────────────────── PERÚ -->
+<section class="slide" data-sec="Importancia" data-notes="En el Perú, según la vigilancia del CDC del Ministerio de Salud, hasta 2021 las malformaciones congénitas eran la tercera causa de muerte neonatal: 17 de cada 100 recién nacidos que fallecen. Aclara que no encontré un desglose nacional más reciente publicado; por eso la cifra es de 2021 y se dice así.">
+  <span class="eyebrow">03 · Por qué importa · el Perú</span>
+  <h2>En el Perú, 17 de cada 100 muertes neonatales se deben a malformaciones congénitas</h2>
+  <div class="cols2" style="align-items:center">
+    <div class="card">
+      <h3>Causas de muerte neonatal en el Perú (vigilancia CDC-MINSA, hasta 2021)</h3>
+      <div class="bar"><span>Prematuridad – inmadurez</span><div class="t"><i style="width:100%"></i></div><b>27 %</b></div>
+      <div class="bar"><span>Asfixia y causas del parto</span><div class="t"><i style="width:66.7%"></i></div><b>18 %</b></div>
+      <div class="bar hl"><span><b style="font-family:var(--sans);text-align:left">Malformaciones congénitas</b></span><div class="t"><i style="width:63%"></i></div><b>17 %</b></div>
+      <div class="bar"><span>Infecciones</span><div class="t"><i style="width:55.6%"></i></div><b>15 %</b></div>
+    </div>
+    <div style="display:grid;gap:16px">
+      <div class="card"><div class="kpi acc2">3.ª</div><div class="kpi-l">causa de muerte neonatal en el país, detrás de la prematuridad y la asfixia. A diferencia de ellas, estas anomalías se originan mientras se forman los órganos, mucho antes del parto.</div></div>
+      <div class="card"><p>Para entender por qué se forman hay que <b>comparar la forma de embriones</b> normales y alterados. Esa comparación, en investigación, se hace con imágenes y con modelos animales.</p></div>
+    </div>
+  </div>
+  <p class="src">CDC-MINSA, presentación en la Mesa de Concertación para la Lucha contra la Pobreza, 15 nov 2022 (dato acumulado hasta 2021). No se encontró un desglose nacional por causa más reciente publicado.</p>
+</section>
+
+<!-- 5 ─────────────────────────────── EMBRIOLOGÍA -->
+<section class="slide" data-sec="Fundamento" data-notes="Aquí conectas la salud con la biología. Las anomalías estructurales nacen mientras se forman los órganos. Para estudiarlas, la investigación usa modelos animales: el ratón es el modelo estándar del consorcio internacional IMPC, que fenotipa embriones con micro-CT. No hay que decir que un día de ratón equivale a una semana humana: las escalas de estadios son distintas (Carnegie en humanos, Theiler en ratón).">
+  <span class="eyebrow">04 · Fundamento biológico</span>
+  <h2>Las anomalías estructurales se forman cuando se forman los órganos</h2>
+  <div class="cols3">
+    <div class="card"><h3>Organogénesis</h3><p>La mayoría de los defectos congénitos se producen en los primeros 3 meses del embarazo, cuando se forman los órganos. En ese periodo la forma cambia más rápido que en ningún otro.</p></div>
+    <div class="card"><h3>Modelo animal</h3><p>El ratón es el modelo estándar para estudiar el desarrollo: el consorcio IMPC desactiva genes uno a uno y escanea los embriones con micro-CT para ver qué estructura cambia.</p></div>
+    <div class="card"><h3>Estadios, no fechas</h3><p>Humano: estadios de Carnegie. Ratón: estadios de Theiler o días embrionarios (E10 a E18,5). No se equiparan automáticamente: cada especie tiene su ritmo.</p></div>
+  </div>
+  <figure class="figure"><img src="{{IMG:qiu_series}}" alt="Serie de ecografías 3D de embriones de ratón de E10 a E14"></figure>
+</section>
+
+<!-- 6 ─────────────────────────────── EL PROBLEMA DE MEDIDA -->
+<section class="slide" data-sec="Valor" data-notes="Este es el valor del proyecto. Cuando dos laboratorios comparan embriones, una diferencia de volumen puede venir del embrión o de la imagen: resolución, segmentación, registro a un atlas. Si no sabemos cuánto pesa cada fuente, podemos confundir un artefacto con biología. Nuestro aporte es poner un número de confianza a cada medida.">
+  <span class="eyebrow">05 · El valor del proyecto</span>
+  <h2>Una diferencia en la imagen no siempre es una diferencia en el embrión</h2>
+  <div class="cols2">
+    <ul class="list">
+      <li><b>Resolución.</b> Con vóxeles grandes, el volumen se desvía y hasta desaparecen cavidades reales. Lo medimos: un anillo de pared estrecha pierde su agujero a 2 vóxeles y lo recupera a 3.</li>
+      <li><b>Segmentación.</b> Dos métodos razonables dan volúmenes distintos para la misma estructura.</li>
+      <li><b>Registro a un atlas.</b> En datos publicados encontramos segmentaciones desplazadas medio milímetro respecto a su imagen.</li>
+      <li><b>Atlas distinto por estadio.</b> Puede crear diferencias entre edades que no son biológicas.</li>
+    </ul>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card"><h3>Lo que existe</h3><p>Herramientas que segmentan y miden (3D Slicer, MEMOS, LAMA, atlas de MusMorph). Entregan el número, no cuánto confiar en él.</p></div>
+      <div class="card" style="border-color:rgba(63,208,201,.45)"><h3>Lo que aporta Geometría de la Vida</h3><p>Un <b>certificado por medida</b>, calibrado con objetos de respuesta conocida y con una <b>guardia de dominio</b> que se niega a certificar imágenes distintas de las de su calibración. No encontramos esa combinación en la literatura revisada.<span class="hv ei">EI</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 ─────────────────────────────── CÓMO FUNCIONA -->
+<section class="slide" data-sec="Cómo funciona" data-notes="Recorre las seis etapas. Uno: ingesta, cada archivo entra con su huella SHA-256 y su licencia; si la huella no coincide, no se usa. Dos: calibración, se leen ejes, orientación y tamaño del vóxel en milímetros. Tres: segmentación con tres métodos. Cuatro: medidas geométricas y topológicas. Cinco: el certificado. Seis: el informe, que dice de dónde salió cada número.">
+  <span class="eyebrow">06 · Cómo funciona</span>
+  <h2>De la imagen al número certificado, en seis etapas</h2>
+  <div class="flow">
+    <div class="st"><b>Ingesta</b><span>NIfTI, MINC2, NRRD, TIFF, NPY. Huella SHA-256, licencia y manifiesto verificable.</span></div>
+    <div class="st"><b>Calibración</b><span>Ejes, orientación y vóxel en mm. Detecta anisotropía y unidades dudosas.</span></div>
+    <div class="st"><b>Segmentación</b><span>Umbral fijo, Otsu y Otsu suavizado; acepta segmentaciones externas.</span></div>
+    <div class="st"><b>Medida</b><span>Volumen, superficie, ejes, esfericidad; topología por números de Betti.</span></div>
+    <div class="st"><b>Certificado</b><span>Probabilidad de error ≤ 5 %, semáforo, eje de escala y guardia de dominio.</span></div>
+    <div class="st"><b>Informe</b><span>Procedencia completa: archivo, parámetros, versión, advertencias.</span></div>
+  </div>
+  <div class="cols3">
+    <div class="card"><h3>2D</h3><p>Área, perímetro, circularidad, momentos, topología 2D; biometría temprana con incertidumbre propagada.</p></div>
+    <div class="card"><h3>3D</h3><p>Volumen y superficie físicos, Betti (piezas, túneles, cavidades), comparación con fantomas analíticos.</p></div>
+    <div class="card"><h3>4D y contexto</h3><p>Trayectorias de crecimiento distinguiendo seguimiento real de pseudo-tiempo; landmarks y Procrustes para comparar estadios.</p></div>
+  </div>
+</section>
+
+<!-- 8 ─────────────────────────────── ATLAS -->
+<section class="slide" data-sec="Atlas" data-notes="Esta es la parte visual de la plataforma, al estilo de los repositorios como FaceBase: cada ficha es un conjunto real que la plataforma leyó y verificó. Haz clic en una tarjeta para ampliarla: a la derecha aparece su procedencia, la huella digital y la licencia. Todo es animal y público; nada humano.">
+  <span class="eyebrow">07 · Atlas de especímenes estudiados</span>
+  <h2>Los embriones que la plataforma ya leyó, verificó y midió</h2>
+  <div class="atlas" id="atlas"></div>
+  <div class="cols4">
+    <div class="card"><div class="kpi acc">80</div><div class="kpi-l">embriones E15.5 de micro-CT (20 piloto + 60 confirmatorio), cada archivo con su huella registrada.</div></div>
+    <div class="card"><div class="kpi">717</div><div class="kpi-l">configuraciones de 540 landmarks de cabeza (E15.5 y E18.5).</div></div>
+    <div class="card"><div class="kpi">396</div><div class="kpi-l">casos de ecografía 3D de alta frecuencia (180 de cuerpo, 216 de ventrículos).</div></div>
+    <div class="card"><div class="kpi acc2">0</div><div class="kpi-l">datos humanos o identificables. Todo con licencia CC BY verificada.</div></div>
+  </div>
+  <p class="muted">Haz clic en una tarjeta para ver la imagen completa y su ficha de procedencia.</p>
+</section>
+
+<!-- 9 ─────────────────────────────── ESPÉCIMEN -->
+<section class="slide" data-sec="Atlas" data-notes="Ficha de un espécimen real. Explica los tres cortes: axial, coronal y sagital, con las 50 estructuras de la segmentación publicada en color. Abajo, la ficha técnica: la huella SHA-256 garantiza que es exactamente el archivo publicado. Ese es el nivel de trazabilidad de la plataforma.">
+  <span class="eyebrow">08 · Ficha de espécimen</span>
+  <h2>IMPC E15.5 · espécimen 0218</h2>
+  <figure class="figure"><img src="{{IMG:musmorph_0218}}" alt="Tres cortes de micro-CT del espécimen 0218 con su segmentación"></figure>
+  <div class="cols2">
+    <dl class="meta">
+      <dt>Especie</dt><dd>Ratón (Mus musculus), línea IMPC</dd>
+      <dt>Estadio</dt><dd>E15.5 (día embrionario 15,5)</dd>
+      <dt>Modalidad</dt><dd>Micro-CT con contraste, vóxel isótropo de 27 µm</dd>
+      <dt>Segmentación</dt><dd>Atlas propagado de MusMorph, 50 etiquetas</dd>
+    </dl>
+    <dl class="meta">
+      <dt>Fuente</dt><dd>FaceBase, registro 3-JZA6 (Devine et al. 2022, Sci Data 9:230)</dd>
+      <dt>Licencia</dt><dd>CC BY 4.0</dd>
+      <dt>SHA-256</dt><dd>944175a49d47dfbd35744642303b5543f5efbf5d0ab6a3ec9e996bf6cec69cd2</dd>
+      <dt>Verificación</dt><dd>MD5 del catálogo y manifiesto: correctos</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- 10 ─────────────────────────────── HALLAZGO -->
+<section class="slide" data-sec="Resultados reales" data-notes="Este es el primer hallazgo con datos reales. Al revisar los datos publicados, la plataforma detectó dos problemas: las segmentaciones están interpoladas, casi un tercio de sus vóxeles tiene valores mezclados entre etiquetas; y en 4 de 20 especímenes la segmentación está desplazada medio milímetro respecto a su imagen. Muestra la imagen del 0040 junto a la del 0218. Si alguien mide sin revisar, mide mal.">
+  <span class="eyebrow">09 · Resultado con datos reales · P3 piloto</span>
+  <h2>La plataforma detectó problemas en datos publicados antes de medir</h2>
+  <figure class="figure"><img src="{{IMG:musmorph_0040}}" alt="Espécimen 0040 con la segmentación desplazada"></figure>
+  <div class="cols3">
+    <div class="card"><div class="kpi acc2">28–32 %</div><div class="kpi-l">de los vóxeles etiquetados tienen valores interpolados entre etiquetas, en los 20 especímenes.<span class="hv">HV</span></div></div>
+    <div class="card"><div class="kpi acc2">4 de 20</div><div class="kpi-l">segmentaciones desplazadas 0,5–0,6 mm respecto a su imagen; 3 de 20, con desfase no rígido.<span class="hv">HV</span></div></div>
+    <div class="card"><div class="kpi">40 / 40</div><div class="kpi-l">archivos con su huella comprobada; flujo completo de principio a fin en datos reales.<span class="hv">HV</span></div></div>
+  </div>
+  <p class="src">docs/p3/RESULTADOS_PILOTO.md · Desviaciones D1, D3 y D5 registradas antes de medir · El confirmatorio de 60 especímenes está en ejecución: su veredicto aún no existe.</p>
+</section>
+
+<!-- 11 ─────────────────────────────── ECOGRAFÍA -->
+<section class="slide" data-sec="Resultados reales" data-notes="La ecografía es la puerta hacia la clínica: es la imagen que se usa en el embarazo humano. Antes de tocar una sola imagen humana, probamos el certificado con ecografía 3D real de embriones de ratón, comparando con referencias dibujadas por personas. Las reglas se escribieron antes de medir. La medición está en curso; no hay veredicto todavía y no lo invento.">
+  <span class="eyebrow">10 · Puente hacia la clínica · H11 en curso</span>
+  <h2>Ecografía 3D real: la prueba del certificado fuera del simulador</h2>
+  <figure class="figure"><img src="{{IMG:qiu_series}}" alt="Serie de ecografías 3D de embriones de ratón"></figure>
+  <div class="cols3">
+    <div class="card"><h3>Pregunta</h3><p>¿El certificado congelado con imágenes simuladas acierta en ecografía real? Se compara con la referencia dibujada por personas: 180 casos de cuerpo (170 embriones) y 216 de ventrículos (203).</p></div>
+    <div class="card"><h3>Reglas escritas antes</h3><p>Tolerancia de 10 %, bootstrap por embrión, mínimo de 30 luces verdes y 15 embriones para poder juzgar. Si no se alcanza, el resultado es «no evaluable», y se publica así.</p></div>
+    <div class="card"><h3>Estado</h3><p><span class="chip mid">midiendo</span> Sin veredicto todavía. Qiu et al. 2021, IEEE DataPort, CC BY.</p></div>
+  </div>
+</section>
+
+<!-- 12 ─────────────────────────────── ONTO-MAP -->
+<section class="slide" data-sec="Resultados reales" data-notes="ONTO-MAP: mapa de formas con 717 cabezas de embrión reales. A la izquierda cada punto es un embrión. Los dos estadios se separan muchísimo, pero no lo vendo como biología: cada estadio se registró a su propio atlas, y eso por sí solo podría separarlos. Las tres hipótesis que escribimos antes salieron contrarias. Un resultado negativo bien medido también es ciencia, y es justamente la pregunta de MORPHO-TRACE: cuánto de una diferencia es del procesamiento.">
+  <span class="eyebrow">11 · Resultado con datos reales · ONTO-MAP</span>
+  <h2>Mapa de formas de 717 cabezas de embrión: un resultado negativo honesto</h2>
+  <figure class="figure"><img src="{{IMG:ontomap_map}}" alt="Mapa de forma de landmarks de cabeza E15.5 y E18.5"></figure>
+  <div class="cols3">
+    <div class="card"><h3>Hipótesis</h3><p>La variación de forma dentro de un estadio apunta hacia el cambio entre estadios (ángulo menor de 45°).</p></div>
+    <div class="card"><h3>Resultado</h3><p>84,5° (IC 95 %: 79,3°–89,5°). <span class="chip bad">3 de 3 contrarias</span><span class="hv">HV</span></p></div>
+    <div class="card"><h3>Lectura</h3><p>Cada estadio tiene su atlas: la separación no se atribuye al desarrollo. El método ya existía; el aporte es la réplica y el factor de confusión identificado.</p></div>
+  </div>
+</section>
+
+<!-- 13 ─────────────────────────────── EL SEMÁFORO -->
+<section class="slide" data-sec="La prueba" data-notes="Aquí está la prueba de que el certificado funciona, en el terreno donde sí se conoce la respuesta: objetos sintéticos. El semáforo de volumen se calibró y se comprobó con 50 400 imágenes nuevas: cuando dio verde, se equivocó entre 0,4 y 2,6 % de las veces. El de topología, con 18 900: como máximo 7 %. Y la guardia evitó los verdes falsos en 10 de 12 situaciones fuera de calibración. Si hay tiempo, abre el laboratorio interactivo y ejecuta la prueba en vivo.">
+  <span class="eyebrow">12 · La prueba · validación con verdad conocida</span>
+  <h2>El certificado, probado donde se conoce la respuesta correcta</h2>
+  <div class="cols3">
+    <div class="card"><div class="kpi acc">0,4–2,6 %</div><div class="kpi-l">de error cuando el semáforo de volumen da verde, con 50 400 imágenes que no había visto (criterio previo: menos de 10 %).<span class="hv">HV</span></div></div>
+    <div class="card"><div class="kpi acc">≤ 7,0 %</div><div class="kpi-l">de topologías incorrectas con luz verde, en 18 900 medidas nuevas, con el modelo congelado de antemano.<span class="hv">HV</span></div></div>
+    <div class="card"><div class="kpi acc2">10 de 12</div><div class="kpi-l">situaciones fuera de calibración sin ninguna luz verde falsa gracias a la guardia; sin ella, hasta 97 %.<span class="hv">HV</span></div></div>
+  </div>
+  <div class="cols2">
+    <div class="card"><h3>Lo que no funcionó</h3><p>La guardia no es perfecta: en un caso dejó pasar 28 verdes y 21 % eran falsos. Un rasgo que la imagen ya perdió por completo no se puede detectar. Todo esto es sintético: no es validación biológica.</p></div>
+    <div class="card"><h3>Laboratorio interactivo</h3><p>Demostraciones en vivo: el semáforo, la prueba con 200 objetos al azar, crecimiento 4D y eje de escala.</p><p style="margin-top:12px"><a class="btn" href="exposicion-geovida.html" target="_blank">Abrir el laboratorio</a></p></div>
+  </div>
+  <p class="src">docs/RESULTADOS_V03.md (H6) · docs/RESULTADOS_V04.md (H9, H10)</p>
+</section>
+
+<!-- 14 ─────────────────────────────── CALIDAD -->
+<section class="slide" data-sec="Calidad" data-notes="Esto es lo que lo hace un trabajo serio y no una demostración: más de 700 funciones de prueba automáticas que corren en cada cambio, 19 preregistros donde las reglas se escriben antes de medir, 27 errores propios publicados con su causa, y trazabilidad completa. El código se desarrolló con asistencia de inteligencia artificial, declarado así.">
+  <span class="eyebrow">13 · Calidad y reproducibilidad</span>
+  <h2>Ingeniería de software científico, no una demostración</h2>
+  <div class="cols4">
+    <div class="card"><div class="kpi acc">703</div><div class="kpi-l">funciones de prueba automáticas; la integración continua las corre en Python 3.12 y 3.13 en cada cambio.</div></div>
+    <div class="card"><div class="kpi">19</div><div class="kpi-l">preregistros: criterios y predicciones fijados antes de cada experimento.</div></div>
+    <div class="card"><div class="kpi">27</div><div class="kpi-l">errores propios publicados con su causa y su prevención (ERRATA).</div></div>
+    <div class="card"><div class="kpi acc2">SHA-256</div><div class="kpi-l">huella de cada archivo de entrada; manifiestos verificables y licencias registradas.</div></div>
+  </div>
+  <table>
+    <thead><tr><th>Nivel de validación</th><th>Qué demuestra</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td>Software</td><td>El código hace lo que dice (pruebas, fantomas analíticos)</td><td><span class="chip ok">hecho</span></td></tr>
+      <tr><td>Datos sintéticos</td><td>El certificado acierta donde se conoce la verdad</td><td><span class="chip ok">confirmado</span></td></tr>
+      <tr><td>Datos reales animales</td><td>Acuerdo y estabilidad con datos publicados</td><td><span class="chip mid">en curso (P3, H11)</span></td></tr>
+      <tr><td>Revisión experta externa</td><td>Que un especialista independiente lo evalúe</td><td><span class="chip bad">pendiente</span></td></tr>
+      <tr><td>Datos humanos y clínica</td><td>Utilidad en pacientes</td><td><span class="chip bad">no iniciado</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 15 ─────────────────────────────── RUTA CLÍNICA -->
+<section class="slide" data-sec="Ruta clínica" data-notes="El destino es clínico, y por eso hay que recorrer el camino correcto. Hoy estamos en la etapa preclínica con datos animales. Lo siguiente es la revisión experta y, con aprobación de un comité de ética, imágenes humanas anonimizadas. Después validación externa en varios centros. En el Perú, el reglamento de dispositivos médicos considera el software autónomo como dispositivo médico activo: un uso clínico exigiría registro sanitario ante DIGEMID. Decir esto da credibilidad.">
+  <span class="eyebrow">14 · Ruta hacia el uso clínico</span>
+  <h2>Destino clínico, camino regulado: dónde estamos y qué falta</h2>
+  <div class="timeline">
+    <div class="ph now"><span class="chip ok">hoy</span><b>Preclínica</b><span>Plataforma, certificado validado en sintético, datos reales de ratón en medición.</span></div>
+    <div class="ph"><span class="chip">siguiente</span><b>Revisión experta</b><span>Embriólogos, ecografistas y morfometristas evalúan métodos y resultados.</span></div>
+    <div class="ph"><span class="chip">después</span><b>Datos humanos</b><span>Imágenes anonimizadas, solo con consentimiento y aprobación de un comité de ética.</span></div>
+    <div class="ph"><span class="chip">después</span><b>Validación externa</b><span>Varios centros, cohortes representativas, evaluación de sesgos y calibración.</span></div>
+    <div class="ph"><span class="chip">final</span><b>Registro sanitario</b><span>DIGEMID: el software autónomo se considera dispositivo médico activo.</span></div>
+  </div>
+  <div class="cols2">
+    <div class="card"><h3>Uso previsto futuro</h3><p>Apoyo a profesionales de la salud para medir estructuras fetales en ecografía con su incertidumbre, siempre bajo supervisión. Nunca un diagnóstico automático ni una predicción individual sin validación.</p></div>
+    <div class="card"><h3>Ya preparado</h3><p>Ficha del modelo, uso previsto y riesgos, plan de validación y ciclo de vida en <span style="font-family:var(--mono)">docs/clinico/</span>; biometría temprana con incertidumbre propagada, probada en simulación.</p></div>
+  </div>
+  <p class="src">DIGEMID, DS 003-2020-SA, reglamento de dispositivos médicos (Ley 29459): «el software autónomo se considera dispositivo médico activo».</p>
+</section>
+
+<!-- 16 ─────────────────────────────── LÍMITES -->
+<section class="slide" data-sec="Límites" data-notes="Dilo antes de que te lo pregunten. Hoy no es una herramienta clínica. El certificado está confirmado en sintético; con datos reales aún no hay veredicto. No hay revisión externa. Todo es animal.">
+  <span class="eyebrow">15 · Lo que el proyecto no afirma</span>
+  <h2>Límites, dichos con claridad</h2>
+  <ul class="list">
+    <li><b>No es una herramienta clínica ni diagnóstica.</b> Está en etapa preclínica; su uso en pacientes exige ética, validación externa y registro sanitario.</li>
+    <li><b>El certificado está confirmado en imágenes sintéticas.</b> Con datos reales de ratón hay un piloto, un resultado negativo y dos veredictos que aún no existen (P3 y H11).</li>
+    <li><b>Acuerdo no es exactitud.</b> Con datos reales se compara contra referencias dibujadas por personas, que no son la verdad.</li>
+    <li><b>Series temporales de embriones distintos son pseudo-tiempo,</b> no el mismo embrión seguido en el tiempo.</li>
+    <li><b>Sin revisión científica externa todavía.</b> El código se desarrolló con asistencia de inteligencia artificial y así está declarado.</li>
+  </ul>
+</section>
+
+<!-- 17 ─────────────────────────────── CIERRE -->
+<section class="slide" data-sec="Cierre" data-notes="Cierra con la frase. Ofrece el repositorio y pide lo que necesitas: revisión experta y colaboración con un laboratorio o un servicio de ecografía.">
+  <div class="grid-bg"></div>
+  <span class="eyebrow">16 · Cierre</span>
+  <h1 style="font-size:54px;max-width:1100px">Medir bien es saber cuánto no se sabe.</h1>
+  <p class="lead">Geometría de la Vida no promete ver más de lo que la imagen permite: dice, para cada medida, si hay que creerle. Ese es el primer paso para estudiar —y algún día ayudar a prevenir— las anomalías congénitas.</p>
+  <div class="cols3">
+    <div class="card"><h3>Qué sigue</h3><p>Publicar los veredictos de P3 y H11 tal como salgan; medir cuánto de una diferencia se debe al atlas (MORPHO-TRACE).</p></div>
+    <div class="card"><h3>Qué necesitamos</h3><p>Revisión de especialistas y un laboratorio o servicio de ecografía aliado, con comité de ética.</p></div>
+    <div class="card"><h3>Dónde verlo</h3><p style="font-family:var(--mono);font-size:13px">github.com/fabiantrelles593-arch/Estudio-Embrionario<br>rama geovida/v0.1-desde-cero · MIT</p></div>
+  </div>
+</section>
+
+<div class="lightbox" id="lb"><span class="x" id="lbx">CERRAR · ESC</span><img id="lbimg" alt=""><div class="side"><h3 id="lbt"></h3><dl class="meta" id="lbm"></dl></div></div>
+<div class="notes" id="notes"><b>Guion de esta lámina</b><span id="notesText"></span></div>
+<nav><span class="brand">GEOMETRÍA <i>DE LA</i> VIDA</span><span class="sec" id="sec"></span><div class="prog"><i id="prog"></i></div><span class="sec" id="where"></span>
+<button id="nb" type="button">Guion (G)</button><button id="pv" type="button">←</button><button id="nx" type="button">→</button></nav>
+
+<script>
+const ATLAS = [
+  {img:"{{IMG:musmorph_0218}}", t:"IMPC E15.5 · 0218", s:"micro-CT · 27 µm · 50 estructuras",
+   m:[["Especie","Ratón, línea IMPC"],["Estadio","E15.5"],["Modalidad","Micro-CT con contraste"],["Vóxel","27 µm isótropo"],["Segmentación","Atlas MusMorph propagado (alineada)"],["Fuente","FaceBase 3-JZA6"],["Licencia","CC BY 4.0"],["SHA-256","944175a49d47dfbd35744642303b5543f5efbf5d0ab6a3ec9e996bf6cec69cd2"]]},
+  {img:"{{IMG:musmorph_0040}}", t:"IMPC E15.5 · 0040", s:"micro-CT · segmentación desplazada",
+   m:[["Especie","Ratón, línea IMPC"],["Estadio","E15.5"],["Modalidad","Micro-CT con contraste"],["Hallazgo","Segmentación publicada desplazada respecto a su imagen (D3)"],["Fuente","FaceBase 3-JZA6"],["Licencia","CC BY 4.0"],["SHA-256","725f0d093be1574d67752ee34d638e4f398ce9aaca0adac45203468dac6f7f71"]]},
+  {img:"{{IMG:qiu_series}}", t:"Ecografía 3D · E10–E14", s:"alta frecuencia · cuerpo y ventrículos",
+   m:[["Especie","Ratón"],["Estadios","E10 a E14 (un embrión distinto por estadio)"],["Modalidad","Ecografía 3D de alta frecuencia"],["Referencia","Cuerpo y ventrículos cerebrales dibujados por personas"],["Casos","180 de cuerpo, 216 de ventrículos"],["Fuente","Qiu et al. 2021, IEEE DataPort"],["Licencia","CC BY"]]},
+  {img:"{{IMG:ontomap_map}}", t:"Landmarks de cabeza · E15.5 / E18.5", s:"717 especímenes · 540 puntos",
+   m:[["Especie","Ratón, línea IMPC"],["Estadios","E15.5 (259) y E18.5 (458)"],["Datos","540 landmarks de cabeza por espécimen"],["Análisis","Procrustes generalizado y componentes principales"],["Resultado","Hipótesis H-O1 a H-O3 contrarias"],["Fuente","MusMorph, FaceBase 3-JZA6"],["Licencia","CC BY 4.0"]]}
+];
+const $ = id => document.getElementById(id);
+$("atlas").innerHTML = ATLAS.map((a,i)=>`<div class="spec" data-i="${i}"><div class="th" style="background-image:url('${a.img}')"></div><div class="bd"><b>${a.t}</b><span>${a.s}</span></div></div>`).join("");
+document.querySelectorAll(".spec").forEach(el=>el.addEventListener("click",()=>{const a=ATLAS[+el.dataset.i];
+  $("lbimg").src=a.img;$("lbt").textContent=a.t;$("lbm").innerHTML=a.m.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");$("lb").classList.add("on");}));
+const closeLb=()=>$("lb").classList.remove("on");
+$("lbx").onclick=closeLb; $("lb").addEventListener("click",e=>{if(e.target.id==="lb")closeLb();});
+const slides=[...document.querySelectorAll(".slide")]; let idx=0, notesOn=false;
+function show(i){idx=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle("on",k===idx));
+  const s=slides[idx];$("sec").textContent=s.dataset.sec||"";$("where").textContent=`${idx+1} / ${slides.length}`;
+  $("prog").style.width=`${100*(idx+1)/slides.length}%`;$("notesText").textContent=s.dataset.notes||"";
+  try{history.replaceState(null,"","#"+(idx+1));}catch(e){}}
+$("pv").onclick=()=>show(idx-1); $("nx").onclick=()=>show(idx+1);
+$("nb").onclick=()=>{notesOn=!notesOn;$("notes").classList.toggle("on",notesOn);};
+document.addEventListener("keydown",e=>{if($("lb").classList.contains("on")){if(e.key==="Escape")closeLb();return;}
+  if(["ArrowRight","PageDown"," "].includes(e.key)){e.preventDefault();show(idx+1);}
+  else if(["ArrowLeft","PageUp"].includes(e.key)){e.preventDefault();show(idx-1);}
+  else if(e.key==="Home")show(0); else if(e.key==="End")show(slides.length-1);
+  else if(e.key.toLowerCase()==="g"){$("nb").click();}});
+show((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
