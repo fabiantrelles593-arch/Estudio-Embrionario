@@ -1,6 +1,6 @@
 # Exposición interactiva de geovida
 
-Un mazo de 19 láminas que se maneja con el teclado (←/→; **G** muestra el guion del expositor) y
+Un mazo de 20 láminas (la 13, «Datos reales», resume P3, ONTO-MAP y H11 al 16 nov 2026) que se maneja con el teclado (←/→; **G** muestra el guion del expositor) y
 que incluye cinco demostraciones en vivo, una prueba de «¿funciona?» con 200 objetos al azar, un
 cuestionario de aprendizaje y las preguntas probables del jurado, con respuesta.
 
