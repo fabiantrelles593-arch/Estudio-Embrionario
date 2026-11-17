@@ -54,7 +54,7 @@ Diseño propuesto: modelo de componentes de varianza `descriptor ~ (1 | espécim
 
 ## 4. Qué queda pendiente de la Fase 1
 
-- Revisión sistemática formal de antecedentes (PubMed + Europe PMC con estrategia registrada) antes de afirmar novedad.
+- ~~Revisión sistemática formal de antecedentes (PubMed + Europe PMC con estrategia registrada) antes de afirmar novedad.~~ Hecha el 17 nov 2026: `docs/estado_del_arte/REVISION_SISTEMATICA_MORPHOTRACE.md` (falta Scopus/Web of Science y un segundo revisor).
 - ~~Lista exacta de estructuras comunes entre MusMorph E15.5 y MEMOS.~~ Resuelto en el piloto de P3: las etiquetas 1–48 coinciden; la 102 y la 103 de MusMorph no se corresponden con la 49 y la 50 de KOMP2 (`docs/p3/RESULTADOS_PILOTO.md` §4).
 - Licencia de S-BIAD441, del portal IMPC y de los datos de UniCoN.
 - Herramientas de morfometría geométrica y análisis de superficies: solo se verificaron licencias, no se compararon métodos.
