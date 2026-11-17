@@ -21,7 +21,7 @@ Resumen: **3 cerradas, 7 parciales o en curso, 1 no iniciada** de 11 fases.
 | Fase (§14 v1) | Estado | Evidencia | Qué falta para cerrar la puerta |
 |---|---|---|---|
 | 0 · Auditoría total | **Cerrada** [HV] | `docs/adr/ADR-001-base-canonica-geovida.md`, `docs/adr/ADR-002-cierre-pr-codex.md` | — |
-| 1 · Estado del arte | **Parcial** | `docs/estado_del_arte/FICHAS_REFERENTES.md`, `docs/estado_del_arte/MATRIZ_CAPACIDADES.md`, `docs/onto_map/REVISION_ORIGINALIDAD.md` | Revisión sistemática con estrategia registrada; comparación de herramientas de morfometría y TDA |
+| 1 · Estado del arte | **Parcial** | `docs/estado_del_arte/FICHAS_REFERENTES.md`, `docs/estado_del_arte/MATRIZ_CAPACIDADES.md`, `docs/onto_map/REVISION_ORIGINALIDAD.md`, `docs/estado_del_arte/REVISION_SISTEMATICA_MORPHOTRACE.md` | Revisión registrada hecha en PubMed y Europe PMC; faltan Scopus/Web of Science, un segundo revisor y la comparación de herramientas de morfometría y TDA |
 | 2 · Pregunta y protocolo | **Cerrada** para P3, ONTO-MAP y H11 [HV] | `docs/PREREGISTRO_P3.md`, `docs/onto_map/PROTOCOLO_ONTOMAP.md`, `docs/PREREGISTRO_H11.md` | Revisión del protocolo por un asesor externo (recomendada, no bloqueante) |
 | 3 · Motor 2D | **Parcial** | `src/geovida/twod.py`, `src/geovida/real2d.py`, `src/geovida/biometry.py`; `docs/RESULTADOS_V02.md`, `docs/RESULTADOS_V08.md` | Validación con más de una imagen real (hoy n = 1, exploratorio) |
 | 4 · Motor 3D | **Cerrada** en lectura, calibración, métricas y topología con fantomas [HV] | `src/geovida/measure.py` (marching cubes y área por distancia con signo), `src/geovida/topology.py`, `src/geovida/minc.py`, `src/geovida/realdata.py`; `docs/RESULTADOS.md`, `docs/RESULTADOS_V04.md` | — Comparación externa hecha: volumen, componentes y área iguales a SimpleITK 2.5.7 en 140 de 140 máscaras; χ contrastado con un método independiente; `area_sdf` con sesgo de ≈ +3 % a resolución fina (`docs/COMPARACION_REFERENCIA.md`) |
@@ -69,7 +69,7 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 | **P1** | ~~Comparación externa del motor 3D~~ hecha el 17 nov con una reimplementación independiente y con SimpleITK 2.5.7 (`docs/COMPARACION_REFERENCIA.md`) | — | Cumplido |
 | **P2** | Preregistrar la evaluación de Crofton como estimador de área (sesgo de `area_sdf` ≈ +3 % a resolución fina) | — | Semillas y formas nuevas, con ruido y desenfoque |
 | **P1** | Medir la contribución del atlas (MORPHO-TRACE): registrar los mismos especímenes a los atlas de E15.5 y E18.5 | Imágenes de MusMorph en ambos estadios; tiempo de cómputo | Preregistro antes de medir |
-| **P1** | Revisión sistemática registrada (PubMed + Europe PMC) para MORPHO-TRACE | — | Estrategia, fecha, criterios y diagrama de selección publicados |
+| **P1** | ~~Revisión sistemática registrada (PubMed + Europe PMC) para MORPHO-TRACE~~ hecha el 17 nov (`docs/estado_del_arte/REVISION_SISTEMATICA_MORPHOTRACE.md`: 155 identificados, 42 cribados, 10 incluidos). Queda: Scopus/Web of Science y un segundo revisor | Acceso a esas bases | Estrategia, fecha, criterios y flujo publicados (cumplido) |
 | **P2** | Leer las guías ISUOG completas y ampliar la biblioteca de anomalías | Acceso al texto completo | Registros sin [PV] en los campos de imagen |
 | **P2** | Licencias de S-BIAD441, portal IMPC y UniCoN | — | Licencia verificada o conjunto descartado |
 | **P3** | Modelo contextual 5D | Fase 5 cerrada y factor de atlas medido | Preregistro |
