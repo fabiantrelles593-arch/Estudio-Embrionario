@@ -24,7 +24,7 @@ Resumen: **3 cerradas, 7 parciales o en curso, 1 no iniciada** de 11 fases.
 | 1 · Estado del arte | **Parcial** | `docs/estado_del_arte/FICHAS_REFERENTES.md`, `docs/estado_del_arte/MATRIZ_CAPACIDADES.md`, `docs/onto_map/REVISION_ORIGINALIDAD.md` | Revisión sistemática con estrategia registrada; comparación de herramientas de morfometría y TDA |
 | 2 · Pregunta y protocolo | **Cerrada** para P3, ONTO-MAP y H11 [HV] | `docs/PREREGISTRO_P3.md`, `docs/onto_map/PROTOCOLO_ONTOMAP.md`, `docs/PREREGISTRO_H11.md` | Revisión del protocolo por un asesor externo (recomendada, no bloqueante) |
 | 3 · Motor 2D | **Parcial** | `src/geovida/twod.py`, `src/geovida/real2d.py`, `src/geovida/biometry.py`; `docs/RESULTADOS_V02.md`, `docs/RESULTADOS_V08.md` | Validación con más de una imagen real (hoy n = 1, exploratorio) |
-| 4 · Motor 3D | **Cerrada** en lectura, calibración, métricas y topología con fantomas [HV] | `src/geovida/measure.py` (marching cubes y área por distancia con signo), `src/geovida/topology.py`, `src/geovida/minc.py`, `src/geovida/realdata.py`; `docs/RESULTADOS.md`, `docs/RESULTADOS_V04.md` | Comparación externa con una implementación de referencia (3D Slicer, ITK o SimpleITK) sobre los mismos volúmenes [PV] |
+| 4 · Motor 3D | **Cerrada** en lectura, calibración, métricas y topología con fantomas [HV] | `src/geovida/measure.py` (marching cubes y área por distancia con signo), `src/geovida/topology.py`, `src/geovida/minc.py`, `src/geovida/realdata.py`; `docs/RESULTADOS.md`, `docs/RESULTADOS_V04.md` | χ contrastado con un método independiente en 140 de 140 máscaras; `area_sdf` con sesgo de ≈ +3 % a resolución fina (`docs/COMPARACION_REFERENCIA.md`). Falta comparar con una herramienta externa establecida (SimpleITK o VTK) [PV] |
 | 5 · MORPHO-TRACE | **En curso** | Certificado confirmado en sintético (`docs/RESULTADOS_V03.md`, `docs/RESULTADOS_V04.md`); P3 piloto con datos reales (`docs/p3/RESULTADOS_PILOTO.md`); P3 confirmatorio midiendo | Veredictos de H-P3a/b/c; separación técnica frente a biológica con datos reales |
 | 6 · Modelado 4D | **Parcial** | `src/geovida/traj4d.py`, `src/geovida/growth.py`; `docs/RESULTADOS_V03.md` (H8) | Solo pseudo-tiempo y sintético: no hay datos longitudinales reales del mismo espécimen [HV] |
 | 7 · Contexto 5D | **No iniciada** | — | Decisión: no se construye hasta tener al menos dos contextos comparables con datos reales y el factor de atlas medido (ONTO-MAP mostró que sin eso el contexto confunde) [PROP] |
@@ -43,7 +43,7 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 | Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 706 funciones de prueba; CI en verde en cada commit [HV] |
 | Datos sintéticos con verdad conocida | Confirmado para el certificado de volumen y de topología [HV] |
 | Datos reales animales | Piloto P3 completo; P3 confirmatorio y H11 en medición; ONTO-MAP negativo [HV] |
-| Comparación externa con software de referencia | **Pendiente** [PV] |
+| Comparación externa con software de referencia | **Parcial**: reimplementación independiente hecha (`docs/COMPARACION_REFERENCIA.md`); herramienta externa establecida pendiente [PV] |
 | Validación independiente o biológica | **No iniciada** |
 | Utilidad clínica | **No iniciada**; el software no es un dispositivo médico |
 
@@ -66,7 +66,8 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 |---|---|---|---|
 | **P0** | Cerrar P3 confirmatorio: `scripts/p3_report.py --confirm` y documento de resultados según §7 del preregistro | Fin de la medición en curso | Veredictos transcritos sin reinterpretar; erratas si las hay |
 | **P0** | Cerrar H11 (v0.4) y luego H12R: `scripts/h11_report.py` y documento de resultados según sus tablas | Fin de la cadena H11 | Ídem |
-| **P1** | Comparación externa del motor 3D: volumen, área y Euler de `geovida` frente a una implementación de referencia independiente sobre fantomas y un volumen real | — (no necesita datos nuevos) | Diferencias informadas por métrica con su explicación; no se afirma superioridad |
+| **P1** | ~~Comparación con una reimplementación independiente~~ hecha el 17 nov (`docs/COMPARACION_REFERENCIA.md`). Queda: repetirla con SimpleITK o VTK | Permiso para instalar la dependencia | Diferencias informadas por métrica; no se afirma superioridad |
+| **P2** | Preregistrar la evaluación de Crofton como estimador de área (sesgo de `area_sdf` ≈ +3 % a resolución fina) | — | Semillas y formas nuevas, con ruido y desenfoque |
 | **P1** | Medir la contribución del atlas (MORPHO-TRACE): registrar los mismos especímenes a los atlas de E15.5 y E18.5 | Imágenes de MusMorph en ambos estadios; tiempo de cómputo | Preregistro antes de medir |
 | **P1** | Revisión sistemática registrada (PubMed + Europe PMC) para MORPHO-TRACE | — | Estrategia, fecha, criterios y diagrama de selección publicados |
 | **P2** | Leer las guías ISUOG completas y ampliar la biblioteca de anomalías | Acceso al texto completo | Registros sin [PV] en los campos de imagen |
