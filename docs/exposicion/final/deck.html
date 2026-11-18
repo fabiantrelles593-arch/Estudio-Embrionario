@@ -405,7 +405,7 @@ a.btn{display:inline-block;text-decoration:none;color:var(--bg);background:var(-
 </section>
 
 <!-- ============ 18. SEMÁFORO ============ -->
-<section class="slide" data-sec="Semáforo" data-notes="El semáforo es exactamente esto: la probabilidad estimada de que el error de volumen sea de 5 % o menos, calculada solo con la máscara y el tamaño del vóxel. Umbrales preregistrados: verde desde 0,90, rojo por debajo de 0,50. Luego el caso real: sin guardia habría dado verde a medidas con más de 400 % de error; la guardia detecta que la ecografía real está fuera de su calibración y no da verde. No es un juicio de salud del embrión.">
+<section class="slide" data-sec="Semáforo" data-notes="El semáforo es exactamente esto: la probabilidad estimada de que el error de volumen sea de 5 % o menos, calculada solo con la máscara y el tamaño del vóxel. Umbrales preregistrados: verde desde 0,90, rojo por debajo de 0,50. Luego el caso real: sin guardia habría dado verde a medidas con más de 400 % de error; la guardia detecta que la ecografía real está fuera de su calibración y no da verde. Y ya con las 1188 medidas de H11: sin guardia, las 540 de cuerpo habrían salido en verde y todas fallaban; con guardia, ninguna. La pregunta primaria quedó sin evaluar porque no hubo verdes. No es un juicio de salud del embrión.">
   <span class="eyebrow">El semáforo · qué significa de verdad</span>
   <h2>Una luz para cada medida: ¿cuánto creerle al volumen?</h2>
   <div class="cols2" style="grid-template-columns:1fr 1.25fr">
@@ -431,7 +431,7 @@ a.btn{display:inline-block;text-decoration:none;color:var(--bg);background:var(-
           <tr><td>Ventrículos · Otsu suavizado</td><td class="num">+1432 %</td><td class="num">&lt; 0,01</td><td><span class="chip ok">verde</span></td><td><span class="chip mid">amarillo</span></td></tr>
         </tbody>
       </table>
-      <p class="muted" style="margin-top:8px">Sin guardia: 5 verdes falsos de 6. Con guardia: ninguno. El veredicto preregistrado de H11 aún no existe.</p>
+      <p class="muted" style="margin-top:8px">Sin guardia: 5 verdes falsos de 6. Con guardia: ninguno. <b>H11 completo</b> (1188 medidas, 213 embriones): con guardia, 0 verdes; sin guardia, 540 de 540 verdes con error &gt; 10 %. La hipótesis primaria no fue evaluable (docs/h11/RESULTADOS_H11.md).</p>
     </div>
   </div>
   <p class="src">results/h11/cache_v04.jsonl (salida real de scripts/run_h11.py) · El semáforo evalúa la medida, nunca la salud, la viabilidad ni la normalidad del embrión.</p>
@@ -495,7 +495,7 @@ a.btn{display:inline-block;text-decoration:none;color:var(--bg);background:var(-
       <tr><td><b>B · Geométricas</b></td><td>Fantomas con verdad analítica; 20 máscaras reales</td><td>Volumen y componentes = SimpleITK 2.5.7 en 140/140; área: sesgo de area_sdf ≈ +3 % a resolución fina</td><td class="num">COMPARACION_REFERENCIA.md</td><td><span class="chip ok">comparada con ITK</span></td></tr>
       <tr><td><b>C · Topológicas</b></td><td>Casos a mano y máscaras aleatorias</td><td>χ = conteo de celdas independiente en 140/140</td><td class="num">tests/test_reference.py</td><td><span class="chip ok">superada</span></td></tr>
       <tr><td><b>D · Resolución y sensibilidad</b></td><td>Fantomas (H1, H6, H9, H10)</td><td>Semáforo de volumen: en verde, 0,4–2,6 % de error en 50 400 imágenes nuevas</td><td class="num">RESULTADOS_V03/V04.md</td><td><span class="chip ok">confirmada en sintético</span></td></tr>
-      <tr><td><b>E · Imágenes biológicas</b></td><td>MusMorph (80), landmarks (717), ecografía (396)</td><td>P3 piloto completo; ONTO-MAP negativo; P3 y H11 midiendo</td><td class="num">p3/, onto_map/, H11</td><td><span class="chip mid">en curso</span></td></tr>
+      <tr><td><b>E · Imágenes biológicas</b></td><td>MusMorph (80), landmarks (717), ecografía (396)</td><td>P3 piloto completo; ONTO-MAP negativo; H11 cerrado (guardia apoyada, primaria no evaluable); P3 y H12R midiendo</td><td class="num">p3/, onto_map/, H11</td><td><span class="chip mid">en curso</span></td></tr>
       <tr><td><b>F · Integración</b></td><td>Datos reales de principio a fin</td><td>Lectura → segmentación → medida → certificado → informe, sin intervención manual</td><td class="num">P3 piloto, run_h11.py</td><td><span class="chip ok">superada</span></td></tr>
     </tbody>
   </table>
@@ -542,7 +542,7 @@ a.btn{display:inline-block;text-decoration:none;color:var(--bg);background:var(-
     <ul class="list">
       <li><b>Muestras:</b> solo ratón; ecografía E10–E14 y micro-CT E15.5/E18.5.</li>
       <li><b>Referencias:</b> trazados humanos o atlas propagados, no la verdad anatómica.</li>
-      <li><b>Veredictos reales:</b> P3 y H11 aún midiendo; el semáforo solo está confirmado en sintético.</li>
+      <li><b>Veredictos reales:</b> H11 cerrado sin luces verdes que evaluar; P3 y H12R aún midiendo; el semáforo solo está confirmado en sintético.</li>
       <li><b>Validación:</b> sin revisión científica externa; código escrito con asistencia de IA, declarado.</li>
       <li><b>Generalización:</b> ninguna a otros equipos, especies ni a humanos.</li>
     </ul>
