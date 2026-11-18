@@ -108,4 +108,6 @@ bastara para un umbral, y no basta [HV].
 - **Sensibilidad de vóxel** (D1, `--tag v04_rs`, 227 casos de cuerpo de 213 embriones): en la cadena, detrás de
   H12R [PV]. No puede sustituir al análisis principal.
 - **H12R** (calibración de ecografía simulada) y su informe: en medición [PV].
-- Registrar en `run_h11.py` las huellas del código cuando no hay git [PROP].
+- ~~Registrar en `run_h11.py` las huellas del código cuando no hay git~~ hecho el 17 nov:
+  `geovida.provenance.code_fingerprint` y `compare_fingerprint`, guardadas en `meta.code_fingerprint`
+  (`tests/test_code_fingerprint.py`). Las corridas de H11 ya hechas no se repiten; la comprobación de §1 sigue siendo la suya.
