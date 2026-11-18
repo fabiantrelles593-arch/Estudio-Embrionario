@@ -31,6 +31,19 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def code_provenance(state: dict) -> dict:
+    """Campos de procedencia del código para ``meta``: commit, si estaba sucio y, sin git, la huella del código.
+
+    La huella se toma al empezar (``git_state()`` se llama antes de medir), así que describe el código que se
+    ejecutó. Sin git, ``git_commit`` es ``unknown`` y la huella permite comprobarlo luego contra la rama
+    (``geovida.provenance.compare_fingerprint``); es lo que en H11 hubo que hacer a mano.
+    """
+    out = {"git_commit": state["commit"], "code_dirty": state["dirty_code"]}
+    if state.get("code_fingerprint") is not None:
+        out["code_fingerprint"] = state["code_fingerprint"]
+    return out
+
+
 def _plain(v):
     """Valores de numpy a tipos de JSON (NaN se conserva: ``json`` de Python lo escribe y lo lee)."""
     if isinstance(v, np.generic):
@@ -109,8 +122,8 @@ def main():
     verdicts = h11.evaluate_h11(df)
 
     df.to_csv(out / f"h11_{a.tag}_cases.csv", index=False)
-    meta = {"generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(), "git_commit": state["commit"],
-            "code_dirty": state["dirty_code"], "manifest": man_path.name, "manifest_sha256": _sha256(man_path),
+    meta = {"generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(), **code_provenance(state),
+            "manifest": man_path.name, "manifest_sha256": _sha256(man_path),
             "calibration": calib, "profile": a.profile, "boot_seed": h11.BOOT_SEED, "n_boot": h11.N_BOOT,
             "roi_margin_ventricle": h11.ROI_MARGIN, "python": platform.python_version(),
             "packages": {p: version(p) for p in ("numpy", "scipy", "scikit-image", "pandas", "nibabel")}}
