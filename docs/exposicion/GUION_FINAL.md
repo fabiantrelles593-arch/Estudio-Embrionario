@@ -73,7 +73,7 @@ Descriptores medidos en el corte real del panel 2 de la lámina 12. Di qué mide
 
 ## 18. Semáforo — Una luz para cada medida: ¿cuánto creerle al volumen?
 
-El semáforo es exactamente esto: la probabilidad estimada de que el error de volumen sea de 5 % o menos, calculada solo con la máscara y el tamaño del vóxel. Umbrales preregistrados: verde desde 0,90, rojo por debajo de 0,50. Luego el caso real: sin guardia habría dado verde a medidas con más de 400 % de error; la guardia detecta que la ecografía real está fuera de su calibración y no da verde. No es un juicio de salud del embrión.
+El semáforo es exactamente esto: la probabilidad estimada de que el error de volumen sea de 5 % o menos, calculada solo con la máscara y el tamaño del vóxel. Umbrales preregistrados: verde desde 0,90, rojo por debajo de 0,50. Luego el caso real: sin guardia habría dado verde a medidas con más de 400 % de error; la guardia detecta que la ecografía real está fuera de su calibración y no da verde. Y ya con las 1188 medidas de H11: sin guardia, las 540 de cuerpo habrían salido en verde y todas fallaban; con guardia, ninguna. La pregunta primaria quedó sin evaluar porque no hubo verdes. No es un juicio de salud del embrión.
 
 ## 19. MORPHO-TRACE — Otra resolución: unas medidas aguantan y otras no
 
