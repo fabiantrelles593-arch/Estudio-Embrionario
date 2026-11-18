@@ -70,7 +70,7 @@ Archivos:
 | Segmentación clásica (umbral global, Otsu, Otsu suavizado) | Lámina 12 | Implementado |
 | Volumen, área (Crofton), Betti y χ en 3D | Láminas 12, 16 y 19 | Implementado; contrastado con SimpleITK |
 | Descriptores 2D (área, perímetro, circularidad, solidez, Hu) | Lámina 17 | Implementado (geovida y scikit-image) |
-| Certificado de volumen (semáforo) con guardia de dominio | Lámina 18 | Confirmado en sintético; con datos reales, en medición (H11) |
+| Certificado de volumen (semáforo) con guardia de dominio | Lámina 18 | Confirmado en sintético; con ecografía real (H11, cerrado): la guardia negó el verde a las 1188 medidas, la primaria no fue evaluable |
 | Sensibilidad a la resolución | Lámina 19 | Ilustración con un caso; el estudio formal (P3) está en medición |
 | Malla 3D por marching cubes | Lámina 13 | Implementado (solo para visualizar) |
 | 4D por pseudo-tiempo | Lámina 14 | Experimental, solo sintético |
