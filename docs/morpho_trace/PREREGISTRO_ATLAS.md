@@ -171,5 +171,13 @@ Un valor no calculable es «no evaluable», nunca «refutada».
   confirmatorio (259 + 458): longitud de **d** = **0,156707**, dentro de [0,150, 0,164] e idéntica a la guardada por
   ONTO-MAP [HV]. Se ejecutó antes de descargar nada porque solo usa landmarks ya publicados y analizados; no depende
   de ningún dato nuevo.
+* **19 nov 2026 — descarga de los atlas.** `scripts/atlas_effect_gates.py download` comprobó primero que el
+  catálogo de FaceBase (6-2EPY) daba los tamaños y MD5 de §3 y después el MD5 de cada archivo bajado: los cuatro
+  coinciden [HV]. Manifiesto SHA-256 en `data/manifests/musmorph_atlas.csv`; incluye también
+  `IMPC_E15.5_Body_Atlas_Segs.mnc`, del mismo registro, bajado el 15 nov para P3 y no usado en MT-A.
+* **19 nov 2026 — G0-c superada.** `scripts/atlas_effect_gates.py g0c`: los dos `.tag` tienen 540 puntos; ρ de
+  Procrustes con el orden dado = **0,160**, frente a un mínimo de **1,454** (mediana 1,521) en 200 órdenes
+  barajados (semilla 20261118, la del estudio, porque §4 no fijaba otra) [HV]. Coincide con la comprobación de un
+  par de especímenes de ONTO-MAP (0,170 frente a ≥ 1,46).
 * **G0-a** (landmarks publicados dentro de la cabeza) se pospone hasta que terminen P3 y H12R: cada imagen ocupa
   unos 800 MB en memoria y el equipo tiene 3,9 GB, con unos 700 MB libres mientras corren.
