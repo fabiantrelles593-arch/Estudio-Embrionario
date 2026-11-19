@@ -68,6 +68,28 @@ def test_run_cases_rejects_a_missing_or_mismatched_label(manifest, tmp_path):
         h11.run_cases(bad, root=root, profile="realistic")
 
 
+def test_label_with_another_voxel_is_rejected_unless_relaxed_spacing(manifest):
+    """Desviación D1 de H11: misma forma y otro vóxel en la cabecera de la etiqueta. El análisis principal la
+    rechaza; la sensibilidad la mide con el vóxel de la imagen (no con el de la etiqueta)."""
+    df, root = manifest
+    _, inside = _ball(radius=13.0)
+    label = np.zeros(inside.shape, np.uint8)
+    label[inside] = 3
+    _save(root / "e0_lab_otro_voxel.nii.gz", label, zooms=(0.1, 0.1, 0.1))
+    case = df.iloc[:1].copy()
+    case["label"] = "e0_lab_otro_voxel.nii.gz"
+    with pytest.raises(ValueError, match="vóxel"):
+        h11.run_cases(case, root=root, profile="realistic")
+    out = h11.run_cases(case, root=root, profile="realistic", relaxed_spacing=True)
+    row = out[out["segmenter"] == "otsu"].iloc[0]
+    assert row["volume_mm3_reference"] == pytest.approx(inside.sum() * 0.05 ** 3, rel=1e-6)
+    bad = case.copy()                                                    # otra forma: se rechaza siempre
+    _save(root / "pequena.nii.gz", np.zeros((10, 10, 10), np.uint8) + 3)
+    bad["label"] = "pequena.nii.gz"
+    with pytest.raises(ValueError, match="no coinciden"):
+        h11.run_cases(bad, root=root, profile="realistic", relaxed_spacing=True)
+
+
 def test_ventricle_uses_the_box_around_the_reference_and_declares_it(manifest):
     df, root = manifest
     v = df.copy()
