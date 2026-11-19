@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "nibabel>=5", "h5py>=3"]
+dev = ["pytest>=8", "nibabel>=5", "h5py>=3", "SimpleITK>=2.3,<3"]   # SimpleITK: registro de MT-A y comparación externa
 real = ["nibabel>=5", "h5py>=3"]
 reference = ["SimpleITK>=2.3,<3"]
 
