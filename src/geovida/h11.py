@@ -32,11 +32,15 @@ MANIFEST_COLUMNS = ("embryo_id", "structure", "image", "label", "label_value")
 
 
 def run_cases(manifest: pd.DataFrame, root=".", profile: str = "realistic", frozen: dict | None = None,
-              segmenters=SEGMENTERS) -> pd.DataFrame:
+              segmenters=SEGMENTERS, relaxed_spacing: bool = False) -> pd.DataFrame:
     """Una fila por (caso del manifiesto × segmentador). Las rutas son relativas a ``root``.
 
     ``structure`` = ``body`` (se mide con el umbral de toda la imagen) o ``ventricle`` (el umbral se
     calcula en una caja alrededor de la referencia, declarada en ``roi_margin``).
+
+    ``relaxed_spacing`` (solo la sensibilidad declarada en la desviación D1 de ``PREREGISTRO_H11.md``): una
+    etiqueta con la misma forma que su imagen pero otro vóxel en la cabecera se acepta y se mide con el vóxel de
+    la imagen. Sin él, ese caso se rechaza con error, como en el análisis principal.
     """
     missing = [c for c in MANIFEST_COLUMNS if c not in manifest.columns]
     if missing:
@@ -48,7 +52,7 @@ def run_cases(manifest: pd.DataFrame, root=".", profile: str = "realistic", froz
         label, label_spacing, _ = load_volume(root / case["label"])
         if label.shape != image.shape:
             raise ValueError(f"{case['embryo_id']}: imagen {image.shape} y etiqueta {label.shape} no coinciden")
-        if not np.allclose(spacing, label_spacing, rtol=1e-4):
+        if not relaxed_spacing and not np.allclose(spacing, label_spacing, rtol=1e-4):
             raise ValueError(f"{case['embryo_id']}: la imagen y la etiqueta no comparten tamaño de vóxel")
         ref = label == case["label_value"]
         if not ref.any():
