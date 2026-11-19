@@ -193,6 +193,29 @@ def test_analyze_gives_a_verdict_only_when_every_gate_passes():
     assert r["failed_gates"] == ["G0-a"] and r["verdict"] == "no evaluable"
 
 
+def test_v1_1_constants_are_the_preregistered_ones():
+    assert gates.MAX_DIST_MM == 0.23 and gates.SEARCH_RADIUS_MM == 0.5 and gates.G0A2_REQUIRED == 35
+
+
+def test_g0a2_counts_only_unseen_specimens_and_lists_exclusions():
+    seen = ["s0", "s1", "s2"]
+    rows = [{"name": f"s{i}", "passed": i not in (0, 5, 6)} for i in range(40)]   # falla un visto y dos no vistos
+    r = gates.g0a2(rows, seen)
+    assert r["n_unseen"] == 37 and r["n_unseen_passed"] == 35 and r["passed"]
+    assert r["excluded"] == ["s0", "s5", "s6"]
+    rows[7]["passed"] = False
+    assert not gates.g0a2(rows, seen)["passed"]                          # 34 de 37
+
+
+def test_analyze_drops_excluded_specimens():
+    g0 = {g: {"passed": True} for g in ("G0-a′", "G0-b′", "G0-c", "G0-d")}
+    rows, sel, pub, conf = _analysis_case()
+    r = gates.analyze(rows, sel, pub, conf, g0, n_boot=200, exclude=sel["pilot"]["E15.5"][:3])
+    assert r["gates"]["G2"]["valid"] == {"E15.5": 17, "E18.5": 20} and r["mta"]["n"] == 37
+    r = gates.analyze(rows, sel, pub, conf, g0, n_boot=200, exclude=sel["pilot"]["E15.5"][:5])
+    assert r["verdict"] == "no evaluable" and "G2" in r["failed_gates"]
+
+
 def test_specimen_images_are_the_onto_map_pilot():
     sel = {"pilot": {"E15.5": ["IMPC_E15.5_0001"], "E18.5": ["IMPC_E18.5_0002", "IMPC_E18.5_0003"]},
            "confirm": {"E15.5": ["IMPC_E15.5_0999"], "E18.5": []}}
