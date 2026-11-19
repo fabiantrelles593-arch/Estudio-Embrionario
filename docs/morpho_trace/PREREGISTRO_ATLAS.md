@@ -200,3 +200,5 @@ Un valor no calculable es «no evaluable», nunca «refutada».
   estadio: MusMorph las distribuye ya remuestreadas al espacio de su atlas. El registro propio parte, por tanto,
   casi de la identidad, y G1 es más fácil de superar de lo que se suponía. No cambia ningún criterio; se tendrá
   en cuenta al interpretar (§9).
+* **19 nov 2026 — G0-a y G0-b fallidas; estudio cerrado como no evaluable.** Resultados y diagnóstico en
+  `docs/morpho_trace/RESULTADOS_ATLAS.md`. No se hizo ningún registro.
