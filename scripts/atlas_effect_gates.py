@@ -188,9 +188,49 @@ def load_x4(path: Path, cache: Path, points=None) -> dict:
     shape, affine, _ = minc.minc_header(path)
     r = ae.stream_volume(lambda: minc.minc_slabs(path, FACTOR), shape, affine, factor=FACTOR, points=points)
     cache.mkdir(parents=True, exist_ok=True)
-    np.savez(cached, downsampled=r["downsampled"], affine_ds=r["affine_ds"], affine=affine)
+    np.savez(cached, downsampled=r["downsampled"], affine_ds=r["affine_ds"], affine=affine, otsu=r["otsu"])
     r["affine"] = affine
     return r
+
+
+# ---------------------------------------------------------------- MT-A v1.1 (PREREGISTRO_ATLAS_v1_1.md §3)
+MAX_DIST_MM = 0.23        # RMSE de los landmarks automáticos de MusMorph (Devine et al. 2022)
+SEARCH_RADIUS_MM = 0.5
+G0A2_REQUIRED = 35        # de 37 especímenes no vistos
+
+
+def image_otsu(path: Path, cache: Path) -> float:
+    """Umbral de Otsu de la imagen completa (de la caché si ya se calculó)."""
+    cached = cache / (path.stem + f"_x{FACTOR}.npz")
+    if cached.exists():
+        z = np.load(cached)
+        if "otsu" in z.files:
+            return float(z["otsu"])
+    return float(load_x4(path, cache, points=np.zeros((0, 3)))["otsu"])
+
+
+def distance_row(name: str, img: Path, pts: np.ndarray, cache: Path) -> dict:
+    """Distancia de cada landmark al tejido (resolución completa) y si la imagen cumple el criterio por imagen."""
+    from geovida import minc
+    shape, affine, _ = minc.minc_header(img)
+    thr = image_otsu(img, cache)
+    d = ae.distance_to_tissue(minc.minc_box_reader(img), shape, affine, pts, thr, SEARCH_RADIUS_MM)
+    frac = float(np.mean(d <= MAX_DIST_MM))
+    finite = d[np.isfinite(d)]
+    return {"name": name, "n_points": int(len(pts)), "otsu": thr, "within": frac, "passed": frac >= G0_MIN_INSIDE,
+            "median_mm": float(np.median(d)), "p90_mm": float(np.percentile(d, 90)),
+            "n_beyond_radius": int(np.sum(~np.isfinite(d))), "max_finite_mm": float(finite.max()) if len(finite) else None}
+
+
+def g0a2(rows: list[dict], seen: list[str]) -> dict:
+    """G0-a′: pasa si ≥ 35 de los 37 especímenes no vistos cumplen; los que no cumplen (de los 40) se excluyen."""
+    unseen = [r for r in rows if r["name"] not in seen]
+    n_ok = sum(r["passed"] for r in unseen)
+    return {"criterion": f"distancia ≤ {MAX_DIST_MM} mm en ≥ {G0_MIN_INSIDE:.0%} de los landmarks; "
+                         f"≥ {G0A2_REQUIRED} de {len(unseen)} no vistos",
+            "items": [{**r, "seen": r["name"] in seen} for r in rows], "n_unseen": len(unseen),
+            "n_unseen_passed": n_ok, "excluded": [r["name"] for r in rows if not r["passed"]],
+            "passed": len(unseen) == 37 and n_ok >= G0A2_REQUIRED}
 
 
 def g0_inside(items: list[tuple[str, Path, np.ndarray]], cache: Path) -> dict:
@@ -243,12 +283,14 @@ def register_all(names: list[str], images: Path, atlas_dir: Path, cache: Path, o
 
 
 def analyze(rows: list[dict], sel: dict, pub_pilot: dict, pub_confirm: dict, gates: dict,
-            n_boot: int = ae.N_BOOT) -> dict:
-    """G2, G1 y estimandos de §5. Un espécimen es válido si sus dos registros terminaron bien (δ necesita ambos)."""
+            n_boot: int = ae.N_BOOT, exclude=()) -> dict:
+    """G2, G1 y estimandos de §5. Un espécimen es válido si sus dos registros terminaron bien (δ necesita ambos) y
+    no está en ``exclude`` (v1.1: no cumple G0-a′)."""
     by = {}
     for r in rows:
         by.setdefault(r["specimen"], {})[r["atlas"]] = r
-    valid = {st: [b for b in sel["pilot"][st] if all(by.get(b, {}).get(a, {}).get("ok") for a in ("E15.5", "E18.5"))]
+    valid = {st: [b for b in sel["pilot"][st] if b not in exclude
+                  and all(by.get(b, {}).get(a, {}).get("ok") for a in ("E15.5", "E18.5"))]
              for st in ("E15.5", "E18.5")}
     g2 = {"valid": {st: len(v) for st, v in valid.items()}, "required": 16,
           "passed": all(len(v) >= 16 for v in valid.values())}
@@ -295,7 +337,7 @@ def main(argv=None) -> int:
     c = sub.add_parser("g0c")
     c.add_argument("--data", required=True)
     c.add_argument("--out", required=True)
-    for name in ("g0a", "g0b", "register", "analyze"):
+    for name in ("g0a", "g0b", "g0a2", "g0b2", "register", "analyze"):
         q = sub.add_parser(name)
         q.add_argument("--ids", required=True, help="results/onto_map/seleccion.json")
         q.add_argument("--atlas", default="data/external/musmorph/atlas")
@@ -311,7 +353,29 @@ def main(argv=None) -> int:
             q.add_argument("--confirm-landmarks", default="data/external/musmorph/landmarks_confirm")
             q.add_argument("--gates-dir", default="results/morpho_trace")
             q.add_argument("--n-boot", type=int, default=ae.N_BOOT)
+            q.add_argument("--protocol", choices=("1.0", "1.1"), default="1.1",
+                           help="1.1: puertas G0-a′/G0-b′ y exclusiones de PREREGISTRO_ATLAS_v1_1.md")
     a = ap.parse_args(argv)
+    if a.cmd in ("g0a2", "g0b2"):
+        sel = json.loads(Path(a.ids).read_text(encoding="utf-8"))
+        atlas_dir, images, cache = Path(a.atlas), Path(a.images), Path(a.cache)
+        if a.cmd == "g0b2":
+            rows = [distance_row(f"atlas {st}", atlas_dir / ATLAS_IMAGES[st], lm.read_tag(atlas_dir / ATLAS_TAG[st]),
+                                 cache) for st in ("E15.5", "E18.5")]
+            res = {"gate": "G0-b′", "criterion": f"distancia ≤ {MAX_DIST_MM} mm en ≥ {G0_MIN_INSIDE:.0%} por atlas",
+                   "items": rows, "passed": all(r["passed"] for r in rows)}
+        else:
+            rows = []
+            for b in sel["pilot"]["E15.5"] + sel["pilot"]["E18.5"]:
+                rows.append(distance_row(b, images / f"{b}.mnc",
+                                         lm.read_tag(Path(a.landmarks) / f"{b}_Head_Landmarks.tag"), cache))
+                print(f"  {b}: {rows[-1]['within']:.1%}", flush=True)
+            res = {"gate": "G0-a′", **g0a2(rows, g0a_specimens(sel))}
+        res["provenance"] = git_state()
+        Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(a.out).write_text(json.dumps(res, indent=1, default=float) + "\n", encoding="utf-8")
+        print(json.dumps({k: v for k, v in res.items() if k not in ("provenance", "items")}, default=float))
+        return 0 if res["passed"] else 1
     if a.cmd in ("g0a", "g0b", "register", "analyze"):
         sel = json.loads(Path(a.ids).read_text(encoding="utf-8"))
         atlas_dir, images, cache = Path(a.atlas), Path(a.images), Path(a.cache)
@@ -329,16 +393,20 @@ def main(argv=None) -> int:
             res = {"gate": "G0-b", **g0_inside(items, cache)}
         else:
             gates = {}
-            for g in ("g0a", "g0b", "g0c", "g0d"):
+            names_g = ("g0a2", "g0b2", "g0c", "g0d") if a.protocol == "1.1" else ("g0a", "g0b", "g0c", "g0d")
+            for g in names_g:
                 p = Path(a.gates_dir) / f"{g}.json"
-                gates[f"G0-{g[-1]}"] = (json.loads(p.read_text(encoding="utf-8")) if p.exists()
-                                                         else {"passed": False, "missing": True})
+                key = f"G0-{g[3]}" + ("′" if g.endswith("2") else "")
+                gates[key] = (json.loads(p.read_text(encoding="utf-8")) if p.exists()
+                              else {"passed": False, "missing": True})
+            exclude = gates.get("G0-a′", {}).get("excluded", []) if a.protocol == "1.1" else []
             rows = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(Path(a.regs).glob("*.json"))]
             names = sel["pilot"]["E15.5"] + sel["pilot"]["E18.5"]
             pub = {b: lm.read_tag(Path(a.landmarks) / f"{b}_Head_Landmarks.tag") for b in names}
             res = {"analysis": "MT-A", **analyze(rows, sel, pub, _load(sel, "confirm", Path(a.confirm_landmarks)),
                                                  {k: {"passed": v.get("passed", False)} for k, v in gates.items()},
-                                                 n_boot=a.n_boot)}
+                                                 n_boot=a.n_boot, exclude=exclude)}
+            res["protocol"], res["excluded"] = a.protocol, exclude
             res["provenance"] = git_state()
             Path(a.out).parent.mkdir(parents=True, exist_ok=True)
             Path(a.out).write_text(json.dumps(res, indent=1, default=float) + "\n", encoding="utf-8")
