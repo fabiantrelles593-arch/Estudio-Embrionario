@@ -1,4 +1,4 @@
-# Informe de progreso — Geometría de la Vida (17 nov 2026)
+# Informe de progreso — Geometría de la Vida (19 nov 2026)
 
 > Formato del prompt rector (§18 v1, §21 v2). Rama `geovida/v0.1-desde-cero` (PR #3, abierta, sin fusionar).
 > Etiquetas: [HV] hecho verificado · [EI] evidencia indirecta · [HIP] hipótesis · [PROP] propuesta · [PV] pendiente de validación.
@@ -40,7 +40,7 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 
 | Nivel | Estado |
 |---|---|
-| Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 718 funciones de prueba en 62 archivos; CI en verde en cada commit [HV] |
+| Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 742 funciones de prueba en 65 archivos; CI en verde en cada commit [HV] |
 | Datos sintéticos con verdad conocida | Confirmado para el certificado de volumen y de topología [HV] |
 | Datos reales animales | Piloto P3 completo; ONTO-MAP negativo; **H11 cerrado**: la guardia negó el verde a las 1188 medidas de ecografía real y, sin ella, 540 de 540 verdes habrían sido falsos; la primaria no fue evaluable. P3 confirmatorio y H12R en medición [HV] |
 | Comparación externa con software de referencia | **Hecha para el motor 3D** con SimpleITK 2.5.7 y una reimplementación independiente (`docs/COMPARACION_REFERENCIA.md`) [HV] |
@@ -70,7 +70,7 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 | **P2** | ~~Que `run_h11.py` registre las huellas del código cuando no hay git~~ hecho el 17 nov: `geovida.provenance.code_fingerprint` (blob de git por archivo) y `compare_fingerprint`; comprobado contra la rama en `42639a8`: 106 de 108 archivos iguales, los 2 distintos eran los recién editados | — | Cumplido (`tests/test_code_fingerprint.py`) |
 | **P1** | ~~Comparación externa del motor 3D~~ hecha el 17 nov con una reimplementación independiente y con SimpleITK 2.5.7 (`docs/COMPARACION_REFERENCIA.md`) | — | Cumplido |
 | **P2** | Preregistrar la evaluación de Crofton como estimador de área (sesgo de `area_sdf` ≈ +3 % a resolución fina) | — | Semillas y formas nuevas, con ruido y desenfoque |
-| **P1** | Medir la contribución del atlas (MORPHO-TRACE): registrar los mismos especímenes a los atlas de E15.5 y E18.5. **Preregistrado el 18 nov** (`docs/morpho_trace/PREREGISTRO_ATLAS.md`): atlas, landmarks de atlas e imágenes de ambos estadios verificados en FaceBase; primaria f = fracción de d reproducida por el cambio de atlas. **Código listo** (`src/geovida/atlas_effect.py`, `tests/test_atlas_effect.py`): con una deformación conocida de 1,4 vóxeles el registro deja 0,22 vóxeles de error (0,58 solo con la afín). **Puerta G0-d superada** (d = 0,156707, igual a ONTO-MAP) | Fin de P3 y H12R (memoria); luego descarga con MD5 y puertas G0-a, b, c | Veredicto de MT-A1 según §5 del preregistro, con las puertas G0–G2 superadas o «no evaluable» |
+| **P1** | Medir la contribución del atlas (MORPHO-TRACE): registrar los mismos especímenes a los atlas de E15.5 y E18.5. **Preregistrado el 18 nov** (`docs/morpho_trace/PREREGISTRO_ATLAS.md`): atlas, landmarks de atlas e imágenes de ambos estadios verificados en FaceBase; primaria f = fracción de d reproducida por el cambio de atlas. **Código listo** (`src/geovida/atlas_effect.py`, `tests/test_atlas_effect.py`): con una deformación conocida de 1,4 vóxeles el registro deja 0,22 vóxeles de error (0,58 solo con la afín). **Puertas G0-d y G0-c superadas** (d = 0,156707, igual a ONTO-MAP; los 540 puntos se corresponden entre atlas, ρ = 0,160 frente a ≥ 1,454). **Atlas descargados el 19 nov** con MD5 igual al preregistrado (`data/manifests/musmorph_atlas.csv`) | Fin de P3 y H12R (memoria) para G0-a y G0-b; descarga de las 34 imágenes que faltan (≈ 1,6 GB, con permiso) | Veredicto de MT-A1 según §5 del preregistro, con las puertas G0–G2 superadas o «no evaluable» |
 | **P1** | ~~Revisión sistemática registrada (PubMed + Europe PMC) para MORPHO-TRACE~~ hecha el 17 nov (`docs/estado_del_arte/REVISION_SISTEMATICA_MORPHOTRACE.md`: 155 identificados, 42 cribados, 10 incluidos). Queda: Scopus/Web of Science y un segundo revisor | Acceso a esas bases | Estrategia, fecha, criterios y flujo publicados (cumplido) |
 | **P2** | Leer las guías ISUOG completas y ampliar la biblioteca de anomalías | Acceso al texto completo | Registros sin [PV] en los campos de imagen |
 | **P2** | Licencias de S-BIAD441, portal IMPC y UniCoN | — | Licencia verificada o conjunto descartado |
@@ -80,4 +80,4 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 ## 6. Estado de validación de este informe
 
 Documento de gestión: resume evidencia existente y no aporta resultados nuevos. Las rutas citadas se pueden
-comprobar en el repositorio; la cifra de pruebas se contó con `grep "def test_"` el 17 nov 2026.
+comprobar en el repositorio; la cifra de pruebas se contó con `grep "def test_"` el 19 nov 2026.
