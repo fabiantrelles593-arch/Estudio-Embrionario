@@ -5,6 +5,8 @@
 
   python scripts/atlas_effect_gates.py download --out data/external/musmorph/atlas
   python scripts/atlas_effect_gates.py g0c --data data/external/musmorph/atlas --out results/morpho_trace/g0c.json
+  python scripts/atlas_effect_gates.py download-images --ids results/onto_map/seleccion.json \\
+      --out data/external/musmorph/mta_images --reuse data/external/musmorph/impc_e15_5 ...
 
 ``g0d``: reproduce la longitud de **d** con las 717 configuraciones publicadas del confirmatorio de ONTO-MAP
 (GPA único, coordenadas tangentes, media E18.5 − media E15.5), con el mismo cargador que ONTO-MAP. Criterio:
@@ -13,6 +15,9 @@ longitud en [0,150, 0,164] (publicada: 0,157). No usa datos nuevos.
 ``download``: baja del catálogo público de FaceBase (registro 6-2EPY, CC BY 4.0) los dos atlas y sus landmarks.
 Antes de bajar nada exige que el tamaño y el MD5 del catálogo sean los fijados en el preregistro (§3); después
 comprueba el MD5 de cada archivo bajado.
+
+``download-images``: las imágenes de los 20 + 20 especímenes del piloto de ONTO-MAP (registro 3-JZA6), con el MD5
+del catálogo. Las que ya se bajaron para P3 se copian de ``--reuse`` si su MD5 coincide, en vez de bajarlas otra vez.
 
 ``g0c``: ¿el punto *i* es el mismo en los dos atlas? ``geovida.landmarks.correspondence_check`` con 200 órdenes
 barajados; pasa si los dos atlas tienen 540 puntos y ρ con el orden dado es menor que el mínimo barajado.
@@ -25,6 +30,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
 import sys
 import urllib.parse
 import urllib.request
@@ -44,6 +50,7 @@ PUBLISHED_D = 0.157
 
 FACEBASE = "https://www.facebase.org"
 ATLAS_RECORD = "6-2EPY"
+IMAGES_RECORD = "3-JZA6"
 ATLAS_FILES = {  # nombre: (bytes, md5), fijados en el preregistro §3 antes de descargar
     "IMPC_E15.5_Body_Atlas.mnc": (76534006, "05245d18ee87ed25faec29b84bfb7adb"),
     "IMPC_E18.5_Body_Atlas.mnc": (48490766, "7db10ed92076cfb325a9d9ef83c7c18a"),
@@ -75,22 +82,41 @@ def check_catalog(rows: list[dict], expected: dict = ATLAS_FILES) -> list[str]:
     return problems
 
 
-def fetch_atlas(out: Path, expected: dict = ATLAS_FILES, opener=urllib.request.urlopen, tries: int = 3) -> list[dict]:
-    """Baja los archivos preregistrados si el catálogo coincide con el preregistro; una fila por archivo."""
-    filt = ";".join("filename=" + urllib.parse.quote(n, safe="") for n in expected)
-    query = f"{FACEBASE}/ermrest/catalog/1/attribute/isa:file/dataset={ATLAS_RECORD}/{filt}/filename,url,byte_count,md5"
-    with opener(query, timeout=60) as resp:
-        rows = json.load(resp)
-    problems = check_catalog(rows, expected)
-    if problems:
-        raise RuntimeError("el catálogo no coincide con el preregistro; no se baja nada:\n  " + "\n  ".join(problems))
+def _matches(path: Path, row: dict) -> bool:
+    return path.exists() and path.stat().st_size == int(row["byte_count"]) and _md5(path) == row["md5"]
+
+
+def fetch(names: list[str], record: str, out: Path, expected: dict | None = None, reuse=(),
+          opener=urllib.request.urlopen, tries: int = 3, chunk: int = 20) -> list[dict]:
+    """Baja ``names`` del registro ``record`` de FaceBase y comprueba el MD5 del catálogo; una fila por nombre.
+
+    Con ``expected`` ({nombre: (bytes, md5)}) exige antes que el catálogo coincida y, si no, no baja nada.
+    Un archivo que ya está en ``out`` o en una carpeta de ``reuse`` con el tamaño y MD5 del catálogo no se
+    vuelve a bajar (el de ``reuse`` se copia)."""
+    rows = []
+    for k in range(0, len(names), chunk):
+        filt = ";".join("filename=" + urllib.parse.quote(n, safe="") for n in names[k:k + chunk])
+        query = f"{FACEBASE}/ermrest/catalog/1/attribute/isa:file/dataset={record}/{filt}/filename,url,byte_count,md5"
+        with opener(query, timeout=60) as resp:
+            rows += json.load(resp)
+    if expected is not None:
+        problems = check_catalog(rows, expected)
+        if problems:
+            raise RuntimeError("el catálogo no coincide con el preregistro; no se baja nada:\n  " + "\n  ".join(problems))
     out.mkdir(parents=True, exist_ok=True)
     log = []
     for r in rows:
-        if r["filename"] not in expected:
+        if r["filename"] not in names:
             continue
         dest = out / r["filename"]
-        ok = dest.exists() and dest.stat().st_size == int(r["byte_count"]) and _md5(dest) == r["md5"]
+        ok, source = _matches(dest, r), "local"
+        for folder in ([] if ok else reuse):
+            if _matches(Path(folder) / r["filename"], r):
+                shutil.copyfile(Path(folder) / r["filename"], dest)
+                ok, source = _matches(dest, r), "copia local"
+                break
+        if not ok:
+            source = "FaceBase"
         for _ in range(0 if ok else tries):
             tmp = dest.with_name(dest.name + ".part")
             with opener(FACEBASE + r["url"], timeout=300) as resp, open(tmp, "wb") as fh:
@@ -101,9 +127,23 @@ def fetch_atlas(out: Path, expected: dict = ATLAS_FILES, opener=urllib.request.u
                 tmp.replace(dest)
                 break
             tmp.unlink()
-        log.append({"filename": r["filename"], "bytes": int(r["byte_count"]), "md5": r["md5"], "md5_ok": ok})
-        print(f"  {r['filename']}: {'md5 correcto' if ok else 'FALLO'}", flush=True)
+        log.append({"filename": r["filename"], "bytes": int(r["byte_count"]), "md5": r["md5"], "md5_ok": ok,
+                    "source": source})
+        print(f"  {r['filename']}: {'md5 correcto' if ok else 'FALLO'} ({source})", flush=True)
+    found = {r["filename"] for r in rows}
+    log += [{"filename": n, "bytes": 0, "md5": "", "md5_ok": False, "source": "no está en el catálogo"}
+            for n in names if n not in found]
     return log
+
+
+def fetch_atlas(out: Path, expected: dict = ATLAS_FILES, opener=urllib.request.urlopen) -> list[dict]:
+    """Los dos atlas y sus landmarks, solo si el catálogo coincide con el preregistro."""
+    return fetch(list(expected), ATLAS_RECORD, out, expected=expected, opener=opener)
+
+
+def specimen_images(sel: dict) -> list[str]:
+    """Imágenes de los 20 + 20 especímenes del piloto de ONTO-MAP (preregistro §2)."""
+    return [f"{b}.mnc" for stage in ("E15.5", "E18.5") for b in sel["pilot"][stage]]
 
 
 def g0c(a, b, n_perm: int = 200, seed: int = ae.SEED) -> dict:
@@ -132,6 +172,10 @@ def main(argv=None) -> int:
     p.add_argument("--out", required=True)
     dl = sub.add_parser("download")
     dl.add_argument("--out", required=True, help="carpeta de destino (fuera de git: data/external/...)")
+    di = sub.add_parser("download-images")
+    di.add_argument("--ids", required=True, help="results/onto_map/seleccion.json")
+    di.add_argument("--out", required=True, help="carpeta de destino (fuera de git: data/external/...)")
+    di.add_argument("--reuse", nargs="*", default=[], help="carpetas con imágenes ya bajadas (se copian si el MD5 coincide)")
     c = sub.add_parser("g0c")
     c.add_argument("--data", required=True)
     c.add_argument("--out", required=True)
@@ -139,6 +183,13 @@ def main(argv=None) -> int:
     if a.cmd == "download":
         log = fetch_atlas(Path(a.out))
         return 0 if len(log) == len(ATLAS_FILES) and all(r["md5_ok"] for r in log) else 1
+    if a.cmd == "download-images":
+        names = specimen_images(json.loads(Path(a.ids).read_text(encoding="utf-8")))
+        log = fetch(names, IMAGES_RECORD, Path(a.out), reuse=a.reuse)
+        bad = [r["filename"] for r in log if not r["md5_ok"]]
+        print(f"{len(log) - len(bad)} de {len(names)} con MD5 correcto; "
+              f"bajadas {sum(r['source'] == 'FaceBase' and r['md5_ok'] for r in log)}" + (f"; fallan {bad}" if bad else ""))
+        return 0 if not bad and len(log) == len(names) else 1
     if a.cmd == "g0c":
         pts = [lm.read_tag(Path(a.data) / n) for n in ATLAS_TAGS]
         res = {"gate": "G0-c", **g0c(*pts), "provenance": git_state()}
