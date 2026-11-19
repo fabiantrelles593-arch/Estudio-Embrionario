@@ -161,3 +161,15 @@ Un valor no calculable es «no evaluable», nunca «refutada».
 ## 11. Desviaciones
 
 (Ninguna al subir este preregistro.)
+
+### Notas de ejecución (no cambian ningún criterio)
+
+* **18 nov 2026 — aclaración.** El vector **d** no se guardó, pero su **longitud** sí:
+  `results/onto_map/exploratorio_confirm.json`, `d_norm` = 0,15670679 (el `rho_max` de `analisis_confirm.json`,
+  0,15674, es otra magnitud que coincide casi por azar) [HV].
+* **18 nov 2026 — G0-d superada.** `scripts/atlas_effect_gates.py g0d` sobre las 717 configuraciones del
+  confirmatorio (259 + 458): longitud de **d** = **0,156707**, dentro de [0,150, 0,164] e idéntica a la guardada por
+  ONTO-MAP [HV]. Se ejecutó antes de descargar nada porque solo usa landmarks ya publicados y analizados; no depende
+  de ningún dato nuevo.
+* **G0-a** (landmarks publicados dentro de la cabeza) se pospone hasta que terminen P3 y H12R: cada imagen ocupa
+  unos 800 MB en memoria y el equipo tiene 3,9 GB, con unos 700 MB libres mientras corren.
