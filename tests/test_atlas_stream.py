@@ -55,6 +55,27 @@ def test_stream_rejects_misaligned_slabs():
         ae.stream_volume(lambda: ((i, arr[i:i + 3]) for i in range(0, len(arr), 3)), arr.shape, AFFINE, factor=4)
 
 
+def test_distance_to_tissue_matches_known_distances():
+    # bola de radio 10 vóxeles, vóxel anisótropo y ejes permutados; puntos a distancias conocidas de su superficie
+    shape = (60, 50, 70)
+    a = np.array([[0.0, 0.0, 0.02, -0.3], [0.0, 0.03, 0.0, 0.1], [0.025, 0.0, 0.0, 0.2], [0, 0, 0, 1.0]])
+    centre = a[:3, :3] @ (np.array(shape) / 2) + a[:3, 3]
+    r_mm = 0.4
+    world = np.einsum("ij,jklm->iklm", a[:3, :3], np.indices(shape).astype(float)) + a[:3, 3, None, None, None]
+    vol = (np.linalg.norm(world - centre[:, None, None, None], axis=0) <= r_mm).astype(np.float32)
+    rng = np.random.default_rng(2)
+    dirs = rng.normal(size=(30, 3))
+    dirs /= np.linalg.norm(dirs, axis=1, keepdims=True)
+    gaps = np.r_[np.full(10, -0.1), np.linspace(0.05, 0.3, 10), np.full(10, 0.8)]   # dentro, cerca, demasiado lejos
+    pts = centre + dirs * (r_mm + gaps)[:, None]
+    d = ae.distance_to_tissue(lambda s: vol[s], shape, a, pts, 0.5, radius_mm=0.5)
+    assert np.all(d[:10] == 0)
+    assert np.allclose(d[10:20], gaps[10:20], atol=0.03)            # error ≤ un vóxel (20–30 µm)
+    assert np.all(np.isinf(d[20:]))
+    outside = ae.distance_to_tissue(lambda s: vol[s], shape, a, np.array([[50.0, 50.0, 50.0]]), 0.5)
+    assert np.isinf(outside[0])
+
+
 @pytest.mark.parametrize("fmt", ["minc1_int", "minc2"])
 def test_minc_slabs_match_load_minc(tmp_path, fmt):
     pytest.importorskip("nibabel")
@@ -74,5 +95,7 @@ def test_minc_slabs_match_load_minc(tmp_path, fmt):
     assert np.array_equal(np.concatenate([s for _, s in parts]), full)
     shape, affine, _ = minc.minc_header(path)
     assert shape == full.shape and np.allclose(affine, meta["affine"])
+    box = (slice(3, 11), slice(0, 44), slice(20, 31))
+    assert np.array_equal(minc.minc_box_reader(path)(box), full[box])
     r = ae.stream_volume(lambda: minc.minc_slabs(path, 4), shape, affine, factor=4)
     assert np.allclose(r["downsampled"], ae.downsample(full, affine, 4)[0], rtol=1e-6, atol=1e-4)
