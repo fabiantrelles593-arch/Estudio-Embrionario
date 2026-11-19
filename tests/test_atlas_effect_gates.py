@@ -123,6 +123,76 @@ def test_fetch_reuses_verified_local_copies_and_reports_missing_files(tmp_path):
     assert log["IMPC_E18.5_9999.mnc"]["md5_ok"] is False
 
 
+def _write_tag(path, pts):
+    body = "\n".join(f" {x:.6f} {y:.6f} {z:.6f} \"\"" for x, y, z in pts)
+    path.write_text(f"MNI Tag Point File\nVolumes = 1;\nPoints =\n{body};\n", encoding="utf-8")
+
+
+def test_register_all_transfers_atlas_points_and_resumes(tmp_path):
+    pytest = __import__("pytest")
+    pytest.importorskip("SimpleITK")
+    from scipy.ndimage import gaussian_filter, shift
+    n = 40
+    z, y, x = np.mgrid[:n, :n, :n].astype(float)
+    c = (n - 1) / 2
+    body = ((z - c) / 13) ** 2 + ((y - c) / 9) ** 2 + ((x - c) / 7) ** 2 <= 1
+    knob = (z - c - 8) ** 2 + (y - c + 5) ** 2 + (x - c - 2) ** 2 <= 12
+    atlas = gaussian_filter((body + 0.6 * knob).astype(np.float32), 1.0)
+    move = np.array([2.0, -1.5, 1.0])                                # el espécimen = atlas desplazado (índice = mundo)
+    spec = shift(atlas, move, order=1).astype(np.float32)
+    cache, atlas_dir = tmp_path / "cache", tmp_path / "atlas"
+    cache.mkdir()
+    atlas_dir.mkdir()
+    for st, f in gates.ATLAS_IMAGES.items():
+        np.savez(cache / (Path(f).stem + "_x4.npz"), downsampled=atlas, affine_ds=np.eye(4), affine=np.eye(4))
+    np.savez(cache / "IMPC_E15.5_0001_x4.npz", downsampled=spec, affine_ds=np.eye(4), affine=np.eye(4))
+    pts = c + np.random.default_rng(0).uniform(-5, 5, (12, 3))
+    for f in gates.ATLAS_TAG.values():
+        _write_tag(atlas_dir / f, pts)
+    out = tmp_path / "regs"
+    rows = gates.register_all(["IMPC_E15.5_0001"], tmp_path, atlas_dir, cache, out, affine_only=True, log=lambda m: None)
+    assert [r["own"] for r in rows] == [True, False] and all(r["ok"] for r in rows)
+    err = np.linalg.norm(np.array(rows[0]["points"]) - (pts + move), axis=1)
+    assert np.median(err) < 0.3, err                                   # el punto del atlas cae donde está en el espécimen
+    again = gates.register_all(["IMPC_E15.5_0001"], tmp_path, atlas_dir, cache, out, affine_only=True,
+                               log=lambda m: (_ for _ in ()).throw(AssertionError("no debía registrar")))
+    assert [r["points"] for r in again] == [r["points"] for r in rows]
+
+
+def _analysis_case(n_valid15=20, a=0.7, k=12):
+    rng = np.random.default_rng(3)
+    base = rng.normal(0, 1, (k, 3))
+    dvec = rng.normal(0, 1, (k, 3)) * 0.08
+    sel = {"pilot": {st: [f"IMPC_{st}_{i:04d}" for i in range(20)] for st in ("E15.5", "E18.5")}}
+    conf = {"E15.5": np.stack([base - dvec / 2 + rng.normal(0, 0.01, base.shape) for _ in range(30)]),
+            "E18.5": np.stack([base + dvec / 2 + rng.normal(0, 0.01, base.shape) for _ in range(30)])}
+    pub, rows = {}, []
+    for st in ("E15.5", "E18.5"):
+        for i, b in enumerate(sel["pilot"][st]):
+            shape = base + (dvec / 2 if st == "E18.5" else -dvec / 2) + rng.normal(0, 0.03, base.shape)
+            pub[b] = shape
+            l15 = shape + rng.normal(0, 0.005, base.shape) - (a * dvec / 2 if st == "E18.5" else 0)
+            l18 = l15 + a * dvec
+            ok = st == "E18.5" or i < n_valid15
+            rows += [{"specimen": b, "atlas": "E15.5", "ok": ok, "points": l15.tolist()},
+                     {"specimen": b, "atlas": "E18.5", "ok": True, "points": l18.tolist()}]
+    return rows, sel, pub, conf
+
+
+def test_analyze_gives_a_verdict_only_when_every_gate_passes():
+    g0 = {g: {"passed": True} for g in ("G0-a", "G0-b", "G0-c", "G0-d")}
+    rows, sel, pub, conf = _analysis_case()
+    r = gates.analyze(rows, sel, pub, conf, g0, n_boot=200)
+    assert r["gates"]["G2"]["passed"] and r["gates"]["G1"]["passed"] and r["failed_gates"] == []
+    assert r["verdict"] == r["mta"]["mta1"]["verdict"] == "apoyada" and 0.5 < r["mta"]["mta1"]["f"] < 0.9
+    rows, sel, pub, conf = _analysis_case(n_valid15=15)               # 15 de 20 válidos en E15.5: falla G2
+    r = gates.analyze(rows, sel, pub, conf, g0, n_boot=200)
+    assert r["gates"]["G2"]["valid"] == {"E15.5": 15, "E18.5": 20} and r["verdict"] == "no evaluable"
+    rows, sel, pub, conf = _analysis_case()
+    r = gates.analyze(rows, sel, pub, conf, {**g0, "G0-a": {"passed": False}}, n_boot=200)
+    assert r["failed_gates"] == ["G0-a"] and r["verdict"] == "no evaluable"
+
+
 def test_specimen_images_are_the_onto_map_pilot():
     sel = {"pilot": {"E15.5": ["IMPC_E15.5_0001"], "E18.5": ["IMPC_E18.5_0002", "IMPC_E18.5_0003"]},
            "confirm": {"E15.5": ["IMPC_E15.5_0999"], "E18.5": []}}
