@@ -105,9 +105,10 @@ bastara para un umbral, y no basta [HV].
 
 ## 7. Pendiente
 
-- **Sensibilidad de vóxel** (D1, `--tag v04_rs`, 227 casos de cuerpo de 213 embriones): en la cadena, detrás de
-  H12R [PV]. No puede sustituir al análisis principal.
-- **H12R** (calibración de ecografía simulada) y su informe: en medición [PV].
+- ~~**Sensibilidad de vóxel**~~ hecha el 19 nov (`docs/h11/RESULTADOS_H12R.md` §5): no cambia H11a, H11b ni H11c;
+  H11e pasa a «no apoyada» en la sensibilidad (49 verdes de topología, todas erróneas). El veredicto principal de
+  H11e sigue siendo «no evaluable».
+- ~~**H12R**~~ cerrado el 19 nov (`docs/h11/RESULTADOS_H12R.md`): primaria no evaluable.
 - ~~Registrar en `run_h11.py` las huellas del código cuando no hay git~~ hecho el 17 nov:
   `geovida.provenance.code_fingerprint` y `compare_fingerprint`, guardadas en `meta.code_fingerprint`
   (`tests/test_code_fingerprint.py`). Las corridas de H11 ya hechas no se repiten; la comprobación de §1 sigue siendo la suya.
