@@ -79,3 +79,6 @@ de 54 µm, e imágenes ya remuestreadas al espacio de su atlas, lo que hace G1 m
 ## 7. Desviaciones
 
 (Ninguna al subir este preregistro.)
+
+* **19 nov 2026 — G0-b′ superada, G0-a′ fallida (31 de 37); no evaluable.** Sin desviaciones. No se hizo ningún
+  registro. Resultados en `docs/morpho_trace/RESULTADOS_ATLAS_v1_1.md`.
