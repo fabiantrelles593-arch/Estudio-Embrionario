@@ -105,6 +105,12 @@ def minc_slabs(path, size: int):
         yield i0, np.asarray(img.dataobj[i0:min(i0 + size, n)], dtype=np.float32)
 
 
+def minc_box_reader(path):
+    """Función ``read(slices) -> float32`` que lee solo un subvolumen, con la misma escala que ``load_minc``."""
+    img, _, _ = _open_minc(path)
+    return lambda slices: np.asarray(img.dataobj[tuple(slices)], dtype=np.float32)
+
+
 def minc_header(path) -> tuple[tuple[int, int, int], np.ndarray, dict]:
     """Forma, afín índice→mundo (mm) y metadatos, sin leer las intensidades."""
     img, _, meta = _open_minc(path)
