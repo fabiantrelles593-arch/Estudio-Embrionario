@@ -22,8 +22,15 @@ del catálogo. Las que ya se bajaron para P3 se copian de ``--reuse`` si su MD5 
 ``g0c``: ¿el punto *i* es el mismo en los dos atlas? ``geovida.landmarks.correspondence_check`` con 200 órdenes
 barajados; pasa si los dos atlas tienen 540 puntos y ρ con el orden dado es menor que el mínimo barajado.
 
-Las demás puertas (G0-a, G0-b, G1, G2) se añaden cuando la memoria permita leer las imágenes. Los resultados
-quedan fuera de git (``results/``), como los datos.
+``g0a`` / ``g0b``: fracción de landmarks publicados (3 especímenes) o de atlas (los 2) que caen sobre el umbral de
+Otsu de su imagen, a resolución completa; pasa con ≥ 95 % en cada imagen.
+
+``register``: cada espécimen del piloto registrado a los dos atlas (§3), un JSON por registro (reanudable).
+``analyze``: puertas G2 y G1 y estimandos de §5; el veredicto es «no evaluable» si falla cualquier puerta.
+
+Las imágenes se leen por losas (``geovida.minc.minc_slabs``) y solo se guarda en memoria el volumen ×4
+(caché ``.npz`` en ``results/morpho_trace/cache``). Los resultados quedan fuera de git (``results/``), como los
+datos.
 """
 from __future__ import annotations
 
@@ -155,6 +162,115 @@ def g0c(a, b, n_perm: int = 200, seed: int = ae.SEED) -> dict:
             "passed": bool(same and r["corresponds"])}
 
 
+ATLAS_IMAGES = {"E15.5": "IMPC_E15.5_Body_Atlas.mnc", "E18.5": "IMPC_E18.5_Body_Atlas.mnc"}
+ATLAS_TAG = {"E15.5": ATLAS_TAGS[0], "E18.5": ATLAS_TAGS[1]}
+G0_MIN_INSIDE = 0.95
+FACTOR = 4
+
+
+def g0a_specimens(sel: dict) -> list[str]:
+    """Los 3 especímenes de G0-a (§4 no fija cuáles): los primeros del piloto alternando estadios."""
+    p = sel["pilot"]
+    return [p["E15.5"][0], p["E18.5"][0], p["E15.5"][1]]
+
+
+def stage_of(name: str) -> str:
+    return "E15.5" if "_E15.5_" in name else "E18.5"
+
+
+def load_x4(path: Path, cache: Path, points=None) -> dict:
+    """Volumen ×4 (con caché .npz) y, con ``points``, la fracción de puntos sobre Otsu a resolución completa."""
+    from geovida import minc
+    cached = cache / (path.stem + f"_x{FACTOR}.npz")
+    if points is None and cached.exists():
+        z = np.load(cached)
+        return {"downsampled": z["downsampled"], "affine_ds": z["affine_ds"], "affine": z["affine"]}
+    shape, affine, _ = minc.minc_header(path)
+    r = ae.stream_volume(lambda: minc.minc_slabs(path, FACTOR), shape, affine, factor=FACTOR, points=points)
+    cache.mkdir(parents=True, exist_ok=True)
+    np.savez(cached, downsampled=r["downsampled"], affine_ds=r["affine_ds"], affine=affine)
+    r["affine"] = affine
+    return r
+
+
+def g0_inside(items: list[tuple[str, Path, np.ndarray]], cache: Path) -> dict:
+    """Puertas G0-a/b: para cada (nombre, imagen, landmarks) la fracción de landmarks sobre el umbral de Otsu."""
+    rows = []
+    for name, img, pts in items:
+        r = load_x4(img, cache, points=pts)
+        rows.append({"name": name, "n_points": int(len(pts)), "otsu": r["otsu"], "inside": r["inside"],
+                     "passed": r["inside"] >= G0_MIN_INSIDE})
+    return {"criterion": f"≥ {G0_MIN_INSIDE:.0%} de los puntos sobre Otsu", "items": rows,
+            "passed": bool(rows) and all(r["passed"] for r in rows)}
+
+
+def register_all(names: list[str], images: Path, atlas_dir: Path, cache: Path, out: Path, *,
+                 mesh: int = 8, affine_only: bool = False, log=print) -> list[dict]:
+    """Registra cada espécimen a los dos atlas (fija = atlas) y transfiere sus 540 landmarks. Reanudable: un
+    JSON por registro en ``out``; los que ya existen no se repiten."""
+    import time
+    out.mkdir(parents=True, exist_ok=True)
+    atlas = {st: load_x4(atlas_dir / f, cache) for st, f in ATLAS_IMAGES.items()}
+    tags = {st: lm.read_tag(atlas_dir / f) for st, f in ATLAS_TAG.items()}
+    rows = []
+    for name in names:
+        spec = None
+        for st in ("E15.5", "E18.5"):
+            dest = out / f"{name}__atlas_{st}.json"
+            if dest.exists():
+                rows.append(json.loads(dest.read_text(encoding="utf-8")))
+                continue
+            if spec is None:
+                spec = load_x4(images / f"{name}.mnc", cache)
+            t0 = time.time()
+            row = {"specimen": name, "stage": stage_of(name), "atlas": st, "own": st == stage_of(name),
+                   "mesh": None if affine_only else mesh, "factor": FACTOR}
+            try:
+                fixed = ae.to_sitk(atlas[st]["downsampled"], atlas[st]["affine_ds"])
+                moving = ae.to_sitk(spec["downsampled"], spec["affine_ds"])
+                tx, info = ae.register(fixed, moving, mesh=mesh, affine_only=affine_only)
+                pts = ae.transfer_points(tx, tags[st])
+                metrics = [v for k, v in info.items() if k.endswith("_metric")]
+                row.update({"info": info, "points": pts.tolist(),
+                            "ok": bool(np.all(np.isfinite(pts)) and all(np.isfinite(metrics)))})
+            except Exception as exc:  # G2 cuenta los registros que fallan; no se detiene la serie
+                row.update({"ok": False, "error": f"{type(exc).__name__}: {exc}"})
+            row["seconds"] = round(time.time() - t0, 1)
+            dest.write_text(json.dumps(row, default=float) + "\n", encoding="utf-8")
+            log(f"  {name} → atlas {st}: {'ok' if row['ok'] else 'FALLO'} ({row['seconds']} s)")
+            rows.append(row)
+    return rows
+
+
+def analyze(rows: list[dict], sel: dict, pub_pilot: dict, pub_confirm: dict, gates: dict,
+            n_boot: int = ae.N_BOOT) -> dict:
+    """G2, G1 y estimandos de §5. Un espécimen es válido si sus dos registros terminaron bien (δ necesita ambos)."""
+    by = {}
+    for r in rows:
+        by.setdefault(r["specimen"], {})[r["atlas"]] = r
+    valid = {st: [b for b in sel["pilot"][st] if all(by.get(b, {}).get(a, {}).get("ok") for a in ("E15.5", "E18.5"))]
+             for st in ("E15.5", "E18.5")}
+    g2 = {"valid": {st: len(v) for st, v in valid.items()}, "required": 16,
+          "passed": all(len(v) >= 16 for v in valid.values())}
+    res = {"gates": {**gates, "G2": g2}}
+    names = valid["E15.5"] + valid["E18.5"]
+    if len(names) < 2:
+        res["verdict"] = "no evaluable"
+        return res
+    own = np.array([by[b][stage_of(b)]["points"] for b in names])
+    published = np.array([pub_pilot[b] for b in names])
+    res["gates"]["G1"] = ae.gate_g1(own, published, {st: [pub_pilot[b] for b in sel["pilot"][st]]
+                                                     for st in ("E15.5", "E18.5")})
+    l15 = np.array([by[b]["E15.5"]["points"] for b in names])
+    l18 = np.array([by[b]["E18.5"]["points"] for b in names])
+    res["mta"] = ae.atlas_effect(pub_confirm["E15.5"], pub_confirm["E18.5"], l15, l18,
+                                 [stage_of(b) for b in names], n_boot=n_boot)
+    failed = [k for k, g in res["gates"].items() if not g.get("passed")]
+    res["failed_gates"] = failed
+    res["verdict"] = "no evaluable" if failed else res["mta"]["mta1"]["verdict"]
+    return res
+
+
 def g0d(configs: dict) -> dict:
     """Puerta G0-d a partir de {'E15.5': (n, k, 3), 'E18.5': (n, k, 3)}."""
     r = ae.published_direction(configs["E15.5"], configs["E18.5"])
@@ -179,7 +295,60 @@ def main(argv=None) -> int:
     c = sub.add_parser("g0c")
     c.add_argument("--data", required=True)
     c.add_argument("--out", required=True)
+    for name in ("g0a", "g0b", "register", "analyze"):
+        q = sub.add_parser(name)
+        q.add_argument("--ids", required=True, help="results/onto_map/seleccion.json")
+        q.add_argument("--atlas", default="data/external/musmorph/atlas")
+        q.add_argument("--images", default="data/external/musmorph/mta_images")
+        q.add_argument("--landmarks", default="data/external/musmorph/landmarks")
+        q.add_argument("--cache", default="results/morpho_trace/cache")
+        q.add_argument("--regs", default="results/morpho_trace/registros")
+        q.add_argument("--out", required=name != "register")
+        if name == "register":
+            q.add_argument("--mesh", type=int, default=8)
+            q.add_argument("--affine-only", action="store_true")
+        if name == "analyze":
+            q.add_argument("--confirm-landmarks", default="data/external/musmorph/landmarks_confirm")
+            q.add_argument("--gates-dir", default="results/morpho_trace")
+            q.add_argument("--n-boot", type=int, default=ae.N_BOOT)
     a = ap.parse_args(argv)
+    if a.cmd in ("g0a", "g0b", "register", "analyze"):
+        sel = json.loads(Path(a.ids).read_text(encoding="utf-8"))
+        atlas_dir, images, cache = Path(a.atlas), Path(a.images), Path(a.cache)
+        if a.cmd == "register":
+            names = sel["pilot"]["E15.5"] + sel["pilot"]["E18.5"]
+            rows = register_all(names, images, atlas_dir, cache, Path(a.regs), mesh=a.mesh, affine_only=a.affine_only)
+            return 0 if len(rows) == 2 * len(names) else 1
+        if a.cmd == "g0a":
+            items = [(b, images / f"{b}.mnc", lm.read_tag(Path(a.landmarks) / f"{b}_Head_Landmarks.tag"))
+                     for b in g0a_specimens(sel)]
+            res = {"gate": "G0-a", **g0_inside(items, cache)}
+        elif a.cmd == "g0b":
+            items = [(f"atlas {st}", atlas_dir / ATLAS_IMAGES[st], lm.read_tag(atlas_dir / ATLAS_TAG[st]))
+                     for st in ("E15.5", "E18.5")]
+            res = {"gate": "G0-b", **g0_inside(items, cache)}
+        else:
+            gates = {}
+            for g in ("g0a", "g0b", "g0c", "g0d"):
+                p = Path(a.gates_dir) / f"{g}.json"
+                gates[f"G0-{g[-1]}"] = (json.loads(p.read_text(encoding="utf-8")) if p.exists()
+                                                         else {"passed": False, "missing": True})
+            rows = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(Path(a.regs).glob("*.json"))]
+            names = sel["pilot"]["E15.5"] + sel["pilot"]["E18.5"]
+            pub = {b: lm.read_tag(Path(a.landmarks) / f"{b}_Head_Landmarks.tag") for b in names}
+            res = {"analysis": "MT-A", **analyze(rows, sel, pub, _load(sel, "confirm", Path(a.confirm_landmarks)),
+                                                 {k: {"passed": v.get("passed", False)} for k, v in gates.items()},
+                                                 n_boot=a.n_boot)}
+            res["provenance"] = git_state()
+            Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+            Path(a.out).write_text(json.dumps(res, indent=1, default=float) + "\n", encoding="utf-8")
+            print(json.dumps({k: res[k] for k in ("verdict", "gates")}, default=float))
+            return 0
+        res["provenance"] = git_state()
+        Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(a.out).write_text(json.dumps(res, indent=1, default=float) + "\n", encoding="utf-8")
+        print(json.dumps({k: v for k, v in res.items() if k != "provenance"}, default=float))
+        return 0 if res["passed"] else 1
     if a.cmd == "download":
         log = fetch_atlas(Path(a.out))
         return 0 if len(log) == len(ATLAS_FILES) and all(r["md5_ok"] for r in log) else 1
