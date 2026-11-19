@@ -77,7 +77,8 @@ def _run_cached(manifest: pd.DataFrame, a, frozen, cache: Path) -> pd.DataFrame:
     have = {(r["image"], r["structure"]) for r in done}
     todo = manifest[[k not in have for k in zip(manifest["image"], manifest["structure"])]]
     for i, (_, case) in enumerate(todo.iterrows(), 1):
-        rows = h11.run_cases(case.to_frame().T, root=a.root, profile=a.profile, frozen=frozen)
+        rows = h11.run_cases(case.to_frame().T, root=a.root, profile=a.profile, frozen=frozen,
+                             relaxed_spacing=a.relaxed_spacing)
         with cache.open("ab") as f:
             for r in rows.to_dict("records"):
                 rec = {"image": case["image"], **{k: _plain(v) for k, v in r.items()}}
@@ -101,6 +102,8 @@ def main():
     ap.add_argument("--tag", default="v04", help="sufijo de los archivos de salida (p. ej. v04 o h12)")
     ap.add_argument("--cache", default=None,
                     help="JSONL donde se guarda cada caso al terminarlo; al relanzar, los ya hechos no se repiten")
+    ap.add_argument("--relaxed-spacing", action="store_true",
+                    help="solo la sensibilidad D1: etiqueta con la misma forma y otro vóxel, medida con el de la imagen")
     a = ap.parse_args()
 
     man_path = Path(a.manifest)
@@ -118,13 +121,13 @@ def main():
     if a.cache:
         df = _run_cached(manifest, a, frozen, Path(a.cache))
     else:
-        df = h11.run_cases(manifest, root=a.root, profile=a.profile, frozen=frozen)
+        df = h11.run_cases(manifest, root=a.root, profile=a.profile, frozen=frozen, relaxed_spacing=a.relaxed_spacing)
     verdicts = h11.evaluate_h11(df)
 
     df.to_csv(out / f"h11_{a.tag}_cases.csv", index=False)
     meta = {"generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(), **code_provenance(state),
             "manifest": man_path.name, "manifest_sha256": _sha256(man_path),
-            "calibration": calib, "profile": a.profile, "boot_seed": h11.BOOT_SEED, "n_boot": h11.N_BOOT,
+            "calibration": calib, "profile": a.profile, "relaxed_spacing": a.relaxed_spacing, "boot_seed": h11.BOOT_SEED, "n_boot": h11.N_BOOT,
             "roi_margin_ventricle": h11.ROI_MARGIN, "python": platform.python_version(),
             "packages": {p: version(p) for p in ("numpy", "scipy", "scikit-image", "pandas", "nibabel")}}
     (out / f"h11_{a.tag}_verdicts.json").write_text(
