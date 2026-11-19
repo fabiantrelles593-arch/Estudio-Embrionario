@@ -93,3 +93,37 @@ def test_fetch_atlas_downloads_verifies_and_refuses_a_changed_catalog(tmp_path):
     with pytest.raises(RuntimeError):
         gates.fetch_atlas(tmp_path / "otra", changed, opener=opener)
     assert not (tmp_path / "otra").exists()
+
+
+def test_fetch_reuses_verified_local_copies_and_reports_missing_files(tmp_path):
+    import hashlib
+    import json
+    files = {"IMPC_E15.5_0001.mnc": b"\x01" * 50, "IMPC_E18.5_0002.mnc": b"\x02" * 70}
+    rows = [{"filename": n, "url": f"/hatrac/{n}", "byte_count": len(d), "md5": hashlib.md5(d).hexdigest()}
+            for n, d in files.items()]
+    downloaded = []
+
+    def opener(url, timeout=None):
+        if "ermrest" in url:
+            return _Resp(json.dumps(rows).encode())
+        downloaded.append(url.rsplit("/", 1)[1])
+        return _Resp(files[url.rsplit("/", 1)[1]])
+
+    good, stale = tmp_path / "p3", tmp_path / "viejo"
+    good.mkdir()
+    stale.mkdir()
+    (good / "IMPC_E15.5_0001.mnc").write_bytes(files["IMPC_E15.5_0001.mnc"])
+    (stale / "IMPC_E18.5_0002.mnc").write_bytes(b"corrupto")              # MD5 distinto: no se reutiliza
+    names = list(files) + ["IMPC_E18.5_9999.mnc"]
+    log = {r["filename"]: r for r in gates.fetch(names, "3-JZA6", tmp_path / "out", reuse=[stale, good],
+                                                 opener=opener)}
+    assert log["IMPC_E15.5_0001.mnc"]["source"] == "copia local" and log["IMPC_E15.5_0001.mnc"]["md5_ok"]
+    assert log["IMPC_E18.5_0002.mnc"]["source"] == "FaceBase" and log["IMPC_E18.5_0002.mnc"]["md5_ok"]
+    assert downloaded == ["IMPC_E18.5_0002.mnc"]
+    assert log["IMPC_E18.5_9999.mnc"]["md5_ok"] is False
+
+
+def test_specimen_images_are_the_onto_map_pilot():
+    sel = {"pilot": {"E15.5": ["IMPC_E15.5_0001"], "E18.5": ["IMPC_E18.5_0002", "IMPC_E18.5_0003"]},
+           "confirm": {"E15.5": ["IMPC_E15.5_0999"], "E18.5": []}}
+    assert gates.specimen_images(sel) == ["IMPC_E15.5_0001.mnc", "IMPC_E18.5_0002.mnc", "IMPC_E18.5_0003.mnc"]
