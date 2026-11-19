@@ -179,5 +179,9 @@ Un valor no calculable es «no evaluable», nunca «refutada».
   Procrustes con el orden dado = **0,160**, frente a un mínimo de **1,454** (mediana 1,521) en 200 órdenes
   barajados (semilla 20261118, la del estudio, porque §4 no fijaba otra) [HV]. Coincide con la comprobación de un
   par de especímenes de ONTO-MAP (0,170 frente a ≥ 1,46).
+* **19 nov 2026 — imágenes de los especímenes.** `scripts/atlas_effect_gates.py download-images`: las 40 imágenes
+  del piloto de ONTO-MAP (20 + 20) tienen el MD5 del catálogo de FaceBase (3-JZA6) [HV]. 34 se bajaron (unos
+  2,0 GB, no los 1,6 GB estimados en §2: las de E15.5 pesan unos 94 MB cada una) y 6 se copiaron de la descarga de
+  P3 tras comprobar su MD5. Manifiesto SHA-256 en `data/manifests/musmorph_mta_images.csv`.
 * **G0-a** (landmarks publicados dentro de la cabeza) se pospone hasta que terminen P3 y H12R: cada imagen ocupa
   unos 800 MB en memoria y el equipo tiene 3,9 GB, con unos 700 MB libres mientras corren.
