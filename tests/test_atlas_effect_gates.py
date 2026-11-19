@@ -35,3 +35,61 @@ def test_g0d_passes_and_fails_by_the_length_of_d():
                "E18.5": _stage(base, length / 2 * direction, 30, rng)}
         r = gates.g0d(cfg)
         assert r["passed"] is expected, r["d_length"]
+
+
+def test_g0c_passes_for_corresponding_points_and_fails_when_shuffled():
+    rng = np.random.default_rng(1)
+    a = rng.normal(0, 1, (gates.N_POINTS, 3))
+    b = 1.3 * a @ np.linalg.qr(rng.normal(size=(3, 3)))[0] + 5 + rng.normal(0, 0.05, a.shape)
+    assert gates.g0c(a, b, n_perm=20)["passed"] is True
+    assert gates.g0c(a, b[rng.permutation(len(b))], n_perm=20)["passed"] is False
+    assert gates.g0c(a[:100], b[:100], n_perm=20)["passed"] is False      # 540 puntos exigidos
+
+
+def test_catalog_must_match_the_preregistration():
+    rows = [{"filename": n, "byte_count": s, "md5": m} for n, (s, m) in gates.ATLAS_FILES.items()]
+    assert gates.check_catalog(rows) == []
+    bad = [dict(r) for r in rows]
+    bad[0]["md5"] = "0" * 32
+    assert len(gates.check_catalog(bad)) == 1 and len(gates.check_catalog(rows[1:])) == 1
+
+
+class _Resp:
+    def __init__(self, data):
+        import io
+        self._b = io.BytesIO(data)
+
+    def read(self, n=-1):
+        return self._b.read(n)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def test_fetch_atlas_downloads_verifies_and_refuses_a_changed_catalog(tmp_path):
+    import hashlib
+    import json
+    files = {"a.tag": b"MNI Tag Point File\n", "b.mnc": b"\x00" * 100}
+    expected = {n: (len(d), hashlib.md5(d).hexdigest()) for n, d in files.items()}
+    rows = [{"filename": n, "url": f"/hatrac/{n}", "byte_count": s, "md5": m} for n, (s, m) in expected.items()]
+    calls = []
+
+    def opener(url, timeout=None):
+        calls.append(url)
+        if "ermrest" in url:
+            return _Resp(json.dumps(rows).encode())
+        return _Resp(files[url.rsplit("/", 1)[1]])
+
+    log = gates.fetch_atlas(tmp_path, expected, opener=opener)
+    assert all(r["md5_ok"] for r in log) and (tmp_path / "b.mnc").read_bytes() == files["b.mnc"]
+    n = len(calls)
+    gates.fetch_atlas(tmp_path, expected, opener=opener)                   # ya están: solo consulta el catálogo
+    assert len(calls) == n + 1
+    changed = {**expected, "a.tag": (expected["a.tag"][0], "f" * 32)}
+    import pytest
+    with pytest.raises(RuntimeError):
+        gates.fetch_atlas(tmp_path / "otra", changed, opener=opener)
+    assert not (tmp_path / "otra").exists()
