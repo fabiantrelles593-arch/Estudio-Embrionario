@@ -96,6 +96,67 @@ def fraction_inside(arr: np.ndarray, affine, points: np.ndarray, threshold: floa
     return float(vals.mean())
 
 
+def stream_volume(slabs, shape, affine, *, factor: int = 4, points: np.ndarray | None = None,
+                  nbins: int = 256) -> dict:
+    """Lo que MT-A necesita de un volumen, leyéndolo por losas para no tenerlo entero en memoria.
+
+    ``slabs()`` devuelve cada vez un iterable nuevo de ``(inicio, losa)`` a lo largo del primer eje, con losas
+    de ``factor`` cortes alineadas en múltiplos de ``factor`` (``geovida.minc.minc_slabs(path, factor)``); se
+    recorre dos veces. Devuelve:
+
+    * ``downsampled`` y ``affine_ds``: idénticos a ``downsample(volumen, affine, factor)``;
+    * ``otsu``: el umbral de ``skimage.filters.threshold_otsu`` sobre el volumen **completo** (mismo histograma
+      de ``nbins`` contenedores entre el mínimo y el máximo);
+    * con ``points``: la intensidad a resolución completa en el vóxel más cercano a cada punto (NaN fuera del
+      volumen) y ``inside``, la fracción por encima de ``otsu`` (puertas G0-a/b, como ``fraction_inside``).
+    """
+    if factor < 1:
+        raise ValueError("factor ≥ 1")
+    shape = tuple(int(s) for s in shape)
+    s = [d - d % factor for d in shape]
+    if min(s) == 0:
+        raise ValueError("el volumen es menor que el bloque")
+    ds = np.empty((s[0] // factor, s[1] // factor, s[2] // factor), np.float32)
+    if points is not None:
+        idx = np.rint(world_to_index(points, affine)).astype(int)
+        valid = np.all((idx >= 0) & (idx < np.asarray(shape)), axis=1)
+        values = np.full(len(idx), np.nan)
+    lo = hi = None
+    for i0, slab in slabs():
+        slab = np.asarray(slab, dtype=np.float32)
+        if i0 % factor or (len(slab) % factor and i0 + len(slab) != shape[0]):
+            raise ValueError("las losas deben empezar en múltiplos de factor y tener factor cortes")
+        smin, smax = slab.min(), slab.max()
+        lo = smin if lo is None else min(lo, smin)
+        hi = smax if hi is None else max(hi, smax)
+        if points is not None:
+            sel = valid & (idx[:, 0] >= i0) & (idx[:, 0] < i0 + len(slab))
+            values[sel] = slab[idx[sel, 0] - i0, idx[sel, 1], idx[sel, 2]]
+        for b0 in range(0, len(slab) - factor + 1, factor):
+            g = (i0 + b0) // factor
+            if g < ds.shape[0]:
+                x = slab[b0:b0 + factor, :s[1], :s[2]]
+                ds[g] = x.reshape(1, factor, s[1] // factor, factor, s[2] // factor, factor).mean(axis=(1, 3, 5))[0]
+    if lo is None:
+        raise ValueError("volumen vacío")
+    counts = np.zeros(nbins, np.int64)
+    edges = None
+    for _, slab in slabs():
+        c, edges = np.histogram(np.asarray(slab, dtype=np.float32), bins=nbins, range=(lo, hi))
+        counts += c
+    from skimage.filters import threshold_otsu
+    otsu = float(threshold_otsu(hist=(counts, (edges[:-1] + edges[1:]) / 2))) if hi > lo else float(lo)
+    a = np.asarray(affine, dtype=float)
+    out = a.copy()
+    out[:3, :3] = a[:3, :3] * factor
+    out[:3, 3] = a[:3, :3] @ np.full(3, (factor - 1) / 2.0) + a[:3, 3]
+    res = {"downsampled": ds, "affine_ds": out, "otsu": otsu, "shape": shape, "factor": factor}
+    if points is not None:
+        res["point_values"] = values
+        res["inside"] = float(np.mean(np.nan_to_num(values, nan=-np.inf) > otsu))
+    return res
+
+
 # ---------------------------------------------------------------- registro
 def register(fixed, moving, *, mesh: int = 8, affine_only: bool = False, seed: int = SEED,
              affine_iterations: int = 200, bspline_iterations: int = 100) -> tuple["object", dict]:
