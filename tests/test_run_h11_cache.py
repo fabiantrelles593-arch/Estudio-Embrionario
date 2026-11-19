@@ -44,7 +44,7 @@ def setup(tmp_path):
         for s in ("body", "ventricle"):
             rows.append({"embryo_id": f"E{k // 2}", "structure": s, "image": f"e{k}.nii.gz",
                          "label": f"e{k}_lab.nii.gz", "label_value": 1})
-    args = argparse.Namespace(root=str(tmp_path), profile="realistic", frozen=None)
+    args = argparse.Namespace(root=str(tmp_path), profile="realistic", frozen=None, relaxed_spacing=False)
     return pd.DataFrame(rows), args, tmp_path
 
 
