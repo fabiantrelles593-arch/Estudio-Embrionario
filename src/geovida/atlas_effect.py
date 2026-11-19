@@ -153,8 +153,37 @@ def stream_volume(slabs, shape, affine, *, factor: int = 4, points: np.ndarray |
     res = {"downsampled": ds, "affine_ds": out, "otsu": otsu, "shape": shape, "factor": factor}
     if points is not None:
         res["point_values"] = values
-        res["inside"] = float(np.mean(np.nan_to_num(values, nan=-np.inf) > otsu))
+        res["inside"] = float(np.mean(np.nan_to_num(values, nan=-np.inf) > otsu)) if len(values) else float("nan")
     return res
+
+
+def distance_to_tissue(read_box, shape, affine, points: np.ndarray, threshold: float,
+                       radius_mm: float = 0.5) -> np.ndarray:
+    """Puertas G0-a′/b′ (MT-A v1.1): distancia en mm de cada punto al tejido por encima de ``threshold``.
+
+    0 si el vóxel más cercano al punto está por encima del umbral; si no, la distancia del punto al centro del
+    vóxel más cercano que lo esté, buscando en un cubo de ±``radius_mm`` (``inf`` si no hay ninguno o el punto cae
+    fuera del volumen). ``read_box(slices)`` devuelve el subarreglo ``volumen[slices]``: solo se lee ese cubo, a
+    resolución completa (``geovida.minc.minc_box_reader``)."""
+    a = np.asarray(affine, dtype=float)
+    shape = np.asarray(shape, dtype=int)
+    half = np.ceil(radius_mm / np.linalg.norm(a[:3, :3], axis=0)).astype(int)
+    idx = np.rint(world_to_index(points, a)).astype(int)
+    out = np.full(len(idx), np.inf)
+    for n, (c, p) in enumerate(zip(idx, np.asarray(points, dtype=float))):
+        if np.any(c < 0) or np.any(c >= shape):
+            continue
+        lo, hi = np.maximum(c - half, 0), np.minimum(c + half + 1, shape)
+        box = np.asarray(read_box(tuple(slice(int(l), int(h)) for l, h in zip(lo, hi))), dtype=np.float32)
+        if box[tuple(c - lo)] > threshold:
+            out[n] = 0.0
+            continue
+        hit = np.argwhere(box > threshold)
+        if len(hit):
+            world = (a[:3, :3] @ (hit + lo).T).T + a[:3, 3]
+            d = float(np.min(np.linalg.norm(world - p, axis=1)))
+            out[n] = d if d <= radius_mm else np.inf
+    return out
 
 
 # ---------------------------------------------------------------- registro
