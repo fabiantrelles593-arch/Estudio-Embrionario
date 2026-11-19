@@ -183,5 +183,20 @@ Un valor no calculable es «no evaluable», nunca «refutada».
   del piloto de ONTO-MAP (20 + 20) tienen el MD5 del catálogo de FaceBase (3-JZA6) [HV]. 34 se bajaron (unos
   2,0 GB, no los 1,6 GB estimados en §2: las de E15.5 pesan unos 94 MB cada una) y 6 se copiaron de la descarga de
   P3 tras comprobar su MD5. Manifiesto SHA-256 en `data/manifests/musmorph_mta_images.csv`.
-* **G0-a** (landmarks publicados dentro de la cabeza) se pospone hasta que terminen P3 y H12R: cada imagen ocupa
-  unos 800 MB en memoria y el equipo tiene 3,9 GB, con unos 700 MB libres mientras corren.
+* ~~**G0-a** se pospone hasta que terminen P3 y H12R~~ (sustituido por la nota siguiente).
+* **19 nov 2026 — lectura por losas, antes de leer ninguna imagen.** Para no esperar a P3 y H12R, las imágenes
+  se leen de 4 en 4 cortes (`geovida.minc.minc_slabs`) y solo se guarda el volumen ×4. Las pruebas
+  (`tests/test_atlas_stream.py`) comprueban que da **lo mismo** que cargar el volumen entero: el mismo
+  submuestreo de §3 paso 2, el mismo umbral de Otsu (histograma de 256 contenedores entre mínimo y máximo, como
+  `skimage`) y la misma intensidad en cada landmark. G0-a y G0-b se miden así **a resolución completa**. No cambia
+  ningún criterio.
+* **19 nov 2026 — qué 3 especímenes usa G0-a** (§4 no lo fijaba; se decide antes de mirar): los primeros del
+  piloto en el orden de `seleccion.json`, alternando estadios: `IMPC_E15.5_1212`, `IMPC_E18.5_1287`,
+  `IMPC_E15.5_0437`. G2 cuenta un espécimen como válido si **sus dos** registros terminan bien, porque δ(s)
+  necesita ambos.
+* **19 nov 2026 — dos hechos de las cabeceras, antes de registrar** [HV]. (1) El atlas E18.5 y sus imágenes tienen
+  vóxel de **54 µm**, no de unos 27 µm como dice §3 paso 2 (eso vale solo para E15.5); con ×4, E15.5 queda en
+  108 µm y E18.5 en 216 µm. (2) Las 40 imágenes tienen **la misma rejilla** (forma y afín) que el atlas de su
+  estadio: MusMorph las distribuye ya remuestreadas al espacio de su atlas. El registro propio parte, por tanto,
+  casi de la identidad, y G1 es más fácil de superar de lo que se suponía. No cambia ningún criterio; se tendrá
+  en cuenta al interpretar (§9).
