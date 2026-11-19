@@ -30,7 +30,7 @@ Resumen: **3 cerradas, 7 parciales o en curso, 1 no iniciada** de 11 fases.
 | 7 · Contexto 5D | **No iniciada** | — | Decisión: no se construye hasta tener al menos dos contextos comparables con datos reales y el factor de atlas medido (ONTO-MAP mostró que sin eso el contexto confunde) [PROP] |
 | 8 · Investigación prenatal | **Parcial** | H12–H16 en simulación (`docs/RESULTADOS_V05.md` a `docs/RESULTADOS_V10.md`), REAL2D n = 1, `docs/prenatal/BIBLIOTECA_ANOMALIAS.md`, H11 cerrado con ecografía real de ratón (`docs/h11/RESULTADOS_H11.md`: primaria no evaluable, guardia apoyada); H12R cerrado (`docs/h11/RESULTADOS_H12R.md`: primaria no evaluable; el simulador de ecografía no cubre el equipo real) | Datos humanos autorizados con aprobación ética; validación con más imágenes reales |
 | 9 · Validación externa y traslación | **Parcial** (solo preparación documental) | `docs/clinico/USO_PREVISTO_Y_RIESGOS.md`, `docs/clinico/PLAN_DE_VALIDACION.md`, `docs/clinico/FICHA_DEL_MODELO.md` | Especialistas externos, comité de ética, validación independiente; registro sanitario DIGEMID si hubiera uso clínico (DS 003-2020-SA: el software autónomo es dispositivo médico activo) |
-| 10 · Publicación | **Parcial** | Presentación v2 (`docs/exposicion/GUION_V2.md`), 27 erratas públicas (`docs/ERRATA.md`), licencia MIT | Manuscrito, manual de reproducción completo, versión etiquetada |
+| 10 · Publicación | **Parcial** | Presentación v2 (`docs/exposicion/GUION_V2.md`), 29 erratas públicas (`docs/ERRATA.md`), licencia MIT | Manuscrito, manual de reproducción completo, versión etiquetada |
 
 Proyecto asociado **ONTO-MAP (P4): cerrado con resultado negativo** [HV] — hipótesis contrarias, factor de
 confusión del atlas identificado, método no original (`docs/onto_map/RESULTADOS_P4.md`,
@@ -40,7 +40,7 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 
 | Nivel | Estado |
 |---|---|
-| Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 742 funciones de prueba en 65 archivos; CI en verde en cada commit [HV] |
+| Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 867 pruebas recogidas por pytest en 68 archivos (19 nov). CI en verde en fbffc51; estuvo en rojo de fd8851b a d4062eb por una prueba desactualizada (errata E29) [HV] |
 | Datos sintéticos con verdad conocida | Confirmado para el certificado de volumen y de topología [HV] |
 | Datos reales animales | Piloto P3 completo; ONTO-MAP negativo; **H11 cerrado**: la guardia negó el verde a las 1188 medidas de ecografía real y, sin ella, 540 de 540 verdes habrían sido falsos; la primaria no fue evaluable. **H12R cerrado** con el mismo resultado (0 verdes; 180 de 180 verdes sin guardia falsos); la sensibilidad de vóxel no cambia la conclusión. P3 confirmatorio en medición [HV] |
 | Comparación externa con software de referencia | **Hecha para el motor 3D** con SimpleITK 2.5.7 y una reimplementación independiente (`docs/COMPARACION_REFERENCIA.md`) [HV] |
