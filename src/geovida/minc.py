@@ -88,6 +88,30 @@ def _dimensions(img) -> list[tuple[str, object]]:
 
 def load_minc(path) -> tuple[np.ndarray, tuple[float, float, float], dict]:
     """Imagen 3D (float32), vóxel en mm por eje del arreglo y metadatos de orientación."""
+    img, zooms, meta = _open_minc(path)
+    return np.asarray(img.get_fdata(dtype=np.float32)), zooms, meta
+
+
+def minc_slabs(path, size: int):
+    """Recorre el volumen por losas de ``size`` cortes del primer eje sin cargarlo entero.
+
+    Devuelve un generador de ``(inicio, losa float32)``; las intensidades son las mismas que da ``load_minc``
+    (nibabel aplica la misma escala al leer una parte). Valida la cabecera igual que ``load_minc``."""
+    if size < 1:
+        raise ValueError("size ≥ 1")
+    img, _, _ = _open_minc(path)
+    n = img.shape[0]
+    for i0 in range(0, n, size):
+        yield i0, np.asarray(img.dataobj[i0:min(i0 + size, n)], dtype=np.float32)
+
+
+def minc_header(path) -> tuple[tuple[int, int, int], np.ndarray, dict]:
+    """Forma, afín índice→mundo (mm) y metadatos, sin leer las intensidades."""
+    img, _, meta = _open_minc(path)
+    return tuple(int(s) for s in img.shape), np.asarray(meta["affine"], dtype=float), meta
+
+
+def _open_minc(path):
     path = Path(path)
     fmt = minc_format(path)
     nib = _nib()
@@ -97,9 +121,8 @@ def load_minc(path) -> tuple[np.ndarray, tuple[float, float, float], dict]:
         except ImportError as exc:  # pragma: no cover
             raise ImportError("MINC2 (HDF5) necesita h5py: pip install 'geovida[real]'") from exc
     img = nib.load(str(path))
-    arr = np.asarray(img.get_fdata(dtype=np.float32))
-    if arr.ndim != 3:
-        raise ValueError(f"{path}: se esperaba un volumen 3D, forma {arr.shape}")
+    if len(img.shape) != 3:
+        raise ValueError(f"{path}: se esperaba un volumen 3D, forma {tuple(img.shape)}")
     affine = np.asarray(img.affine, dtype=float)
     zooms = tuple(float(z) for z in img.header.get_zooms()[:3])
     norms = np.linalg.norm(affine[:3, :3], axis=0)
@@ -123,4 +146,4 @@ def load_minc(path) -> tuple[np.ndarray, tuple[float, float, float], dict]:
         "affine": affine.tolist(),
         "world_axes": world_axes(affine),
     }
-    return arr, zooms, meta
+    return img, zooms, meta
