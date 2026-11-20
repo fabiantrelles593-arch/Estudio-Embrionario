@@ -106,3 +106,8 @@ volumen de ±10 %), la red es mucho más pequeña que la publicada y se entrena 
 ## 9. Desviaciones
 
 (Ninguna al subir este preregistro.)
+
+* **20 nov 2026 — ejecución sin desviaciones.** `train-coarse`, `train-fine` y `calibrate` corrieron como estaba escrito
+  con el código de la rama (`h19.py` a9ce1cc, `run_h19.py` 651a058). Puerta S superada (24 de 27); puerta C no (16 verdes,
+  2 fallan: 12,5 % > 10 %). Por §4 no se congeló nada, no se escribe ningún SHA-256 aquí y **la prueba no se abrió**.
+  Resultados en `docs/h19/RESULTADOS_H19.md`.
