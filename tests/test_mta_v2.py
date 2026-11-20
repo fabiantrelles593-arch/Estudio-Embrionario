@@ -35,6 +35,46 @@ def test_not_enough_passers_is_an_error():
         mta.draw(s, passed)
 
 
+def test_selection_has_the_shape_atlas_effect_gates_expects_and_is_disjoint():
+    s, passed = _qc()
+    v2 = mta.draw(s, passed)
+    onto = {"pilot": {"E15.5": ["old1"], "E18.5": ["old2"]},
+            "confirm": {"E15.5": s["E15.5"] + ["IMPC_E15.5_9001"], "E18.5": s["E18.5"] + ["IMPC_E18.5_9002"]}}
+    sel = mta.selection(v2, onto)
+    assert sel["pilot"] == v2["sample"]                                   # la muestra de v2, no el piloto viejo
+    assert sel["confirm"] == {"E15.5": ["IMPC_E15.5_9001"], "E18.5": ["IMPC_E18.5_9002"]}
+    pilot = set(sel["pilot"]["E15.5"] + sel["pilot"]["E18.5"])
+    assert not pilot & set(sel["confirm"]["E15.5"] + sel["confirm"]["E18.5"])
+
+
+def test_g0a3_and_g0t():
+    sample = {"E15.5": ["a", "b"], "E18.5": ["c"]}
+    ok = mta.g0a3(sample, {"a": True, "b": True, "c": True}, {"a": 0.99, "b": 0.97, "c": 1.0})
+    assert ok["passed"] and len(ok["items"]) == 3
+    assert not mta.g0a3(sample, {"a": True, "b": False, "c": True}, {"a": 1, "b": 0.9, "c": 1})["passed"]
+    assert mta.g0t(3000)["passed"] and mta.g0t(3000)["hours_estimated"] == pytest.approx(66.7, abs=0.1)
+    assert not mta.g0t(3300)["passed"]                                    # 80 × 3300 s = 73,3 h > 72 h
+
+
+def test_gate_files_per_protocol(tmp_path):
+    spec = importlib.util.spec_from_file_location(
+        "gates", Path(__file__).resolve().parents[1] / "scripts" / "atlas_effect_gates.py")
+    gates = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gates)
+    import json
+    v2 = tmp_path / "v2"
+    v2.mkdir()
+    for stem in ("g0b2", "g0c"):                                          # ya superadas, en la carpeta superior
+        (tmp_path / f"{stem}.json").write_text(json.dumps({"passed": True}), encoding="utf-8")
+    for stem in ("g0a3", "g0d2"):
+        (v2 / f"{stem}.json").write_text(json.dumps({"passed": True}), encoding="utf-8")
+    g = gates.gate_files(v2, "2.0")
+    assert set(g) == {"G0-a″", "G0-b′", "G0-c", "G0-d′", "G0-t"}
+    assert all(g[k]["passed"] for k in ("G0-a″", "G0-b′", "G0-c", "G0-d′"))
+    assert g["G0-t"] == {"passed": False, "missing": True}                 # falta: no superada
+    assert set(gates.gate_files(tmp_path, "1.1")) == {"G0-a′", "G0-b′", "G0-c", "G0-d"}
+
+
 def test_d_is_computed_without_any_qc_specimen():
     s, passed = _qc()
     res = mta.draw(s, passed)
