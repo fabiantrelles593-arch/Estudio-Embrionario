@@ -174,7 +174,7 @@ def render_confirm(summary: dict, agreement: pd.DataFrame | None = None) -> str:
     out += ["## Exploratorios (no confirmatorios)", "",
             f"- Por sexo: {'calculado (`.sex.csv`)' if summary.get('exploratory_sex') else 'no calculado'}.",
             "- MEMOS a ×4: " + (f"{x4['n_specimens']} especímenes; orden de τ frente a ×4: {_order(x4['order_tau_vs_x4'])}."
-                                 if x4 else "no calculado."),
+                                 if x4 and x4.get("order_tau_vs_x4") else "no calculado."),
             f"- Tiempo: principal {_f(summary['seconds_main'], 0)} s; pasada `exact` {_f(summary['seconds_exact'], 0)} s.", ""]
     return "\n".join(out)
 
