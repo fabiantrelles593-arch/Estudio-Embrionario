@@ -78,6 +78,11 @@ def test_render_confirm_transcribes_verdicts_and_d1():
     assert "(a) sin trasladar | 2 | 0,60" in text and "(b) con traslación (principal) | 2 | 0,85" in text
     assert "no rígidos (D5): 1 (`s7`)" in text and "MEMOS a ×4: no calculado" in text
     assert "Combinación no prevista en §7" in text
+    # como lo deja `confirm --reuse-main`: sin tiempo de la pasada principal y ×4 vacío
+    text2 = rep.render_confirm({**summary, "seconds_main": float("nan"),
+                                "exploratory_x4": {"n_specimens": 0, "status": "sin segmentaciones ×4: no calculado"}},
+                               agr)
+    assert "MEMOS a ×4: no calculado" in text2 and "principal — s" in text2
 
 
 def test_section7_rows():
