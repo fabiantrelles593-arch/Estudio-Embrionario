@@ -142,6 +142,20 @@ def sliding_mean_logits(vol: np.ndarray, predictor, n_classes: int, out: np.ndar
     return n_win
 
 
+def pad_to_window(vol: np.ndarray, roi: int = ROI) -> tuple[np.ndarray, tuple[slice, ...]]:
+    """Rellena con ceros, simétricamente, los ejes menores que la ventana (la regla de MONAI
+    `sliding_window_inference`: mitad delante, resto detrás). Devuelve el volumen y los cortes que recuperan el
+    original. Sin esto, a ×4 un eje de 121 vóxeles hacía fallar a todos los especímenes (P3, D2)."""
+    pads = []
+    for d in vol.shape:
+        diff = max(roi - d, 0)
+        pads.append((diff // 2, diff - diff // 2))
+    if not any(a or b for a, b in pads):
+        return vol, tuple(slice(0, d) for d in vol.shape)
+    keep = tuple(slice(a, a + d) for (a, _), d in zip(pads, vol.shape))
+    return np.pad(vol, pads, mode="constant", constant_values=0), keep
+
+
 def upsample_argmax(logits: np.ndarray, factor: int, slab: int = 4) -> np.ndarray:
     """Amplía logits (C, Z, Y, X) por `factor` (trilineal, align_corners=False) y aplica argmax.
 
@@ -200,13 +214,15 @@ def segment_volume(img: np.ndarray, predictor, factor: int, workdir: Path, log=p
     box = body_box(ds)
     vol = np.ascontiguousarray(ds[box])
     del ds
+    shape_box = vol.shape
+    vol, keep = pad_to_window(vol)
     mm = np.lib.format.open_memmap(workdir / "logits.npy", mode="w+", dtype=np.float16,
                                    shape=(N_CLASSES, *vol.shape))
     t0 = time.time()
     n = sliding_mean_logits(vol, predictor, N_CLASSES, mm, log=log)
     t_inf = time.time() - t0
     mm.flush()
-    lab = upsample_argmax(mm, factor)
+    lab = upsample_argmax(mm[(slice(None), *keep)], factor)
     del mm
     gc.collect()
     try:  # en Windows el mapeo puede seguir abierto un momento: no perder el resultado por la limpieza
@@ -215,7 +231,7 @@ def segment_volume(img: np.ndarray, predictor, factor: int, workdir: Path, log=p
         pass
     full_box = tuple(slice(s.start * factor, s.start * factor + lab.shape[i]) for i, s in enumerate(box))
     info = {"factor": factor, "box_native": [[s.start, s.stop] for s in full_box],
-            "grid_input": list(vol.shape), "windows": n, "seconds_inference": round(t_inf, 1),
+            "grid_input": list(shape_box), "grid_padded": list(vol.shape), "windows": n, "seconds_inference": round(t_inf, 1),
             "intensity_minmax": [lo, hi]}
     return lab, full_box, info
 
