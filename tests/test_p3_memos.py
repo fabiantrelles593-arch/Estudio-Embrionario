@@ -63,6 +63,38 @@ def test_sliding_rejects_small_volume():
                                np.zeros((4, 5, 9, 9), np.float32), roi=8)
 
 
+def test_pad_to_window_is_symmetric_and_recoverable():
+    vol = np.arange(5 * 9 * 12, dtype=np.float32).reshape(5, 9, 12)
+    padded, keep = pm.pad_to_window(vol, roi=8)
+    assert padded.shape == (8, 9, 12)                    # solo el eje corto, como MONAI
+    assert keep == (slice(1, 6), slice(0, 9), slice(0, 12))
+    np.testing.assert_array_equal(padded[keep], vol)
+    assert padded[0].max() == 0 and padded[-2:].max() == 0
+    same, keep2 = pm.pad_to_window(vol[:, :, :8].copy() + 0, roi=5)
+    assert same.shape == (5, 9, 8) and keep2 == (slice(0, 5), slice(0, 9), slice(0, 8))
+
+
+def test_padded_sliding_matches_monai_on_a_volume_smaller_than_the_window():
+    """El caso que hizo fallar a ×4 en P3: un eje menor que la ventana. Con el relleno, el resultado es el de MONAI."""
+    torch = pytest.importorskip("torch")
+    inferers = pytest.importorskip("monai.inferers")
+    rng = np.random.default_rng(1)
+    roi, ov = 8, 0.5
+    vol = rng.random((13, 6, 10)).astype(np.float32)
+    pred = _predictor(roi)
+    padded, keep = pm.pad_to_window(vol, roi)
+    out = np.zeros((4, *padded.shape), np.float32)
+    pm.sliding_mean_logits(padded, pred, 4, out, roi=roi, overlap=ov)
+    ours = out[(slice(None), *keep)]
+
+    def net(t):                                          # MONAI pasa lotes (N, 1, roi, roi, roi)
+        return torch.stack([torch.from_numpy(pred(p[0].numpy())) for p in t])
+
+    ref = inferers.sliding_window_inference(torch.from_numpy(vol)[None, None], (roi,) * 3, 1, net,
+                                            overlap=ov, mode="constant")[0].numpy()
+    np.testing.assert_allclose(ours, ref, rtol=1e-5, atol=1e-5)
+
+
 def test_upsample_slabs_equal_whole():
     torch = pytest.importorskip("torch")
     import torch.nn.functional as F
