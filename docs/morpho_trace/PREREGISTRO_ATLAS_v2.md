@@ -80,3 +80,10 @@ landmarks publicados de los 40 de la muestra (en v1.0 eran los del piloto).
 ## 9. Desviaciones
 
 (Ninguna al subir este preregistro.)
+
+* **20 nov 2026 — código y primeras puertas, sin desviaciones.** El paso 2 de §8 se hizo como estaba escrito:
+  `mta_v2.py selection` escribe `results/morpho_trace/v2/seleccion_v2.json` con la forma de la selección de ONTO-MAP
+  (muestra de v2 y confirmatorio sin QC-LM: 199 + 398), y `atlas_effect_gates.py analyze --protocol 2.0` lee las
+  puertas de v2 (pruebas en `tests/test_mta_v2.py`), subido antes de medir. **G0-a″ superada** (los 40 cumplen) y
+  **G0-d′ superada**: |d| = 0,15678 con las 597 configuraciones (0,15671 con las 717) [HV,
+  `results/morpho_trace/v2/g0a3.json`, `g0d2.json`]. G0-t y los registros esperan a que P3 y H19 dejen memoria.
