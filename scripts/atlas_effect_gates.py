@@ -313,6 +313,25 @@ def analyze(rows: list[dict], sel: dict, pub_pilot: dict, pub_confirm: dict, gat
     return res
 
 
+GATE_FILES = {
+    "1.0": {"G0-a": "g0a", "G0-b": "g0b", "G0-c": "g0c", "G0-d": "g0d"},
+    "1.1": {"G0-a′": "g0a2", "G0-b′": "g0b2", "G0-c": "g0c", "G0-d": "g0d"},
+    "2.0": {"G0-a″": "g0a3", "G0-b′": "g0b2", "G0-c": "g0c", "G0-d′": "g0d2", "G0-t": "g0t"},
+}
+
+
+def gate_files(gates_dir: Path, protocol: str) -> dict:
+    """Puertas de cada protocolo. Un archivo que falta cuenta como puerta no superada. En 2.0, G0-b′ y G0-c (ya
+    superadas en v1.0/v1.1, sin especímenes) se leen de la carpeta superior si no están en la de v2."""
+    out = {}
+    for key, stem in GATE_FILES[protocol].items():
+        p = gates_dir / f"{stem}.json"
+        if not p.exists() and protocol == "2.0" and stem in ("g0b2", "g0c"):
+            p = gates_dir.parent / f"{stem}.json"
+        out[key] = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"passed": False, "missing": True}
+    return out
+
+
 def g0d(configs: dict) -> dict:
     """Puerta G0-d a partir de {'E15.5': (n, k, 3), 'E18.5': (n, k, 3)}."""
     r = ae.published_direction(configs["E15.5"], configs["E18.5"])
@@ -353,8 +372,9 @@ def main(argv=None) -> int:
             q.add_argument("--confirm-landmarks", default="data/external/musmorph/landmarks_confirm")
             q.add_argument("--gates-dir", default="results/morpho_trace")
             q.add_argument("--n-boot", type=int, default=ae.N_BOOT)
-            q.add_argument("--protocol", choices=("1.0", "1.1"), default="1.1",
-                           help="1.1: puertas G0-a′/G0-b′ y exclusiones de PREREGISTRO_ATLAS_v1_1.md")
+            q.add_argument("--protocol", choices=("1.0", "1.1", "2.0"), default="1.1",
+                           help="1.1: puertas G0-a′/G0-b′ y exclusiones de PREREGISTRO_ATLAS_v1_1.md; "
+                                "2.0: puertas de PREREGISTRO_ATLAS_v2.md (G0-a″, G0-b′, G0-c, G0-d′, G0-t), sin exclusiones")
     a = ap.parse_args(argv)
     if a.cmd in ("g0a2", "g0b2"):
         sel = json.loads(Path(a.ids).read_text(encoding="utf-8"))
@@ -392,13 +412,7 @@ def main(argv=None) -> int:
                      for st in ("E15.5", "E18.5")]
             res = {"gate": "G0-b", **g0_inside(items, cache)}
         else:
-            gates = {}
-            names_g = ("g0a2", "g0b2", "g0c", "g0d") if a.protocol == "1.1" else ("g0a", "g0b", "g0c", "g0d")
-            for g in names_g:
-                p = Path(a.gates_dir) / f"{g}.json"
-                key = f"G0-{g[3]}" + ("′" if g.endswith("2") else "")
-                gates[key] = (json.loads(p.read_text(encoding="utf-8")) if p.exists()
-                              else {"passed": False, "missing": True})
+            gates = gate_files(Path(a.gates_dir), a.protocol)
             exclude = gates.get("G0-a′", {}).get("excluded", []) if a.protocol == "1.1" else []
             rows = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(Path(a.regs).glob("*.json"))]
             names = sel["pilot"]["E15.5"] + sel["pilot"]["E18.5"]
