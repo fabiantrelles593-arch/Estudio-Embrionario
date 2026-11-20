@@ -150,12 +150,21 @@ def cmd_confirm(a) -> int:
             # la regla de D1 solo cambia A: en la pasada «exact», B se reutiliza de la tabla principal
             yield sid, (maps if with_agreement else {"A": maps["A"]}), spacing
 
-    df = p3.condition_table(items("nearest", True), p3_data.P3_STRUCTURES, cert_segmenter="A")
-    df.to_csv(out.with_suffix(".conditions.csv"), index=False)
-    agr_df = pd.DataFrame(agr)
-    agr_df.to_csv(out.with_suffix(".agreement.csv"), index=False)
-    summarize_agreement(agr_df, non_rigid).to_csv(out.with_suffix(".agreement_summary.csv"), index=False)
-    t_main = time.time() - t0
+    if a.reuse_main:
+        # la pasada principal ya escribió sus tablas: se leen tal cual en vez de medir otra vez (mismo código, mismos datos)
+        df = pd.read_csv(out.with_suffix(".conditions.csv"), dtype={"specimen": str, "segmenter": str})
+        if sorted(df["specimen"].unique()) != sorted(ids):
+            raise SystemExit("--reuse-main: la tabla guardada no tiene los mismos especímenes que la selección")
+        agr_df = pd.read_csv(out.with_suffix(".agreement.csv"), dtype={"specimen": str})
+        summarize_agreement(agr_df, non_rigid).to_csv(out.with_suffix(".agreement_summary.csv"), index=False)
+        t_main = math.nan
+    else:
+        df = p3.condition_table(items("nearest", True), p3_data.P3_STRUCTURES, cert_segmenter="A")
+        df.to_csv(out.with_suffix(".conditions.csv"), index=False)
+        agr_df = pd.DataFrame(agr)
+        agr_df.to_csv(out.with_suffix(".agreement.csv"), index=False)
+        summarize_agreement(agr_df, non_rigid).to_csv(out.with_suffix(".agreement_summary.csv"), index=False)
+        t_main = time.time() - t0
 
     res = p3.evaluate(df, groups, units, n_boot=a.n_boot)
     res["units"].to_csv(out.with_suffix(".units.csv"), index=False)
@@ -173,7 +182,9 @@ def cmd_confirm(a) -> int:
     if a.memos_x4:
         mx4 = Path(a.memos_x4)
         ids4 = [s for s in ids if (mx4 / f"{s}_memos.npz").exists()]
+        x4 = {"n_specimens": 0, "status": "sin segmentaciones ×4: no calculado"}
 
+    if a.memos_x4 and ids4:
         def items_x4():  # solo B cambia: A se reutiliza de la tabla principal
             for sid in ids4:
                 maps, spacing = _specimen_maps(sid, data, memos, "nearest", memos_as_b=mx4)
@@ -232,6 +243,8 @@ def main(argv=None) -> int:
     c.add_argument("--non-rigid-spread", type=int, default=4)
     c.add_argument("--metadata", help="CSV de MusMorph, para el exploratorio por sexo")
     c.add_argument("--memos-x4", help="carpeta de MEMOS sobre la imagen a ×4 (exploratorio de D2)")
+    c.add_argument("--reuse-main", action="store_true",
+                   help="leer conditions/agreement ya escritos por una pasada principal completa y seguir desde ahí")
     a = ap.parse_args(argv)
     if a.cmd == "confirm":
         return cmd_confirm(a)
