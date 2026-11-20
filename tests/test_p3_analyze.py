@@ -139,3 +139,22 @@ def test_confirm_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
     agr = pd.read_csv(out.with_suffix(".agreement.csv"))
     b = agr[(agr["form"] == "b") & (agr["structure"] == 2)]
     assert b["dice"].min() == pytest.approx(1.0)  # la traslación de D3 alinea A con B
+
+    # --reuse-main: sigue desde las tablas ya escritas sin volver a medir la pasada principal; ×4 vacío no rompe
+    def no_nearest(sid, data_dir, memos_dir, rule="nearest", pad=0, memos_as_b=None):
+        assert rule == "exact", "la pasada principal no debe repetirse"
+        return fake_maps(sid, data_dir, memos_dir, rule, pad, memos_as_b)
+
+    monkeypatch.setattr(pa, "_specimen_maps", no_nearest)
+    empty = tmp_path / "x4_vacio"
+    empty.mkdir()
+    out2 = tmp_path / "res" / "confirm2.json"
+    for suffix in (".conditions.csv", ".agreement.csv"):
+        out2.with_suffix(suffix).write_bytes(out.with_suffix(suffix).read_bytes())
+    assert pa.main(["confirm", "--data", str(data), "--memos", str(memos), "--groups", str(tmp_path / "g.csv"),
+                    "--ids", str(sel), "--out", str(out2), "--n-boot", "20", "--memos-x4", str(empty),
+                    "--reuse-main"]) == 0
+    s2 = json.loads(out2.read_text(encoding="utf-8"))
+    assert s2["exploratory_x4"]["n_specimens"] == 0 and not out2.with_suffix(".conditions_x4.csv").exists()
+    assert s2["primary"]["verdict_a"] == s["primary"]["verdict_a"]
+    pd.testing.assert_frame_equal(pd.read_csv(out2.with_suffix(".tau.csv")), pd.read_csv(out.with_suffix(".tau.csv")))
