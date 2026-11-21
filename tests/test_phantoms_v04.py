@@ -34,7 +34,7 @@ def test_new_names_are_registered_without_moving_old_indices():
     assert NEW_NAMES == ("dumbbell", "cup")
     # Las semillas de H1, H3, H6 y H8 dependen de este orden: no puede cambiar.
     assert ALL_SHAPES[:10] == PHANTOM_NAMES + EXTRA_NAMES
-    assert ALL_SHAPES[10:] == NEW_NAMES
+    assert ALL_SHAPES[10:12] == NEW_NAMES   # H21 añade sus formas después, sin mover estas
 
 
 def test_dumbbell_truth_is_closed_form():
