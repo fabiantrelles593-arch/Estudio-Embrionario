@@ -211,7 +211,7 @@
 | Segmentación | Automática; entrenada con cortes 2D anotados parcialmente **[HV]** |
 | Datos | 4 volúmenes parcialmente anotados por edad, ~1600 cortes cada uno **[HV]**; DOI 10.26208/6e6x-ps14 y 10.26208/3HY4-6S34 **[HV]**; licencia de datos **[PV]** |
 | Software | No se encontró repositorio de código en el artículo **[HV, búsqueda]** |
-| Licencia | Código **[PV]**; datos **[PV]** |
+| Licencia | Código **[PV]**; datos: `rightsList` vacía en DataCite **[HV]**, CC BY 4.0 solo en el pie del portal **[EI]** → **[PV]** (`LICENCIAS_DATOS_EXTERNOS.md`, 20 nov 2026) |
 | Validación | +1,7 % de Dice de media; +7,5 % en datos no vistos **[HV]** |
 | Limitaciones | Anotación escasa; mejora modesta **[HV]** |
 | Posible integración | Ninguna inmediata |
@@ -234,7 +234,7 @@
 | Segmentación | Atlas KOMP2 E15.5 segmentado a mano (50 regiones) **[HV, vía MEMOS]** |
 | Datos | Penetrancia incompleta y expresividad variable frecuentes **[HV]** |
 | Software | Portal IMPC |
-| Licencia | El subconjunto IMPC en FaceBase es CC BY 4.0 **[HV]**; portal IMPC **[PV]** |
+| Licencia | El subconjunto IMPC en FaceBase es CC BY 4.0 **[HV]**; portal IMPC CC BY 4.0, con cita pedida **[HV]** (`LICENCIAS_DATOS_EXTERNOS.md`, 20 nov 2026) |
 | Validación | No aplica (recurso) |
 | Limitaciones | Pocos mutantes por línea; variabilidad de protocolos entre centros **[EI]** |
 | Posible integración | Fuente original de los embriones E15.5 de MusMorph |
@@ -280,7 +280,7 @@
 | Segmentación | **[PV]** |
 | Datos | BioStudies S-BIAD441 **[HV]**; número de especímenes **[PV]** |
 | Software | Zenodo 6962145 (FeARLesS) **[HV]** |
-| Licencia | Código MIT **[HV]**; datos S-BIAD441 sin licencia en el registro **[HV]** → **[PV]** |
+| Licencia | Código MIT **[HV]**; datos S-BIAD441 sin licencia en el registro **[HV]** (comprobado de nuevo el 20 nov 2026, `LICENCIAS_DATOS_EXTERNOS.md`) → **[PV]** |
 | Validación | Probado en miembro y corazón **[HV]** |
 | Limitaciones | Requiere alineación previa; órganos más complejos necesitan más coeficientes **[HV]** |
 | Posible integración | Referencia para el módulo 4D en pseudo-tiempo; código MIT reutilizable con atribución **[PROP]** |
@@ -363,4 +363,4 @@
 
 Todas las referencias se obtuvieron de PubMed el 14 nov 2026 (PMID indicados). Textos completos de Europe PMC: PMC8015254 (LAMA), PMC9990908 (MEMOS), PMC9130254 (Matula 2022), PMC9481268 (Dalmasso), PMC11785758 (UniCoN), PMC7936920 (Matula 2021). Licencias: API de GitHub; PyPI `lama-phenotype-detection`; Zenodo 4559800, 6962145 y 1327317; DataCite 10.5524/100862; BioStudies S-BIAD441.
 
-**Sin verificar todavía [PV]:** Belle et al. 2017 (*Cell*, 10.1016/j.cell.2017.03.008, no localizado en PubMed); licencia del portal IMPC; licencia de los datos de UniCoN; tamaño muestral de Christiansen 2016; disponibilidad actual del Human Embryo Atlas.
+**Sin verificar todavía [PV]:** Belle et al. 2017 (*Cell*, 10.1016/j.cell.2017.03.008, no localizado en PubMed); licencia de los datos de UniCoN y de S-BIAD441 (sin licencia del conjunto el 20 nov 2026; la del portal IMPC quedó verificada ese día: `LICENCIAS_DATOS_EXTERNOS.md`); tamaño muestral de Christiansen 2016; disponibilidad actual del Human Embryo Atlas.
