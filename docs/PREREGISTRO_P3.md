@@ -1,4 +1,4 @@
-# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1–D5**)
+# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1–D6; confirmatorio cerrado el 21 nov 2026: `docs/p3/RESULTADOS_P3.md`**)
 
 > **Estado:** aprobado por el autor el 14 nov 2026 (Fase 2). Falta, idealmente, la revisión de un asesor antes de descargar datos. El análisis de §5 está en `src/geovida/p3.py`, probado solo con fantomas.
 > Se escribe **antes de descargar ningún archivo de MusMorph**: no hay resultados. Solo investigación y educación; datos animales publicados, sin datos humanos.
@@ -188,3 +188,15 @@ Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b**, y 
 - **Qué no afecta.** τ y el certificado: el volumen, el área y b0 de cada máscara no dependen de dónde esté colocada. H-P3a y H-P3b no cambian.
 - **Límite declarado.** Tres tercios solo detectan un giro o una deformación a gran escala. Una deformación local no se ve, y el umbral de 4 vóxeles es una convención, no un valor validado.
 - **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
+
+### D6 (21 nov 2026) — El exploratorio MEMOS a ×4 no se calculó (registrada después de medir)
+
+- **Qué pasó [HV].** El exploratorio de D2 falló en los 60 especímenes del confirmatorio por un fallo del código: la
+  entrada no se rellenaba hasta la ventana de 128 vóxeles, como hace MONAI. Corregido y probado contra MONAI
+  (`scripts/p3_memos.py`, `tests/test_p3_memos.py`).
+- **Consecuencia.** El resumen confirmatorio se escribió sin ese exploratorio (`p3_analyze.py confirm --reuse-main`).
+  Se repetirá con memoria libre y se informará como anexo de `docs/p3/RESULTADOS_P3.md`.
+- **Qué no afecta.** τ, H-P3a, H-P3b, H-P3c ni sus criterios: el exploratorio no tiene criterio.
+- **Laguna del criterio de H-P3b, declarada después de medir.** El §6 no define el caso |ρ| < 0,5 con el IC de la
+  correlación parcial excluyendo 0; el código congelado lo clasifica como «no apoyada». No se cambia nada: ver
+  `docs/p3/RESULTADOS_P3.md` §3.1.
