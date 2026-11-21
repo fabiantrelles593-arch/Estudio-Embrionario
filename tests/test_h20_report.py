@@ -53,6 +53,13 @@ def test_section8_follows_where_the_study_stopped():
     assert rep.section8(True, True, "apoyada") == rep.SECTION8["apoyada"]
     assert rep.section8(True, True, "no apoyada") == rep.SECTION8["no apoyada"]
     assert rep.section8(True, True, "no evaluable") == rep.section8(True, True, "no concluyente") == rep.SECTION8["otro"]
+    assert rep.section8(True, True, None) == rep.SECTION8["pendiente"]
+
+
+def test_gate_c_passed_without_test_is_pending_not_few_greens():
+    text = rep.render(_g0(), _cal(True), _lit())
+    assert "Prueba abierta, todavía sin medir" in text and "Pocas verdes" not in text
+    assert "| H20b evaluable, dado que se abre la prueba | 45 % | no aplica |" in text
 
 
 def test_g0_failure_stops_the_report_and_ignores_later_files():
