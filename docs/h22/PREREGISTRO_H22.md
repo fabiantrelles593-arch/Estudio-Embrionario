@@ -1,4 +1,4 @@
-# Preregistro — H22: ¿puede la guardia distinguir «fuera de dominio» de «inservible»? (v1.0, 21 nov 2026; **borrador, pendiente de aprobación del autor**)
+# Preregistro — H22: ¿puede la guardia distinguir «fuera de dominio» de «inservible»? (v1.0, 21 nov 2026; **aprobado por el autor el 21 nov 2026, antes de medir**)
 
 > Tarea P2 de `docs/INFORME_DE_PROGRESO.md` («estudiar si la guardia debería distinguir "fuera de dominio" de
 > "inservible"; diseño escrito y probado en sintético antes de tocar datos reales»). Se sube a la rama **antes**
