@@ -123,6 +123,56 @@ def d1_verdicts(main: dict, exact: dict, order: dict) -> dict:
     return out
 
 
+def x4_exploratory(df: pd.DataFrame, tau_main: pd.DataFrame, ids, data: Path, memos: Path, mx4: Path, out: Path,
+                   groups: pd.DataFrame) -> dict:
+    """Exploratorio de D2 (sin criterio): B = MEMOS sobre la imagen a ×4; A se reutiliza de la tabla principal."""
+    ids4 = [s for s in ids if (mx4 / f"{s}_memos.npz").exists()]
+    if not ids4:
+        return {"n_specimens": 0, "status": "sin segmentaciones ×4: no calculado"}
+
+    def items_x4():  # solo B cambia
+        for sid in ids4:
+            maps, spacing = _specimen_maps(sid, data, memos, "nearest", memos_as_b=mx4)
+            print(f"  x4 {sid}", flush=True)
+            yield sid, {"B": maps["B"]}, spacing
+
+    b4 = p3.condition_table(items_x4(), p3_data.P3_STRUCTURES, cert_segmenter="A")
+    df4 = pd.concat([df[(df["segmenter"] == "A") & df["specimen"].isin(ids4)], b4], ignore_index=True)
+    df4.to_csv(out.with_suffix(".conditions_x4.csv"), index=False)
+    tau4 = p3.technical_fraction(df4)
+    tau4.to_csv(out.with_suffix(".tau_x4.csv"), index=False)
+    return {"n_specimens": len(ids4), "order_tau_vs_x4": p3.order_agreement(tau_main, tau4),
+            "median_tau_by_group": {"main": group_median_tau(tau_main, groups),
+                                    "x4": group_median_tau(tau4, groups)}}
+
+
+def group_median_tau(tau: pd.DataFrame, groups: pd.DataFrame, units=None) -> dict:
+    """Como en ``p3.evaluate``: τ medio por unidad (pares bilaterales) y mediana por grupo de §5.6."""
+    units = p3_data.p3_units() if units is None else dict(units)
+    t = tau.assign(unit=[units.get(int(s), str(s)) for s in tau["structure"]])
+    per_unit = t.groupby("unit")["tau"].mean()
+    g = groups.set_index("unit")["group"]
+    per_unit = per_unit[per_unit.index.isin(g.index)].dropna()
+    return {k: float(v) for k, v in per_unit.groupby(g.reindex(per_unit.index)).median().items()}
+
+
+def cmd_x4(a) -> int:
+    """Solo el exploratorio ×4, desde las tablas de una pasada principal ya escrita. No toca el resumen ``--out``."""
+    sel = json.loads(Path(a.ids).read_text(encoding="utf-8"))
+    out = Path(a.out)
+    df = pd.read_csv(out.with_suffix(".conditions.csv"), dtype={"specimen": str, "segmenter": str})
+    ids = [s for s in sel[a.which] if s in set(df["specimen"])]
+    groups = pd.read_csv(a.groups, dtype={"unit": str})
+    t0 = time.time()
+    res = x4_exploratory(df, p3.technical_fraction(df), ids, Path(a.data), Path(a.memos), Path(a.memos_x4), out,
+                         groups)
+    res["seconds"] = round(time.time() - t0, 1)
+    out.with_suffix(".x4.json").write_text(json.dumps(res, indent=1, ensure_ascii=False, default=float),
+                                           encoding="utf-8")
+    print(json.dumps(res, indent=1, ensure_ascii=False, default=float))
+    return 0
+
+
 def cmd_confirm(a) -> int:
     sel = json.loads(Path(a.ids).read_text(encoding="utf-8"))
     memos, data = Path(a.memos), Path(a.data)
@@ -178,25 +228,7 @@ def cmd_confirm(a) -> int:
         meta = pd.read_csv(a.metadata)
         sex_of = dict(zip(meta["Biosample"].astype(str), meta["Sex"].astype(str)))
         sex_taus(df, sex_of).to_csv(out.with_suffix(".sex.csv"), index=False)
-    x4 = None
-    if a.memos_x4:
-        mx4 = Path(a.memos_x4)
-        ids4 = [s for s in ids if (mx4 / f"{s}_memos.npz").exists()]
-        x4 = {"n_specimens": 0, "status": "sin segmentaciones ×4: no calculado"}
-
-    if a.memos_x4 and ids4:
-        def items_x4():  # solo B cambia: A se reutiliza de la tabla principal
-            for sid in ids4:
-                maps, spacing = _specimen_maps(sid, data, memos, "nearest", memos_as_b=mx4)
-                print(f"  x4 {sid}", flush=True)
-                yield sid, {"B": maps["B"]}, spacing
-
-        b4 = p3.condition_table(items_x4(), p3_data.P3_STRUCTURES, cert_segmenter="A")
-        df4 = pd.concat([df[(df["segmenter"] == "A") & df["specimen"].isin(ids4)], b4], ignore_index=True)
-        df4.to_csv(out.with_suffix(".conditions_x4.csv"), index=False)
-        tau4 = p3.technical_fraction(df4)
-        tau4.to_csv(out.with_suffix(".tau_x4.csv"), index=False)
-        x4 = {"n_specimens": len(ids4), "order_tau_vs_x4": p3.order_agreement(taus["log_volume"], tau4)}
+    x4 = x4_exploratory(df, taus["log_volume"], ids, data, memos, Path(a.memos_x4), out, groups) if a.memos_x4 else None
 
     t1 = time.time()
     a_exact = p3.condition_table(items("exact", False), p3_data.P3_STRUCTURES, cert_segmenter="A")
@@ -245,9 +277,16 @@ def main(argv=None) -> int:
     c.add_argument("--memos-x4", help="carpeta de MEMOS sobre la imagen a ×4 (exploratorio de D2)")
     c.add_argument("--reuse-main", action="store_true",
                    help="leer conditions/agreement ya escritos por una pasada principal completa y seguir desde ahí")
+    x = sub.add_parser("x4", help="solo el exploratorio ×4 (D6), reutilizando las tablas de la pasada principal")
+    for k in ("--data", "--memos", "--groups", "--out", "--memos-x4"):
+        x.add_argument(k, required=True)
+    x.add_argument("--ids", default="results/p3/seleccion.json")
+    x.add_argument("--which", default="confirm")
     a = ap.parse_args(argv)
     if a.cmd == "confirm":
         return cmd_confirm(a)
+    if a.cmd == "x4":
+        return cmd_x4(a)
 
     if a.cmd == "groups":
         atlas, _, spacing, _, _ = p3_data.load_labels(a.atlas, p3_data.P3_STRUCTURES, "exact")
