@@ -31,6 +31,9 @@ SECTION8 = {
                    "Publicarlo; estudiar los verdes que fallan (errores consistentes)"),
     "otro": ("Pocas verdes o pocos embriones",
              "Más datos, mismo protocolo; **la prueba usada no decide dos veces**"),
+    # no es una fila del §8: la puerta C se superó y la prueba todavía no se ha medido
+    "pendiente": ("Prueba abierta, todavía sin medir: ningún veredicto",
+                  "Correr `run_h20.py test --sha` con el SHA-256 anotado en el §10"),
 }
 
 
@@ -58,12 +61,15 @@ def _ci(pair, pct=True) -> str:
 
 
 def section8(g0_passed: bool, c_passed: bool | None, h20b_verdict: str | None) -> tuple[str, str]:
-    """Fila de §8 (conclusión, siguiente paso) según hasta dónde llegó el estudio."""
+    """Fila de §8 (conclusión, siguiente paso) según hasta dónde llegó el estudio. Sin veredicto de H20b tras superar
+    la puerta C, la prueba está pendiente (no es «pocas verdes»)."""
     if not g0_passed:
         return SECTION8["g0"]
     if not c_passed:
         return SECTION8["c"]
-    return SECTION8.get(h20b_verdict or "", SECTION8["otro"])
+    if h20b_verdict is None:
+        return SECTION8["pendiente"]
+    return SECTION8.get(h20b_verdict, SECTION8["otro"])
 
 
 def light_table(lit: pd.DataFrame, column: str = "light") -> pd.DataFrame:
