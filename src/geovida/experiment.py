@@ -16,7 +16,7 @@ import pandas as pd
 
 from .imaging import render, spec_for_t_over_h
 from .measure import measure_mask, relative_errors, surface_distance_stats, dice
-from .phantoms import EXTRA_NAMES, NEW_NAMES, PHANTOM_NAMES, make_phantom
+from .phantoms import EXTRA_NAMES, H21_NAMES, NEW_NAMES, PHANTOM_NAMES, make_phantom
 from .segment import SEGMENTERS, segment
 
 T_OVER_H = (1.5, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0)
@@ -25,7 +25,7 @@ PROFILES = ("ideal", "realistic")
 BASE_SEED = 20261109
 H3_SEED = 20261110  # semilla propia de la confirmación H3 (formas y flujos nuevos)
 H6_SHAPES = PHANTOM_NAMES + EXTRA_NAMES   # las 10 formas de H6 (y de la calibración de H9)
-ALL_SHAPES = H6_SHAPES + NEW_NAMES        # índice de semilla; los índices previos no cambian
+ALL_SHAPES = H6_SHAPES + NEW_NAMES + H21_NAMES  # índice de semilla; los índices previos no cambian
 # v0.4: perfiles de imagen «desplazados», nunca usados para calibrar. Sirven para
 # medir cuánto depende el certificado del simulador con el que se calibró.
 SHIFT_PROFILES = ("blurry", "noisy", "mild_blur", "mild_noise")
