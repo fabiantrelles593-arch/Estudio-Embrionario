@@ -1,4 +1,4 @@
-# Preregistro — H21: ¿Crofton como estimador principal de área en lugar de `area_sdf`? (v1.0, 21 nov 2026; **borrador, pendiente de aprobación del autor**)
+# Preregistro — H21: ¿Crofton como estimador principal de área en lugar de `area_sdf`? (v1.0, 21 nov 2026; **aprobado por el autor el 21 nov 2026, antes de medir**)
 
 > Tarea P2 de `docs/INFORME_DE_PROGRESO.md`, propuesta en `docs/COMPARACION_REFERENCIA.md` §3. Se sube a la rama
 > **antes** de ejecutar `scripts/run_h21.py run`. Solo datos sintéticos con verdad analítica; ningún dato real ni
