@@ -33,6 +33,10 @@ EXTRA_NAMES = ("capsule", "cylinder", "oblate")
 # ``dumbbell``: dos bolas unidas por un cuello delgado (t = diámetro del cuello).
 # ``cup``: semicáscara esférica abierta de pared t (rasgo laminar).
 NEW_NAMES = ("dumbbell", "cup")
+# H21: formas nunca usadas antes, para evaluar el estimador de área (docs/PREREGISTRO_H21.md).
+# ``prolate`` (lisa y convexa), ``hemisphere`` (borde vivo), ``cone`` (vértice y borde) y
+# ``horseshoe`` (medio toro de extremos planos, no convexo).
+H21_NAMES = ("prolate", "hemisphere", "cone", "horseshoe")
 
 
 @dataclass(frozen=True)
@@ -217,6 +221,54 @@ def _cup(t: float) -> Phantom:
     return Phantom("cup", t, truth, (ro, ro, ro), inside)
 
 
+def _prolate(t: float) -> Phantom:
+    """Esferoide alargado: semiejes t/2, t/2 y 1.5t (relación 3)."""
+    a, c = t / 2, 1.5 * t
+    truth = Truth(4 / 3 * math.pi * a * a * c, _ellipsoid_area(c, a, a), (1, 0, 0), 1, t, math.inf)
+    return Phantom("prolate", t, truth, (a, a, c),
+                   lambda p: (p[..., 0] ** 2 + p[..., 1] ** 2) / (a * a) + (p[..., 2] / c) ** 2 <= 1.0)
+
+
+def _hemisphere(t: float) -> Phantom:
+    """Media bola maciza de radio t (altura t), centrada en altura: z en [-t/2, t/2]."""
+    r = t
+    truth = Truth(2 / 3 * math.pi * r**3, 3 * math.pi * r * r, (1, 0, 0), 1, t, math.inf)
+
+    def inside(p):
+        z = p[..., 2] + r / 2
+        return (p[..., 0] ** 2 + p[..., 1] ** 2 + z * z <= r * r) & (z >= 0.0)
+
+    return Phantom("hemisphere", t, truth, (r, r, r / 2), inside)
+
+
+def _cone(t: float) -> Phantom:
+    """Cono macizo de radio de base t y altura 2t, centrado en altura."""
+    r, h = t, 2.0 * t
+    truth = Truth(math.pi * r * r * h / 3, math.pi * r * (r + math.hypot(r, h)), (1, 0, 0), 1, t, math.inf)
+
+    def inside(p):
+        z = p[..., 2] + h / 2
+        rho = np.hypot(p[..., 0], p[..., 1])
+        return (z >= 0.0) & (z <= h) & (rho <= r * (1.0 - z / h))
+
+    return Phantom("cone", t, truth, (r, r, h / 2), inside)
+
+
+def _horseshoe(t: float) -> Phantom:
+    """Medio toro macizo (y >= 0) de tubo de diámetro t y radio central 2t, con extremos planos."""
+    r, big_r = t / 2, 2.0 * t
+    truth = Truth(math.pi**2 * big_r * r * r, 2 * math.pi**2 * big_r * r + 2 * math.pi * r * r,
+                  (1, 0, 0), 1, t, math.inf)
+    half_y = (big_r + r) / 2
+
+    def inside(p):
+        y = p[..., 1] + half_y
+        rho = np.hypot(p[..., 0], y)
+        return ((rho - big_r) ** 2 + p[..., 2] ** 2 <= r * r) & (y >= 0.0)
+
+    return Phantom("horseshoe", t, truth, (big_r + r, half_y, r), inside)
+
+
 def make_phantom(name: str, t: float) -> Phantom:
     """Construye el fantoma ``name`` con menor grosor sólido ``t`` (>0)."""
     if not t > 0:
@@ -245,5 +297,8 @@ def make_phantom(name: str, t: float) -> Phantom:
         return _dumbbell(t)
     if name == "cup":
         return _cup(t)
+    h21 = {"prolate": _prolate, "hemisphere": _hemisphere, "cone": _cone, "horseshoe": _horseshoe}
+    if name in h21:
+        return h21[name](t)
     raise ValueError(f"fantoma desconocido: {name!r}; "
-                     f"opciones: {PHANTOM_NAMES + EXTRA_NAMES + NEW_NAMES}")
+                     f"opciones: {PHANTOM_NAMES + EXTRA_NAMES + NEW_NAMES + H21_NAMES}")
