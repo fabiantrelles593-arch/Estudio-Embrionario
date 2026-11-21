@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "Si usas este software, cítalo como se indica."
+title: "geovida: presupuesto de incertidumbre morfométrica/topológica con fantomas de verdad conocida y banco de pruebas 4D sintético"
+version: 0.11.0
+date-released: 2026-11-12
+license: MIT
+authors:
+  - family-names: Trelles
+    given-names: Fabián
+    affiliation: "Colegio Adventista José Pardo, Lima, Perú"
+abstract: >
+  Marco abierto para cuantificar cuánto error de volumen, área y topología
+  introduce la resolución, la anisotropía y la segmentación en imágenes 3D
+  (fantomas con verdad analítica), y banco de pruebas sintético para medir el
+  efecto del error de estadificación sobre trayectorias medias en pseudo-tiempo.
+  Desarrollado con asistencia de IA (Claude, Anthropic); revisión científica
+  humana pendiente.
+keywords: [morfometría, topología digital, metrología, embriología, pseudo-tiempo, reproducibilidad]

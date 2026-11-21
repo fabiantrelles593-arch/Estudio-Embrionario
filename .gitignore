@@ -1,0 +1,25 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+# Datos: nunca se versionan datos biológicos ni crudos
+data/raw/
+data/private/
+data/biological/
+data/pending_permission/
+*.tif
+*.tiff
+*.nrrd
+*.npy
+*.npz
+# Resultados voluminosos (los resúmenes pequeños en results/summary/ sí se versionan)
+results/raw/
+results/summary/*_stdout.json
+results/summary/*_stderr.txt
+# Datos externos (ADR-005): se descargan fuera de Git; solo se versiona su manifiesto
+data/external/
+*.mnc
+*.mnc.gz

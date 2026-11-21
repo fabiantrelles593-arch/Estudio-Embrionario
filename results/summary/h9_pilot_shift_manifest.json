@@ -1,0 +1,23 @@
+{
+  "set": "pilot_shift",
+  "started_utc": "2026-11-10T10:00:48.013676+00:00",
+  "elapsed_s": 163.4,
+  "git_commit": "1becf08d45ceb988d8f23cb5868db653c2d6d8ff",
+  "code_dirty": false,
+  "reps": 2,
+  "conditions": 840,
+  "rows": 2520,
+  "base_seed": 20261122,
+  "segmenters": [
+    "global",
+    "otsu",
+    "smoothed_otsu"
+  ],
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  }
+}

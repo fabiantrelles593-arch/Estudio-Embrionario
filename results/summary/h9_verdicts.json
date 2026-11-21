@@ -1,0 +1,76 @@
+{
+  "selected": "T7",
+  "features": [
+    "ln_d",
+    "tau_dil",
+    "tau_ero",
+    "m_lo",
+    "m_hi",
+    "a1",
+    "a2"
+  ],
+  "h9b": {
+    "count": 4,
+    "n": 6,
+    "verdict": "parcial"
+  },
+  "h9c": {
+    "count": 6,
+    "n": 6,
+    "verdict": "apoyada"
+  },
+  "h9d": {
+    "failing": 0,
+    "evaluable": 6,
+    "n": 6,
+    "verdict": "apoyada"
+  },
+  "h9e": {
+    "count": 6,
+    "n": 6,
+    "verdict": "apoyada"
+  },
+  "h10c": {
+    "failing": 0,
+    "evaluated": 12,
+    "min_retained": 0.9523809523809523,
+    "verdict": "apoyada"
+  },
+  "h10d": {
+    "count": 6,
+    "n": 6,
+    "verdict": "apoyada"
+  },
+  "h9f": {
+    "failing": 0,
+    "evaluable": 6,
+    "n": 6,
+    "verdict": "apoyada"
+  },
+  "h9g": {
+    "failing": 2,
+    "evaluable": 8,
+    "n": 12,
+    "baseline_failing": 9,
+    "baseline_evaluable": 11,
+    "verdict": "no apoyada"
+  },
+  "h10a": {
+    "count": 7,
+    "evaluable": 12,
+    "n": 12,
+    "verdict": "apoyada"
+  },
+  "h10b": {
+    "failing": 0,
+    "with_greens": 2,
+    "rejected": 10,
+    "n": 12,
+    "verdict": "apoyada"
+  },
+  "silent_failure_overall": {
+    "n_failures": 4395,
+    "green": 0.06552901023890785,
+    "red": 0.6354948805460751
+  }
+}

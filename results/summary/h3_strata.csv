@@ -1,0 +1,7 @@
+stratum,n,p_ok,logloss_q,logloss_t,ece_q,ece_t,q_star_frozen,h3a_q_better,h3b_calibrated,q_star_refit,h3c_evaluable,q_star_ratio,h3c_conserved
+global|ideal,12600,0.6394,0.2951,0.3625,0.0289,0.0808,1.1855,True,True,1.1572,True,0.9762,True
+global|realistic,12600,0.5303,0.2625,0.3637,0.0417,0.1262,1.4393,True,True,1.3613,True,0.9458,True
+otsu|ideal,12600,0.5121,0.3123,0.3125,0.0432,0.0419,1.787,True,True,1.6022,True,0.8966,True
+otsu|realistic,12600,0.4102,0.2054,0.2344,0.027,0.0725,1.6282,True,True,1.6105,True,0.9891,True
+smoothed_otsu|ideal,12600,0.1511,0.1541,0.1737,0.0422,0.0893,3.4034,True,True,2.9255,True,0.8596,True
+smoothed_otsu|realistic,12600,0.145,0.1359,0.1523,0.0388,0.1067,3.3318,True,True,2.7871,True,0.8365,True

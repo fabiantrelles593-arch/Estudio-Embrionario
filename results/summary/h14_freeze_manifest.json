@@ -1,0 +1,20 @@
+{
+  "set": "freeze",
+  "started_utc": "2026-11-12T02:28:53.107311+00:00",
+  "elapsed_s": 0.0,
+  "git_commit": "59f0f8da89e3ad5ddccfd35294fadb6a9e227d2b",
+  "code_dirty": false,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  },
+  "frozen_sha256": "676c7c841b8a3d2b85e25cdfa8347fe5659df13179229308f2ed7f736d7aeb97",
+  "derived_from": "results/raw/h13_cal.csv.gz",
+  "source_cal_sha256": "9d2ea0563522ee55b207b93c65a78cee67585ee523a65a646ba11ef920a3ad60",
+  "h13_frozen_sha256": "60943f4855ebf9c10cafe5503db0fa9ff6285be53df7044b6968b8b3e4315b0a",
+  "min_usable_rate": 0.9,
+  "usable_definition": "|err_px| <= 0.5 * n"
+}

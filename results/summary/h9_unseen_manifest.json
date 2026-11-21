@@ -1,0 +1,23 @@
+{
+  "set": "unseen",
+  "started_utc": "2026-11-10T16:45:11.001677+00:00",
+  "elapsed_s": 616.5,
+  "git_commit": "b1d05260cf3a2e145e9ecbcfd8a8531f5f6d0971",
+  "code_dirty": false,
+  "reps": 12,
+  "conditions": 1008,
+  "rows": 3024,
+  "base_seed": 20261124,
+  "segmenters": [
+    "global",
+    "otsu",
+    "smoothed_otsu"
+  ],
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  }
+}
