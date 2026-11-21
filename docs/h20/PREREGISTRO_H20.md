@@ -123,3 +123,8 @@ vecino de forma consistente).
 ## 10. Desviaciones
 
 (Ninguna al subir este preregistro.)
+
+**Candado (21 nov 2026, antes de `test`).** G0 superada: 5 de 5 casos, identidad igual a H19 en los 5, entre 13 y 23 s
+por caso. Puerta C superada: 12 verdes en la calibración y ninguna con |error| > 10 %. Congelado
+`results/h20/h20_frozen.json` (umbrales, envolvente y huellas de las redes), SHA-256
+`66d7ffcf3d9d8397aeefe208aa480deb870d6b616c5cc01c24f8abae7250804e`. `test` solo se corre con este valor.
