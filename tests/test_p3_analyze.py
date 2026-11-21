@@ -158,3 +158,25 @@ def test_confirm_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
     assert s2["exploratory_x4"]["n_specimens"] == 0 and not out2.with_suffix(".conditions_x4.csv").exists()
     assert s2["primary"]["verdict_a"] == s["primary"]["verdict_a"]
     pd.testing.assert_frame_equal(pd.read_csv(out2.with_suffix(".tau.csv")), pd.read_csv(out.with_suffix(".tau.csv")))
+
+    # x4 (D6): solo el exploratorio; no repite ninguna pasada de A ni reescribe el resumen confirmatorio
+    def only_x4(sid, data_dir, memos_dir, rule="nearest", pad=0, memos_as_b=None):
+        assert memos_as_b is not None, "x4 solo debe medir B sobre ×4"
+        return fake_maps(sid, data_dir, memos_dir, rule, pad, memos_as_b)
+
+    monkeypatch.setattr(pa, "_specimen_maps", only_x4)
+    before = out.read_bytes()
+    assert pa.main(["x4", "--data", str(data), "--memos", str(memos), "--groups", str(tmp_path / "g.csv"),
+                    "--ids", str(sel), "--out", str(out), "--memos-x4", str(x4)]) == 0
+    assert out.read_bytes() == before
+    r = json.loads(out.with_suffix(".x4.json").read_text(encoding="utf-8"))
+    assert r["n_specimens"] == 4 and set(r["median_tau_by_group"]) == {"main", "x4"}
+    assert pd.read_csv(out.with_suffix(".conditions_x4.csv"))["specimen"].nunique() == 4
+
+
+def test_group_median_tau_averages_bilateral_units_first():
+    import pandas as pd
+    tau = pd.DataFrame({"structure": [1, 2, 3, 4], "tau": [0.2, 0.4, 0.9, 0.1]})
+    groups = pd.DataFrame({"unit": ["1+2", "3", "4"], "group": ["delgada", "compacta", "compacta"]})
+    out = pa.group_median_tau(tau, groups, units={1: "1+2", 2: "1+2"})
+    assert out == {"delgada": pytest.approx(0.3), "compacta": pytest.approx(0.5)}
