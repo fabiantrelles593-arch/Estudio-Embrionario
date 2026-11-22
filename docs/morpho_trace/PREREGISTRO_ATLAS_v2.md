@@ -87,3 +87,7 @@ landmarks publicados de los 40 de la muestra (en v1.0 eran los del piloto).
   puertas de v2 (pruebas en `tests/test_mta_v2.py`), subido antes de medir. **G0-a″ superada** (los 40 cumplen) y
   **G0-d′ superada**: |d| = 0,15678 con las 597 configuraciones (0,15671 con las 717) [HV,
   `results/morpho_trace/v2/g0a3.json`, `g0d2.json`]. G0-t y los registros esperan a que P3 y H19 dejen memoria.
+* **21 nov 2026 — G0-t superada, sin desviaciones.** Con P3 y H22 terminados, el registro de prueba atlas E18.5 →
+  atlas E15.5 tardó 1323 s; 80 registros ≈ 29,4 h (límite 72 h) [HV, `results/morpho_trace/v2/g0t.json`]. Código
+  igual a la rama (`mta_v2.py` 401f7d1, `atlas_effect_gates.py` fb4a869, `atlas_effect.py` 9369540). Los 80 registros
+  empezaron el mismo día, a prioridad baja.
