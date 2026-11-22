@@ -130,4 +130,40 @@ ya no puede decidirla. Ideas, **sin decidir** [PROP]:
 
 `results/p3/confirmatorio.json` (resumen), `.units.csv`, `.tau.csv`, `.conditions.csv`, `.conditions_exact.csv`,
 `.mixed.csv`, `.agreement.csv`, `.agreement_summary.csv`, `.sex.csv`, `.exploratory.csv` e
-`informe_confirmatorio.md` (salida de `p3_report.py`).
+`informe_confirmatorio.md` (salida de `p3_report.py`). Del anexo ×4: `confirmatorio.x4.json`, `.conditions_x4.csv` y
+`.tau_x4.csv`.
+
+## 11. Anexo (21 nov 2026) — exploratorio MEMOS a ×4 (D2, D6)
+
+> Exploratorio sin criterio. No cambia τ, H-P3a, H-P3b, H-P3c ni ningún veredicto. Calculado con
+> `p3_analyze.py x4`, que reutiliza las tablas de la pasada principal y no escribe en el resumen confirmatorio.
+
+**Qué se hizo [HV].** Se volvió a ejecutar MEMOS sobre la imagen nativa reducida a ×4 (≈ 0,108 mm; el doble de la
+escala con la que se entrenó, D2) en los 60 especímenes, con el fallo de D6 corregido. El segmentador A (atlas) se
+toma tal cual de la pasada principal; solo cambia B. 49 115 s (unas 13,6 h). El SHA-256 de
+`results/p3/confirmatorio.json` es el mismo antes y después: el resumen confirmatorio no se tocó.
+
+**Resultado [HV]:**
+
+| | Pasada principal (B = MEMOS a ×2) | Exploratorio (B = MEMOS a ×4) |
+|---|---|---|
+| Filas de B con volumen 0 | 64 de 8640 (0,7 %) | 2030 de 8640 (23,5 %) |
+| Volumen de B a ×1, mediana entre estructuras, relativo a la pasada principal | 1 | 0,11 |
+| Especímenes descartados por estructura (mediana; máx.) | 0; 3 | 9,5; 60 |
+| Estructuras con τ calculable | 48 | 47 (la etiqueta 25 queda vacía en los 60) |
+| τ del log-volumen, mediana entre estructuras | 0,37 | 0,83 |
+| τ mediana por grupo: compacta / delgada | 0,32 / 0,40 | 0,84 / 0,69 |
+| Concordancia del orden por τ con la pasada principal | — | ρ = −0,21 en 47 estructuras (discrepa) |
+
+**Lectura:**
+
+* **MEMOS falla fuera de su escala de entrenamiento [HV].** A ×4, MEMOS deja vacías casi una cuarta parte de las
+  máscaras y, en la estructura mediana, recupera el 11 % del volumen de la pasada principal. En 8 estructuras más de
+  la mitad de las máscaras salen vacías.
+* **Por eso τ sube y el orden se invierte.** La parte «técnica» crece porque el segmentador B deja de funcionar,
+  no porque la resolución pese más en la anatomía. Que las compactas queden por encima de las delgadas en este
+  exploratorio no dice nada contra H-P3a. **No se interpreta** [HV sobre las cifras; la causa es la escala, EI].
+* **Qué sí confirma.** La decisión de D2 de ejecutar MEMOS a la escala de su entrenamiento (×2 sobre la nativa) era
+  necesaria: una escala más gruesa cambia el resultado por completo.
+* **Lo que no se puede concluir:** nada sobre la exactitud de MEMOS a su escala; nada sobre otros segmentadores; las
+  salidas de MEMOS se usan solo en local y no se publican (pesos con licencia no declarada).
