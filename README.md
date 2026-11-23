@@ -13,9 +13,11 @@ las que vio al calibrarse.
 > cribado, estimación de riesgo fetal ni selección de embriones. Un software con finalidad médica
 > es un dispositivo médico regulado.
 >
-> **Estado: solo datos sintéticos.** Ninguna imagen real, humana o animal, se ha procesado. Los
-> resultados describen el comportamiento del *instrumento de medida*, no biología. No hay revisión
-> científica externa.
+> **Estado (23 nov 2026): datos sintéticos y datos reales de ratón publicados.** Desde el 16 nov se han
+> procesado ecografías 3D reales de embriones de ratón (Qiu et al. 2021, CC BY) y micro-TC de embriones de
+> ratón de MusMorph/IMPC (CC BY 4.0); resumen en la sección «v0.12 · Datos reales de ratón». **Ningún dato
+> humano** se ha procesado salvo la imagen 2D n = 1 del piloto REAL2D, que queda fuera del repositorio. No hay
+> revisión científica externa.
 
 ## Qué puede hacer hoy
 
@@ -62,7 +64,7 @@ Cada prueba fijó criterios y predicciones en git **antes** de ejecutarse. Detal
 Documentos: [`RESULTADOS.md`](docs/RESULTADOS.md) (v0.1), [`RESULTADOS_V02.md`](docs/RESULTADOS_V02.md),
 [`RESULTADOS_V03.md`](docs/RESULTADOS_V03.md), [`RESULTADOS_V04.md`](docs/RESULTADOS_V04.md),
 [`RESULTADOS_V05.md`](docs/RESULTADOS_V05.md) (ecografía simulada),
-[`ERRATA.md`](docs/ERRATA.md) (26 errores propios, con causa y prevención) y
+[`ERRATA.md`](docs/ERRATA.md) (30 errores propios, con causa y prevención) y
 [`ANTECEDENTES_V04.md`](docs/ANTECEDENTES_V04.md) (qué existe ya en la literatura).
 
 ## v0.5: ecografía simulada (H12), resultado
@@ -152,21 +154,27 @@ fracasó), [`PREREGISTRO_REAL2D_PILOTO.md`](docs/PREREGISTRO_REAL2D_PILOTO.md) (
 * **Cómo se comprueba**: el núcleo matemático se ejecuta con Node y se compara con `geovida.dating`, `geovida.trajectory` y `geovida.chainguard` (`tests/test_prototype_core.py`); la interfaz se recorre en Chromium (`tests/test_prototype_ui.py`). Construir: `python scripts/build_prototype.py`.
 * **Lo que no es**: no está validado con imágenes reales ni con lectores humanos (la incertidumbre al marcar es un supuesto); no predice el crecimiento ni el aspecto de nadie.
 
-## Siguiente fase (v0.5, en curso): embriones reales
+## v0.12 · Datos reales de ratón (16–23 nov 2026)
 
-Hasta v0.4 todo es sintético. v0.5 lleva el certificado a **ecografía 3D real de embriones de ratón**
-con contornos de expertos, sin reajustar nada y con los criterios fijados antes de abrir los datos
-([`PREREGISTRO_H11.md`](docs/PREREGISTRO_H11.md)). Propósito, objetivos y ruta por etapas, hasta la
-puerta ética y regulatoria que exigiría cualquier uso con humanos:
-[`OBJETIVOS_V05.md`](docs/OBJETIVOS_V05.md). Ya existen el lector de volúmenes NIfTI
-(`geovida.realdata`) y `geovida datasheet` (ficha de volúmenes; guía paso a paso en
-[`GUIA_DATOS_REALES.md`](docs/GUIA_DATOS_REALES.md)). **Todavía no se ha procesado ninguna imagen real.** El código de H11 (`geovida.h11`, `scripts/run_h11.py`)
-y el preregistro de su variante recalibrada ([`PREREGISTRO_H12R.md`](docs/PREREGISTRO_H12R.md)) están listos y
-probados con volúmenes sintéticos; esperan los volúmenes.
+Todos estos estudios fijaron criterios en git antes de medir. Los veredictos completos están en cada documento
+de resultados y en [`TRAZABILIDAD.md`](docs/clinico/TRAZABILIDAD.md); aquí solo se resume qué se aprendió.
+Cómo rehacerlos: [`REPRODUCCION.md`](docs/REPRODUCCION.md).
+
+| Estudio | Datos | Qué se aprendió |
+|---|---|---|
+| H11, H12R ([H11](docs/h11/RESULTADOS_H11.md), [H12R](docs/h11/RESULTADOS_H12R.md)) | Ecografía 3D real, 213 embriones | La guardia de dominio funcionó: se negó a dar verde, y sin ella el 100 % de los verdes habrían sido falsos. La primaria no fue evaluable: el certificado calibrado en simulación no transfiere al equipo real |
+| H18, H19, H20 ([H18](docs/h18/RESULTADOS_H18.md), [H19](docs/h19/RESULTADOS_H19.md), [H20](docs/h20/RESULTADOS_H20.md)) | Ecografía 3D real, prueba sellada medida una vez | Una red de dos etapas mide bien el volumen en embriones nuevos (93 % a ≤ 10 %); la luz verde basada en su estabilidad acertó (H20b apoyada), pero separa poco los fallos |
+| P3 ([resultados](docs/p3/RESULTADOS_P3.md)) | Micro-TC MusMorph E15.5, 60 especímenes | Cuánta variación de cada estructura es técnica y cuánta del espécimen; H-P3a apoyada, H-P3b no interpretable |
+| ONTO-MAP ([resultados](docs/onto_map/RESULTADOS_P4.md)) | Landmarks MusMorph, 259 + 458 | Resultado negativo: la dirección E15.5 → E18.5 no se puede atribuir al desarrollo porque cada estadio usa un atlas distinto |
+| QC-LM ([resultados](docs/morpho_trace/RESULTADOS_QC_LANDMARKS.md)) | Landmarks e imágenes MusMorph, 60 + 60 | Un tercio de los especímenes E15.5 tiene landmarks publicados desplazados, pero no explican la diferencia entre estadios |
+| MT-A v1.0–v2 ([v2](docs/morpho_trace/RESULTADOS_ATLAS_v2.md)) | Imágenes y atlas MusMorph | Las tres versiones, no evaluables. En v2 falla el registro propio del proyecto, que aleja los landmarks de lo publicado; se está verificando su cadena |
+
+**Ninguno de estos resultados es clínico ni se refiere a humanos.**
 
 ## Lo que este proyecto NO afirma
 
-* No reconstruye ni mide embriones humanos ni de ratón reales (aún).
+* No reconstruye ni mide embriones humanos. Mide embriones de ratón reales solo a partir de conjuntos
+  publicados, con fines de método, y no extrae conclusiones biológicas que esos estudios no autoricen.
 * «4D» es **pseudo-tiempo transversal**: cada espécimen se mide una vez y se asigna a una etapa.
 * «5D» no es una dimensión biológica. En bioimagen ya significa x, y, z, canal y tiempo. Lo que
   aquí se añade es un **eje de escala de medición**: la misma imagen, medida otra vez más gruesa.
@@ -186,7 +194,7 @@ probados con volúmenes sintéticos; esperan los volúmenes.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                                           # 687 casos, ~50 s en CI (el prototipo en navegador necesita Playwright y Chromium)
+pytest                                           # 940 casos (23 nov 2026); el prototipo en navegador necesita Playwright y Chromium
 python scripts/run_h6.py --phase test && python scripts/analyze_h6.py     # ~17 min, 2 núcleos
 python scripts/run_h7.py && python scripts/analyze_h7.py                  # ~1 min
 python scripts/run_h8.py && python scripts/analyze_h8.py                  # ~5 min
@@ -196,7 +204,8 @@ python scripts/analyze_h9.py
 ```
 
 Semillas deterministas por celda: el resultado no depende del número de procesos, y dos corridas
-del mismo barrido dan tablas idénticas (comprobado en H8).
+del mismo barrido dan tablas idénticas (comprobado en H8). Los estudios con datos reales se reproducen con
+[`REPRODUCCION.md`](docs/REPRODUCCION.md) (entorno, descargas con MD5, orden de los pasos y huella del código).
 
 ## Estructura
 
@@ -234,10 +243,11 @@ tenido revisión científica humana externa.** Autor del proyecto: Fabián Trell
 
 ## Siguiente paso real
 
-Datos públicos con licencia verificada, empezando por imágenes 2D (HC18, CC BY 4.0; EmbryoNet,
-CC BY 4.0), con un preregistro propio; y un laboratorio aliado o fantomas físicos para comprobar
-que el certificado se sostiene fuera del simulador. Hasta entonces, esto es una herramienta de
-método, no un resultado biológico.
+El certificado ya se probó con ecografía real de ratón (H11–H20): con una red aprendida mide bien, pero
+la luz verde todavía separa poco los fallos. Lo siguiente es replicarlo en otro conjunto con licencia
+verificada, verificar la cadena de registro de MT-A antes de medir el efecto del atlas, y conseguir revisión
+externa. Las prioridades están en [`INFORME_DE_PROGRESO.md`](docs/INFORME_DE_PROGRESO.md). Esto sigue siendo una
+herramienta de método, no un resultado biológico ni clínico.
 
 ## Licencia
 
