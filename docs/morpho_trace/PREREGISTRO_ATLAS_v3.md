@@ -178,3 +178,21 @@ publicación cómo se generaron exactamente los landmarks, y escribir un preregi
   a fin con los dos atlas y ningún espécimen (atlas E18.5 → sí mismo, atlas E15.5 → sí mismo y atlas E18.5 → atlas
   E15.5, con C1, C2 y C3). Solo se miró si terminaba y cuánto tardaba; no se calculó ni se miró ninguna distancia a
   landmarks. El resultado de la sensibilidad 1 se calculará en G0-t′, como está escrito.
+
+### Notas de ejecución (no cambian ningún criterio)
+
+* **23 nov 2026 — preregistro, código y pruebas en la rama** (preregistro en 96fc788; cabeza 77b9230 con CI en verde
+  en Python 3.12 y 3.13). Después: `sample` (SHA-256 de la muestra
+  `f5d63f0306cb27f083c09beef4b4261c82de22ab927ef4f1748dc3fa411a73e0`), **G0-a‴ superada** (40 de 40 cumplen) y
+  **G0-m superada** (las dos cajas contienen sus landmarks y caben en su imagen) [HV,
+  `results/morpho_trace/v3/muestra_v3.json`, `g0a4.json`, `g0m.json`]. La puerta S empezó el mismo día.
+* **23 nov 2026 — comprobación en la publicación de la premisa de §10** (lectura, sin datos). Devine et al. 2022
+  (doi:10.1038/s41597-022-01338-x), sección «Image registration and label propagation»: cada imagen se registró por
+  pares al atlas de su estadio con una afín multirresolución y después SyN geodésico (correlación cruzada), y los
+  landmarks del atlas se llevaron a cada espécimen con la transformada compuesta invertida [HV]. Los landmarks
+  publicados de los embriones son, por tanto, landmarks del atlas deformados por ese registro. La premisa de §10
+  queda verificada; §10 sigue fuera de este preregistro.
+* **23 nov 2026 — puerta S fallida; estudio cerrado como no evaluable, sin desviaciones.** Los 12 registros del
+  piloto terminaron bien; ningún candidato fue apto (C1 mejora la identidad en 2 de 4, mediana de ρ 0,0415 frente a
+  0,0343; C2 y C3, en 0 de 4) [HV, `results/morpho_trace/v3/s.json`]. Como fija §4, no se hicieron G0-t′, G1′ ni los
+  registros confirmatorios. Detalles en `docs/morpho_trace/RESULTADOS_ATLAS_v3.md`.
