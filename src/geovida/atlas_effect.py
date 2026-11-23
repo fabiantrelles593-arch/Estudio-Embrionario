@@ -12,6 +12,9 @@ Implementa el protocolo fijado en ``docs/morpho_trace/PREREGISTRO_ATLAS.md`` (§
    **móvil** (el espécimen); ``transfer_points`` la aplica a los landmarks del atlas.
 3. **Estadística** (solo NumPy). ``published_direction`` (puerta G0-d), ``atlas_effect`` (f, MT-A2, MT-A3 con
    remuestreo por espécimen), ``gate_g1``, ``fraction_inside`` (G0-a/b) y ``verdict_mta1``.
+4. **MT-A v3** (``PREREGISTRO_ATLAS_v3.md``): caja de cabeza a partir de los landmarks del atlas (``head_box``,
+   ``box_mask``, ``crop_to_box``), inicialización entre atlas (``landmark_affine``, ``affine_to_sitk``), registro con
+   máscara (``register_head``) y G1′ con la identidad como referencia (``gate_g1_identity``). ``register`` no cambia.
 
 Las pruebas usan fantomas con deformación conocida (``tests/test_atlas_effect.py``): que el registro recupere
 una transformada sintética no valida su comportamiento con embriones reales; eso lo mide la puerta G1.
@@ -232,6 +235,124 @@ def register(fixed, moving, *, mesh: int = 8, affine_only: bool = False, seed: i
 def transfer_points(transform, points: np.ndarray) -> np.ndarray:
     """Aplica la transformada (fija → móvil) a puntos del mundo (n, 3)."""
     return np.array([transform.TransformPoint(tuple(float(c) for c in p)) for p in np.asarray(points)])
+
+
+# ---------------------------------------------------------------- MT-A v3: registro limitado a la cabeza
+def head_box(points: np.ndarray, margin_mm: float) -> tuple[np.ndarray, np.ndarray]:
+    """Caja alineada con los ejes del mundo que contiene ``points``, ampliada ``margin_mm`` por cada lado."""
+    p = np.asarray(points, dtype=float)
+    if p.ndim != 2 or p.shape[1] != 3 or len(p) == 0:
+        raise ValueError("points debe ser (n, 3) con n ≥ 1")
+    return p.min(axis=0) - margin_mm, p.max(axis=0) + margin_mm
+
+
+def _voxel_centres_world(shape, affine) -> np.ndarray:
+    a = np.asarray(affine, dtype=float)
+    idx = np.indices(shape).reshape(3, -1).T
+    return idx @ a[:3, :3].T + a[:3, 3]
+
+
+def box_mask(shape, affine, lo, hi) -> np.ndarray:
+    """uint8 con 1 en los vóxeles cuyo centro (en el mundo) cae dentro de la caja [lo, hi]."""
+    w = _voxel_centres_world(tuple(int(s) for s in shape), affine)
+    inside = np.all((w >= np.asarray(lo)) & (w <= np.asarray(hi)), axis=1)
+    return inside.reshape(tuple(int(s) for s in shape)).astype(np.uint8)
+
+
+def crop_to_box(arr: np.ndarray, affine, lo, hi) -> tuple[np.ndarray, np.ndarray]:
+    """Subvolumen mínimo que contiene todos los vóxeles cuyo centro cae en la caja, y su afín. La geometría del
+    mundo no cambia: el mismo punto del mundo cae en el mismo vóxel del volumen original."""
+    m = box_mask(arr.shape, affine, lo, hi)
+    if not m.any():
+        raise ValueError("la caja no contiene ningún vóxel del volumen")
+    nz = np.argwhere(m)
+    i0, i1 = nz.min(axis=0), nz.max(axis=0) + 1
+    a = np.asarray(affine, dtype=float).copy()
+    a[:3, 3] = a[:3, :3] @ i0 + a[:3, 3]
+    sub = np.asarray(arr)[i0[0]:i1[0], i0[1]:i1[1], i0[2]:i1[2]]
+    return np.ascontiguousarray(sub, dtype=np.float32), a
+
+
+def landmark_affine(src: np.ndarray, dst: np.ndarray) -> np.ndarray:
+    """Afín 4 × 4 de mínimos cuadrados que lleva ``src`` (n, 3) a ``dst`` (n, 3), con puntos correspondientes."""
+    s, d = np.asarray(src, dtype=float), np.asarray(dst, dtype=float)
+    if s.shape != d.shape or s.ndim != 2 or s.shape[1] != 3 or len(s) < 4:
+        raise ValueError("src y dst deben ser (n, 3) con n ≥ 4 y la misma forma")
+    x, *_ = np.linalg.lstsq(np.c_[s, np.ones(len(s))], d, rcond=None)
+    out = np.eye(4)
+    out[:3, :3], out[:3, 3] = x[:3].T, x[3]
+    return out
+
+
+def affine_to_sitk(matrix) -> "object":
+    """Afín 4 × 4 (p ↦ A p + t, en mm del mundo) como ``sitk.AffineTransform`` con centro en el origen."""
+    sitk = _sitk()
+    m = np.asarray(matrix, dtype=float)
+    tx = sitk.AffineTransform(3)
+    tx.SetMatrix(tuple(float(v) for v in m[:3, :3].ravel()))
+    tx.SetTranslation(tuple(float(v) for v in m[:3, 3]))
+    return tx
+
+
+def register_head(fixed, moving, *, fixed_mask, initial, meshes=(None, 4, 8), seed: int = 20261123,
+                  sampling_percentage: float = 0.20, affine_iterations: int = 200,
+                  bspline_iterations: int = 50) -> dict:
+    """Registro de MT-A v3 (PREREGISTRO_ATLAS_v3.md §3.3). Afín desde ``initial`` (transformada fija → móvil) con
+    información mutua de Mattes **solo dentro de** ``fixed_mask`` y muestreo regular; después, para cada malla de
+    ``meshes`` distinta de ``None``, una B-spline sobre esa afín. Devuelve {malla o None: (transformada, info)}.
+    No cambia ``register`` (v1.0–v2)."""
+    sitk = _sitk()
+    f = sitk.Cast(fixed, sitk.sitkFloat32)
+    m = sitk.Cast(moving, sitk.sitkFloat32)
+    mask = sitk.Cast(fixed_mask, sitk.sitkUInt8)
+
+    def _method(levels, sigmas):
+        r = sitk.ImageRegistrationMethod()
+        r.SetMetricAsMattesMutualInformation(numberOfHistogramBins=50)
+        r.SetMetricFixedMask(mask)
+        r.SetMetricSamplingStrategy(r.REGULAR)
+        r.SetMetricSamplingPercentage(sampling_percentage, seed)
+        r.SetInterpolator(sitk.sitkLinear)
+        r.SetShrinkFactorsPerLevel(levels)
+        r.SetSmoothingSigmasPerLevel(sigmas)
+        r.SmoothingSigmasAreSpecifiedInPhysicalUnitsOff()
+        return r
+
+    r1 = _method([4, 2, 1], [2, 1, 0])
+    r1.SetOptimizerAsRegularStepGradientDescent(learningRate=1.0, minStep=1e-4,
+                                                numberOfIterations=affine_iterations)
+    r1.SetOptimizerScalesFromPhysicalShift()
+    r1.SetInitialTransform(sitk.AffineTransform(initial), inPlace=False)
+    affine_tx = r1.Execute(f, m)
+    base = {"affine_metric": float(r1.GetMetricValue()), "affine_stop": r1.GetOptimizerStopConditionDescription()}
+    out = {}
+    for mesh in meshes:
+        if mesh is None:
+            out[None] = (affine_tx, {**base, "mesh": None})
+            continue
+        bs = sitk.BSplineTransformInitializer(f, [mesh] * 3, order=3)
+        r2 = _method([2, 1], [1, 0])
+        r2.SetOptimizerAsLBFGSB(gradientConvergenceTolerance=1e-5, numberOfIterations=bspline_iterations)
+        r2.SetMovingInitialTransform(affine_tx)
+        r2.SetInitialTransform(bs, inPlace=True)
+        r2.Execute(f, m)
+        out[mesh] = (sitk.CompositeTransform([affine_tx, bs]),
+                     {**base, "mesh": mesh, "bspline_metric": float(r2.GetMetricValue()),
+                      "bspline_stop": r2.GetOptimizerStopConditionDescription()})
+    return out
+
+
+def gate_g1_identity(own: np.ndarray, identity: np.ndarray, published: np.ndarray,
+                     published_by_stage: dict) -> dict:
+    """G1′ (v3): la mediana de ρ(transferido, publicado) debe ser menor que la de ρ(identidad, publicado) **y** que
+    la de ρ entre especímenes del mismo estadio (``gate_g1``)."""
+    g = gate_g1(own, published, published_by_stage)
+    ident = [lm.procrustes_distances(a, b)["rho"]
+             for a, b in zip(np.asarray(identity, float), np.asarray(published, float))]
+    mi = float(np.median(ident))
+    return {**g, "median_rho_identity": mi, "passed_between": g["passed"],
+            "passed_identity": g["median_rho_transfer"] < mi,
+            "passed": bool(g["passed"] and g["median_rho_transfer"] < mi)}
 
 
 # ---------------------------------------------------------------- estadística
