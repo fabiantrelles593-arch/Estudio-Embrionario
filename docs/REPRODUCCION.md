@@ -20,7 +20,7 @@ python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Script
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # primero, para no bajar la versión con CUDA
 pip install -e ".[dev]"                                   # incluye nibabel, h5py, SimpleITK y torch
 pip install monai                                         # solo para MEMOS en P3 (no está en los extras)
-pytest                                                    # 940 pruebas en 73 archivos (23 nov 2026)
+pytest                                                    # 944 pruebas en 74 archivos (23 nov 2026)
 ```
 
 Las órdenes se ejecutan desde la raíz del repositorio con `PYTHONPATH=src` si el paquete no está instalado.
@@ -138,6 +138,10 @@ python scripts/atlas_effect_gates.py analyze --protocol 2.0 --ids results/morpho
     --landmarks data/external/musmorph/landmarks_confirm --regs results/morpho_trace/v2/registros \
     --gates-dir results/morpho_trace/v2 --out results/morpho_trace/v2/analisis.json
 python scripts/explore_mta_v2_g1.py      # diagnóstico exploratorio de G1 (no cambia el veredicto)
+# verificación de la cadena de registro (nota de ingeniería, docs/morpho_trace/VERIFICACION_REGISTRO.md)
+python scripts/verify_registration_chain.py synthetic                                   # unos 25 min
+python scripts/verify_registration_chain.py specimens --names IMPC_E15.5_0313 IMPC_E18.5_1284   # unas 1,6 h
+python scripts/verify_registration_chain.py geometry --names IMPC_E15.5_0313 IMPC_E18.5_1284    # unos minutos
 ```
 
 Los 80 registros de v2 tardaron 22,9 h de cálculo en el equipo de referencia. Si el proceso se corta, se relanza
