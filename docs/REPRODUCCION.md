@@ -20,7 +20,7 @@ python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Script
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # primero, para no bajar la versión con CUDA
 pip install -e ".[dev]"                                   # incluye nibabel, h5py, SimpleITK y torch
 pip install monai                                         # solo para MEMOS en P3 (no está en los extras)
-pytest                                                    # 944 pruebas en 74 archivos (23 nov 2026)
+pytest                                                    # 958 pruebas en 75 archivos (23 nov 2026)
 ```
 
 Las órdenes se ejecutan desde la raíz del repositorio con `PYTHONPATH=src` si el paquete no está instalado.
@@ -142,6 +142,15 @@ python scripts/explore_mta_v2_g1.py      # diagnóstico exploratorio de G1 (no c
 python scripts/verify_registration_chain.py synthetic                                   # unos 25 min
 python scripts/verify_registration_chain.py specimens --names IMPC_E15.5_0313 IMPC_E18.5_1284   # unas 1,6 h
 python scripts/verify_registration_chain.py geometry --names IMPC_E15.5_0313 IMPC_E18.5_1284    # unos minutos
+# MT-A v3 (docs/morpho_trace/PREREGISTRO_ATLAS_v3.md); cada orden se niega a seguir si falla una puerta anterior
+python scripts/mta_v3.py sample        # una sola vez: 2 + 2 de piloto y 18 + 18 confirmatorios
+python scripts/mta_v3.py g0a4
+python scripts/mta_v3.py g0m
+python scripts/mta_v3.py pilot         # puerta S: 12 registros de cabeza
+python scripts/mta_v3.py g0t           # G0-t′ y sensibilidad 1
+python scripts/mta_v3.py own           # G1′: 36 registros propios
+python scripts/mta_v3.py cross         # 36 registros cruzados, solo si G1′ pasó
+python scripts/mta_v3.py analyze
 ```
 
 Los 80 registros de v2 tardaron 22,9 h de cálculo en el equipo de referencia. Si el proceso se corta, se relanza
