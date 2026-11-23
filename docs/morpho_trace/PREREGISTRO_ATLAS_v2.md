@@ -91,3 +91,7 @@ landmarks publicados de los 40 de la muestra (en v1.0 eran los del piloto).
   atlas E15.5 tardó 1323 s; 80 registros ≈ 29,4 h (límite 72 h) [HV, `results/morpho_trace/v2/g0t.json`]. Código
   igual a la rama (`mta_v2.py` 401f7d1, `atlas_effect_gates.py` fb4a869, `atlas_effect.py` 9369540). Los 80 registros
   empezaron el mismo día, a prioridad baja.
+* **23 nov 2026 — registros terminados y estudio cerrado, sin desviaciones.** El proceso se detuvo el 22 nov con 34
+  de 80 registros guardados, porque terminó la sesión que lo lanzó. Se relanzó la misma orden, reanudable, con el
+  código comprobado contra los blobs de G0-t. 80 de 80 válidos, 22,9 h de cálculo. Veredicto: **no evaluable**,
+  porque falla G1. Detalles en `docs/morpho_trace/RESULTADOS_ATLAS_v2.md`.
