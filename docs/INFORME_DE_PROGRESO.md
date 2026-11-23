@@ -1,4 +1,4 @@
-# Informe de progreso — Geometría de la Vida (19 nov 2026)
+# Informe de progreso — Geometría de la Vida (23 nov 2026)
 
 > Formato del prompt rector (§18 v1, §21 v2). Rama `geovida/v0.1-desde-cero` (PR #3, abierta, sin fusionar).
 > Etiquetas: [HV] hecho verificado · [EI] evidencia indirecta · [HIP] hipótesis · [PROP] propuesta · [PV] pendiente de validación.
@@ -25,12 +25,12 @@ Resumen: **3 cerradas, 7 parciales o en curso, 1 no iniciada** de 11 fases.
 | 2 · Pregunta y protocolo | **Cerrada** para P3, ONTO-MAP y H11 [HV] | `docs/PREREGISTRO_P3.md`, `docs/onto_map/PROTOCOLO_ONTOMAP.md`, `docs/PREREGISTRO_H11.md` | Revisión del protocolo por un asesor externo (recomendada, no bloqueante) |
 | 3 · Motor 2D | **Parcial** | `src/geovida/twod.py`, `src/geovida/real2d.py`, `src/geovida/biometry.py`; `docs/RESULTADOS_V02.md`, `docs/RESULTADOS_V08.md` | Validación con más de una imagen real (hoy n = 1, exploratorio) |
 | 4 · Motor 3D | **Cerrada** en lectura, calibración, métricas y topología con fantomas [HV] | `src/geovida/measure.py` (marching cubes y área por distancia con signo), `src/geovida/topology.py`, `src/geovida/minc.py`, `src/geovida/realdata.py`; `docs/RESULTADOS.md`, `docs/RESULTADOS_V04.md` | — Comparación externa hecha: volumen, componentes y área iguales a SimpleITK 2.5.7 en 140 de 140 máscaras; χ contrastado con un método independiente; `area_sdf` con sesgo de ≈ +3 % a resolución fina (`docs/COMPARACION_REFERENCIA.md`) |
-| 5 · MORPHO-TRACE | **En curso** | Certificado confirmado en sintético (`docs/RESULTADOS_V03.md`, `docs/RESULTADOS_V04.md`); P3 piloto con datos reales (`docs/p3/RESULTADOS_PILOTO.md`); P3 confirmatorio midiendo | Veredictos de H-P3a/b/c; separación técnica frente a biológica con datos reales |
+| 5 · MORPHO-TRACE | **Parcial** | Certificado confirmado en sintético (`docs/RESULTADOS_V03.md`, `docs/RESULTADOS_V04.md`); P3 confirmatorio cerrado con datos reales (`docs/p3/RESULTADOS_P3.md`: H-P3a apoyada, H-P3b no interpretable); QC-LM cerrado (`docs/morpho_trace/RESULTADOS_QC_LANDMARKS.md`); MT-A v1.0–v2 no evaluables (`docs/morpho_trace/RESULTADOS_ATLAS_v2.md`) | Medir el factor de atlas con un registro que supere G1 (verificación de la cadena de registro en curso) |
 | 6 · Modelado 4D | **Parcial** | `src/geovida/traj4d.py`, `src/geovida/growth.py`; `docs/RESULTADOS_V03.md` (H8) | Solo pseudo-tiempo y sintético: no hay datos longitudinales reales del mismo espécimen [HV] |
 | 7 · Contexto 5D | **No iniciada** | — | Decisión: no se construye hasta tener al menos dos contextos comparables con datos reales y el factor de atlas medido (ONTO-MAP mostró que sin eso el contexto confunde) [PROP] |
 | 8 · Investigación prenatal | **Parcial** | H12–H16 en simulación (`docs/RESULTADOS_V05.md` a `docs/RESULTADOS_V10.md`), REAL2D n = 1, `docs/prenatal/BIBLIOTECA_ANOMALIAS.md`, H11 cerrado con ecografía real de ratón (`docs/h11/RESULTADOS_H11.md`: primaria no evaluable, guardia apoyada); H12R cerrado (`docs/h11/RESULTADOS_H12R.md`: primaria no evaluable; el simulador de ecografía no cubre el equipo real) | Datos humanos autorizados con aprobación ética; validación con más imágenes reales |
 | 9 · Validación externa y traslación | **Parcial** (solo preparación documental) | `docs/clinico/USO_PREVISTO_Y_RIESGOS.md`, `docs/clinico/PLAN_DE_VALIDACION.md`, `docs/clinico/FICHA_DEL_MODELO.md` | Especialistas externos, comité de ética, validación independiente; registro sanitario DIGEMID si hubiera uso clínico (DS 003-2020-SA: el software autónomo es dispositivo médico activo) |
-| 10 · Publicación | **Parcial** | Presentación v2 (`docs/exposicion/GUION_V2.md`), 30 erratas públicas (`docs/ERRATA.md`), licencia MIT | Manuscrito, manual de reproducción completo, versión etiquetada |
+| 10 · Publicación | **Parcial** | Presentación v2 (`docs/exposicion/GUION_V2.md`), 30 erratas públicas (`docs/ERRATA.md`), licencia MIT, manual de reproducción de los estudios con datos reales (`docs/REPRODUCCION.md`, 23 nov) | Manuscrito, versión etiquetada (requiere autorización del autor), comprobación de la reproducción en un segundo equipo |
 
 Proyecto asociado **ONTO-MAP (P4): cerrado con resultado negativo** [HV] — hipótesis contrarias, factor de
 confusión del atlas identificado, método no original (`docs/onto_map/RESULTADOS_P4.md`,
@@ -40,9 +40,9 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 
 | Nivel | Estado |
 |---|---|
-| Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 867 pruebas recogidas por pytest en 68 archivos (19 nov). CI en verde en fbffc51; estuvo en rojo de fd8851b a d4062eb por una prueba desactualizada (errata E29) [HV] |
+| Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 940 pruebas recogidas por pytest en 73 archivos (23 nov). CI en verde en 9ef1702; estuvo en rojo de fd8851b a d4062eb por una prueba desactualizada (errata E29) [HV] |
 | Datos sintéticos con verdad conocida | Confirmado para el certificado de volumen y de topología [HV] |
-| Datos reales animales | Piloto P3 completo; ONTO-MAP negativo; **H11 cerrado**: la guardia negó el verde a las 1188 medidas de ecografía real y, sin ella, 540 de 540 verdes habrían sido falsos; la primaria no fue evaluable. **H12R cerrado** con el mismo resultado (0 verdes; 180 de 180 verdes sin guardia falsos); la sensibilidad de vóxel no cambia la conclusión. P3 confirmatorio en medición [HV] |
+| Datos reales animales | Piloto P3 completo; ONTO-MAP negativo; **H11 cerrado**: la guardia negó el verde a las 1188 medidas de ecografía real y, sin ella, 540 de 540 verdes habrían sido falsos; la primaria no fue evaluable. **H12R cerrado** con el mismo resultado (0 verdes; 180 de 180 verdes sin guardia falsos); la sensibilidad de vóxel no cambia la conclusión. H18–H20 cerrados (red aprendida; prueba sellada medida una vez en H20). P3 confirmatorio, QC-LM y MT-A v2 cerrados [HV] |
 | Comparación externa con software de referencia | **Hecha para el motor 3D** con SimpleITK 2.5.7 y una reimplementación independiente (`docs/COMPARACION_REFERENCIA.md`) [HV] |
 | Validación independiente o biológica | **No iniciada** |
 | Utilidad clínica | **No iniciada**; el software no es un dispositivo médico |
@@ -53,7 +53,8 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 |---|---|---|---|
 | Recursos de cómputo (3,9 GB de RAM, sin GPU) | Mediciones de días; competencia por memoria entre cadenas | Caché reanudable por caso (`scripts/run_h11.py`), prioridad baja, lectura corte a corte | Activo |
 | Segmentaciones publicadas imperfectas (interpoladas, desplazadas) | Sesgo en cualquier medida de MusMorph | Desviaciones D1, D3 y D5 registradas antes de medir | Mitigado y documentado |
-| Atlas distinto por estadio | Diferencias entre estadios que no son biológicas | No atribuir **d** al desarrollo; proponer registro de los mismos especímenes a ambos atlas | Abierto (P1) |
+| Atlas distinto por estadio | Diferencias entre estadios que no son biológicas | No atribuir **d** al desarrollo; registrar los mismos especímenes a ambos atlas (MT-A; tres versiones no evaluables, la última por el registro propio) | Abierto (P1) |
+| Registro propio que deforma la anatomía | Cualquier medida basada en transferir landmarks por registro | Diagnóstico de MT-A v2 §5; verificación de la cadena de registro antes de reutilizarlo | Abierto (P1) |
 | Sin revisión externa | Errores de método no detectados | Preregistros, erratas públicas; buscar asesor | Abierto (P1) |
 | Código con asistencia de IA | Errores sutiles | Pruebas, verificación de huellas, CI; declarado en el repositorio | Mitigado parcialmente |
 | Pesos de MEMOS con licencia no declarada | No redistribuibles | Uso solo local; ninguna salida de MEMOS se publica | Mitigado |
@@ -82,4 +83,4 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 ## 6. Estado de validación de este informe
 
 Documento de gestión: resume evidencia existente y no aporta resultados nuevos. Las rutas citadas se pueden
-comprobar en el repositorio; la cifra de pruebas se contó con `grep "def test_"` el 19 nov 2026.
+comprobar en el repositorio; la cifra de pruebas se contó con `pytest --collect-only` el 23 nov 2026.
