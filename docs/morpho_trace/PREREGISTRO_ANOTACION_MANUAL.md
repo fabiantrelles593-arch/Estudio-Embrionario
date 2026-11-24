@@ -180,3 +180,29 @@ imágenes de embrión [HIP].
 * **Observación sobre G0-r (sin cambio).** El criterio usa δ / ε. Con un anotador muy preciso (ε muy pequeño),
   diferencias pequeñas en mm darían un cociente alto y G0-r podría fallar. Se deja como se aprobó. Si el autor quiere
   modificarlo, debe hacerlo antes de que empiece la anotación y quedará registrado como desviación.
+
+### Notas de ejecución
+
+* **24 nov 2026 — preregistro, código y pruebas en la rama** (preregistro en fa6692f; código en 2f8c269 y f9814af;
+  pruebas en 781556b, con CI en verde en Python 3.12 y 3.13). Nadie ha anotado nada.
+* **24 nov 2026 — `prepare`.** Referencias 10, 15, 9 y 8 (suplentes 7, 16 y 1), como se fijaron en §3.1.
+  Especímenes de la parte B:
+  * E15.5: 0020, 0429, 0434, 0480, 0845, 0864, 1185 y 1212 (se repiten 0480 y 0864).
+  * E18.5: 0477, 0727, 1287, 1340, 1546, 1561, 1569 y 1793 (se repiten 0727 y 1340).
+
+  Se escribieron 18 volúmenes y el fantoma en `data/manual/mtd/volumes/` (unos 1 GB, fuera de git), la hoja de sesiones
+  y el manifiesto [HV, `results/morpho_trace/mtd/manifest.json`].
+* **24 nov 2026 — `gates-pre`: G0-e no superada; G0-c pendiente** (falta la anotación del fantoma)
+  [HV, `results/morpho_trace/mtd/gates_pre.json`].
+  * E15.5: los 22 puntos dentro de la imagen y por encima de Otsu.
+  * E18.5: los 22 dentro de la imagen, pero solo 12 por encima de Otsu. Fallan los landmarks 1, 2, 4, 5, 7, 10, 12, 16,
+    18 y 21.
+
+  Diagnóstico descriptivo, que no cambia la puerta [HV, `results/morpho_trace/mtd/g0e_diagnostico.json`]: los 10 están
+  exactamente a 1 vóxel (0,054 mm) del vóxel sobre Otsu más cercano. Es decir, están en la superficie del tejido, no
+  fuera del espacio de la imagen. Ya se conocía con los 540 puntos: G0-b de ONTO-MAP dio un 58 % sobre Otsu en el atlas
+  E18.5, y se sustituyó por G0-b′ (distancia ≤ 0,23 mm), que superaron los dos atlas (`results/morpho_trace/g0b.json`
+  y `g0b2.json`). Al redactar G0-e no se tuvo en cuenta; es un fallo de diseño de la puerta.
+
+  **Según §6, el estudio queda parado en G0-e.** Seguir exige que el autor apruebe una enmienda a G0-e, que quedaría
+  registrada como desviación decidida después de ver la puerta y antes de cualquier anotación.
