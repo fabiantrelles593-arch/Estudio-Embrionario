@@ -20,7 +20,7 @@ python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Script
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # primero, para no bajar la versión con CUDA
 pip install -e ".[dev]"                                   # incluye nibabel, h5py, SimpleITK y torch
 pip install monai                                         # solo para MEMOS en P3 (no está en los extras)
-pytest                                                    # 1006 pruebas en 81 archivos (24 nov 2026)
+pytest                                                    # 1012 pruebas en 82 archivos (24 nov 2026)
 ```
 
 Las órdenes se ejecutan desde la raíz del repositorio con `PYTHONPATH=src` si el paquete no está instalado.
@@ -161,6 +161,7 @@ python scripts/mtc_homologos.py analyze
 # MT-D (docs/morpho_trace/PREREGISTRO_ANOTACION_MANUAL.md): los puntos manuales los coloca una persona en 3D Slicer.
 # prepare exporta 18 volúmenes NIfTI y el fantoma a data/manual/mtd/ (unos 1 GB, 1,5 min) y escribe la hoja de sesiones
 python scripts/mtd_anotacion.py prepare
+python scripts/mtd_anotacion.py templates    # plantillas de Slicer con las etiquetas puestas (sin reexportar)
 python scripts/mtd_anotacion.py gates-pre    # G0-e y G0-c; G0-c necesita data/manual/mtd/annotations/P0000.mrk.json
 python scripts/mtd_anotacion.py gates-post   # G0-ε y G0-r, con las anotaciones de los atlas
 python scripts/mtd_anotacion.py analyze
@@ -169,7 +170,8 @@ python scripts/mtd_anotacion.py analyze
 Las imágenes humanas (FI-1, `docs/prenatal/PREREGISTRO_FOTO_IMPRESION.md`) **no se pueden reproducir desde el
 repositorio**: no están en él y solo se usan con las condiciones de `docs/DATOS_REALES_Y_ETICA.md` §3. La
 anonimización se hace en local con `python scripts/anonimizar_imagen.py preview|apply ...`, que solo escribe en
-`data/private/`.
+`data/private/`. Después, `python scripts/fi1_foto_impresion.py plan|gates|analyze`. Las tres órdenes se niegan a
+hacer nada sin un registro completo de G0-ética en `data/private/ecografia/g0_etica.json`.
 
 Los 80 registros de v2 tardaron 22,9 h de cálculo en el equipo de referencia. Si el proceso se corta, se relanza
 la misma orden y continúa donde quedó.
