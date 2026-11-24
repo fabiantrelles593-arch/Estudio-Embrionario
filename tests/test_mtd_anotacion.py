@@ -77,6 +77,20 @@ def test_markups_skip_undefined_and_reject_duplicates(tmp_path):
         ml.read_markups(f)
 
 
+def test_template_has_labels_and_reads_as_empty(tmp_path):
+    f = tmp_path / "plantilla.mrk.json"
+    ml.write_template(f, [17, 18, 10])
+    doc = json.loads(f.read_text())
+    cps = doc["markups"][0]["controlPoints"]
+    assert [c["label"] for c in cps] == ["L17", "L18", "L10"]
+    assert all(c["positionStatus"] == "undefined" for c in cps)
+    assert ml.read_markups(f) == {}
+    cps[0].update({"position": [1.0, 2.0, 3.0], "positionStatus": "defined"})
+    f.write_text(json.dumps(doc))
+    got = ml.read_markups(f)
+    assert set(got) == {17} and np.allclose(got[17], [-1.0, -2.0, 3.0])
+
+
 def test_crop_and_nifti_keep_world(tmp_path):
     nib = pytest.importorskip("nibabel")
     rng = np.random.default_rng(1)
