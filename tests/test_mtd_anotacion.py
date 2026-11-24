@@ -113,10 +113,17 @@ def test_gate_space_detects_outside_and_dark():
     aff = np.eye(4)
     vol = np.zeros((10, 10, 10))
     vol[2:8, 2:8, 2:8] = 5.0
-    pts = np.array([[4.0, 4, 4], [0.0, 0, 0], [20.0, 1, 1]])
-    g = ml.gate_space(pts, vol.shape, aff, lambda idx: vol[tuple(idx.T)], 1.0)
-    assert g["n_inside"] == 2 and g["n_above_otsu"] == 1 and g["failed_landmarks"] == [2, 3]
+    def box_at(i, r):
+        sl = [slice(max(0, int(i[k]) - r), min(10, int(i[k]) + r + 1)) for k in range(3)]
+        return vol[tuple(sl)], np.asarray(i) - np.array([s.start for s in sl])
+    pts = np.array([[4.0, 4, 4], [1.0, 4, 4], [1.0, 1, 4], [0.0, 0, 0], [20.0, 1, 1]])
+    g = ml.gate_space(pts, vol.shape, aff, box_at, 1.0)
+    assert g["n_inside"] == 4 and g["n_above_otsu"] == 1 and g["n_within_tolerance"] == 2
+    assert g["below_otsu_landmarks"] == [2, 3, 4] and g["failed_landmarks"] == [3, 4, 5]
+    assert g["distance_vox"][1] == pytest.approx(1.0) and g["distance_vox"][4] is None
     assert not g["passed"]
+    assert ml.gate_space(pts[:2], vol.shape, aff, box_at, 1.0)["passed"]
+    assert not ml.gate_space(pts[:2], vol.shape, aff, box_at, 1.0, tol_vox=0.0)["passed"]
 
 
 def test_q_is_one_with_musmorph_points_and_near_zero_without_difference():
@@ -196,3 +203,4 @@ def test_constants_match_preregistration():
     assert (ml.Q_LOW, ml.Q_HIGH, ml.Q_NOT) == (0.75, 1.25, 0.50)
     assert ml.EPS_FACTOR == 0.5 and ml.REF_RATIO_MAX == 3.0 and ml.N_REPEATS_ATLAS == 5
     assert ml.N_SPECIMENS_PER_STAGE == 8 and ml.N_SPECIMEN_REPEATS == 2
+    assert ml.G0E_TOL_VOX == 1.0
