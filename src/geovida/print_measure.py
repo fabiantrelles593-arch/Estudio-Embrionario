@@ -119,6 +119,44 @@ def distance_mm(p, q, mm_per_unit: float) -> float:
     return float(np.linalg.norm(np.asarray(p, float) - np.asarray(q, float))) * mm_per_unit
 
 
+def measure_photo(ann: dict) -> dict:
+    """Una foto marcada a mano → distancias de cada pareja de calibres, con y sin corrección de perspectiva.
+
+    ``ann``: ``aspect_mm`` [ancho, alto] medidos con regla (D-1); ``corners`` (4, sup-izq en sentido horario);
+    ``midpoints`` (4, en el mismo orden de bordes: superior, derecho, inferior, izquierdo; D-2); ``ticks`` (≥ 3
+    marcas consecutivas de 1 cm); ``pairs`` {nombre: [[x, y], [x, y]]}. Coordenadas en píxeles de la foto."""
+    w, h = (float(v) for v in ann["aspect_mm"])
+    R = rectify(ann["corners"], w / h)
+    corners_r = warp_points(R, ann["corners"])
+    mids_r = warp_points(R, ann["midpoints"])
+    ticks_r = warp_points(R, ann["ticks"])
+    k = scale_mm_per_unit(ticks_r)
+    k_raw = scale_mm_per_unit(ann["ticks"])
+    out = {}
+    for name, (p, q) in sorted(ann["pairs"].items()):
+        pr, qr = warp_points(R, [p, q])
+        out[name] = {"corrected_mm": distance_mm(pr, qr, k), "uncorrected_mm": distance_mm(p, q, k_raw)}
+    return {"scale_cv": scale_cv(ticks_r), "edge_bend_deg": edge_bend_deg(corners_r, mids_r), "pairs": out}
+
+
+def gate_photo(m: dict) -> dict:
+    """G0-escala y G0-homografía (enmendada, D-2) para una foto medida."""
+    ok_s, ok_h = m["scale_cv"] <= SCALE_CV_MAX, m["edge_bend_deg"] <= BEND_MAX_DEG
+    return {"scale_cv": m["scale_cv"], "edge_bend_deg": m["edge_bend_deg"], "G0-escala": bool(ok_s),
+            "G0-homografia": bool(ok_h), "passed": bool(ok_s and ok_h)}
+
+
+ETHICS_FIELDS = ("consentimiento_codigo", "aval_etico", "anonimizacion_revisada")
+
+
+def gate_ethics(record: dict | None) -> dict:
+    """G0-ética: registro con el código interno del consentimiento firmado (sin nombres), el aval (comité o
+    institución) y la confirmación de que una persona revisó la anonimización. Sin registro completo, no pasa."""
+    rec = record or {}
+    missing = [f for f in ETHICS_FIELDS if not rec.get(f)]
+    return {"gate": "G0-ética", "missing": missing, "passed": not missing}
+
+
 def relative_errors(measured, printed) -> np.ndarray:
     m, p = np.asarray(measured, float), np.asarray(printed, float)
     if np.any(p <= 0):
