@@ -1,6 +1,7 @@
 """MT-D (docs/morpho_trace/PREREGISTRO_ANOTACION_MANUAL.md): anotación manual independiente de los landmarks 17–22.
 
     python scripts/mtd_anotacion.py prepare      # referencias, muestra, códigos, volúmenes NIfTI y hoja de sesiones
+    python scripts/mtd_anotacion.py templates    # plantillas de Slicer con etiquetas y hoja rehecha (sin reexportar)
     python scripts/mtd_anotacion.py gates-pre    # G0-e (espacio común) y G0-c (fantoma; necesita su anotación)
     python scripts/mtd_anotacion.py gates-post   # G0-ε y G0-r, con las anotaciones de los atlas
     python scripts/mtd_anotacion.py analyze      # MT-D1–MT-D3 (solo si las cuatro puertas pasaron)
@@ -68,6 +69,8 @@ def sheet(plan: dict, refs: list[int]) -> str:
              "* Definiciones de los landmarks: Tabla S2 de Devine et al. 2022 (numeración de MusMorph).",
              f"* Coloca en cada volumen, con estas etiquetas exactas: {', '.join(ml.label(i) for i in ml.TARGETS)} "
              f"y {', '.join(ml.label(i) for i in refs)}.",
+             "* Para cada tarea, copia `plantillas/plantilla_landmarks.mrk.json`: trae los puntos con su etiqueta, sin "
+             "colocar; solo tienes que situarlos (en el fantoma, `plantillas/plantilla_fantoma.mrk.json`).",
              "* Un landmark que no puedas localizar: no lo coloques (no lo estimes).",
              "* Guarda los puntos como `annotations/<tarea>.mrk.json` (Markups de Slicer, sin cambiar la convención).",
              "* Sesiones separadas por al menos 24 h. En cada tarea empieza desde cero: no abras anotaciones previas.",
@@ -80,6 +83,20 @@ def sheet(plan: dict, refs: list[int]) -> str:
         lines += [f"| {t['task']} | `volumes/{t['volume']}.nii.gz` |" for t in plan["tasks"] if t["session"] == s]
         lines.append("")
     return "\n".join(lines)
+
+
+def write_templates(refs: list[int], work: Path = WORK) -> None:
+    """Plantillas de Slicer con las etiquetas ya puestas: 10 landmarks (17–22 y referencias) y fantoma (L1–L3)."""
+    ml.write_template(work / "plantillas" / "plantilla_landmarks.mrk.json", list(ml.TARGETS) + list(refs))
+    ml.write_template(work / "plantillas" / "plantilla_fantoma.mrk.json", [1, 2, 3])
+
+
+def run_templates(manifest: dict) -> dict:
+    """Escribe las plantillas y rehace la hoja de sesiones sin volver a exportar volúmenes."""
+    write_templates(manifest["references"])
+    (WORK / "SESIONES.md").write_text(sheet(manifest, manifest["references"]) + "\n", encoding="utf-8")
+    return {"step": "templates", "files": ["plantillas/plantilla_landmarks.mrk.json",
+                                           "plantillas/plantilla_fantoma.mrk.json", "SESIONES.md"]}
 
 
 def run_prepare(a) -> dict:
@@ -103,6 +120,7 @@ def run_prepare(a) -> dict:
     vol, aff, truth = ml.phantom(aff15[:3, :3])
     ml.save_nifti(vol, aff, WORK / "volumes" / f"{PHANTOM}.nii.gz")
     (WORK / "annotations").mkdir(parents=True, exist_ok=True)
+    write_templates(refs["references"])
     (WORK / "SESIONES.md").write_text(sheet(plan, refs["references"]) + "\n", encoding="utf-8")
     return {"step": "prepare", **refs, **plan, "volumes": vols,
             "phantom": {"code": PHANTOM, "truth_ras_mm": {k: v.tolist() for k, v in truth.items()},
@@ -205,7 +223,7 @@ def run_analysis(a, manifest: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=["prepare", "gates-pre", "gates-post", "analyze"])
+    ap.add_argument("cmd", choices=["prepare", "templates", "gates-pre", "gates-post", "analyze"])
     ap.add_argument("--mtc", default="results/morpho_trace/mtc/analisis.json", help="resultados de MT-C (referencias)")
     ap.add_argument("--atlas", default="data/external/musmorph/atlas")
     ap.add_argument("--images", default="data/external/musmorph/mta_images")
@@ -217,6 +235,9 @@ def main(argv=None) -> int:
         _write(run_prepare(a), OUT / "manifest.json")
         return 0
     manifest = _read(OUT / "manifest.json")
+    if a.cmd == "templates":
+        print(json.dumps(run_templates(manifest), ensure_ascii=False))
+        return 0
     if a.cmd == "gates-pre":
         res = run_gates_pre(a, manifest)
         _write(res, OUT / "gates_pre.json")
