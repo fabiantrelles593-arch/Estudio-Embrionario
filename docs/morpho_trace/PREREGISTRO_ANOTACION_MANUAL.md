@@ -156,6 +156,20 @@ imágenes de embrión [HIP].
 
 (Ninguna al subir este preregistro.)
 
+* **D-1 · 24 nov 2026 — enmienda de G0-e, aprobada por el autor** después de ver la puerta (notas de ejecución) y antes
+  de cualquier anotación.
+  * **Criterio original** (§6, sin cambios en el texto): los 22 puntos dentro de la imagen y, en su vóxel más cercano,
+    por encima de Otsu.
+  * **Criterio enmendado:** los 22 puntos dentro de la imagen y, en su vóxel más cercano, por encima de Otsu **o a una
+    distancia euclídea ≤ 1 vóxel** del vóxel sobre Otsu más cercano. Se informan por separado los puntos sobre Otsu y
+    los que solo pasan por la tolerancia.
+  * **Motivo:** los puntos de superficie del atlas E18.5 (vóxel de 0,054 mm) caen en el borde del tejido; ya se vio en
+    G0-b/G0-b′ de ONTO-MAP. La puerta sirve para detectar un espacio de coordenadas equivocado, que desplazaría los
+    puntos mucho más de un vóxel.
+  * **Por qué no sesga el resultado:** la puerta no usa ninguna anotación manual, y todavía no existe ninguna.
+  * Se aplica en `ml.gate_space` (`G0E_TOL_VOX = 1.0`). El resultado original queda guardado en
+    `results/morpho_trace/mtd/gates_pre_original.json`.
+
 ### Notas previas a la subida (no cambian ningún criterio)
 
 * **24 nov 2026 — D2 detenida por tamaño.** El PDF suplementario
