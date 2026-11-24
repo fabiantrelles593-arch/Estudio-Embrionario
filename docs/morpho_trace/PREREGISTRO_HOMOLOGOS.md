@@ -137,3 +137,14 @@ La última, porque con 22 puntos cada error de colocación pesa más que reparti
   `7c348b807cdf7339b27a720d01a73b02b0af2639237ab62f179e3c1bb7639166`. No se han leído ni comparado: eso es G0-o.
 * **Las 21 caras de `Patches.tsv`** se copian como constante en `atlas_anchor.PATCH_TRIANGLES` (21 tríos de
   índices, con la fuente citada); no se incorpora nada más del repositorio MusMorph.
+
+### Notas de ejecución
+
+* **23 nov 2026 — preregistro, código y pruebas en la rama** (preregistro en 893f692; cabeza d9c3abf con CI en verde
+  en Python 3.12 y 3.13). `gates`: **las tres puertas superadas**; en G0-o(a) las filas 1–22 coinciden exactamente con
+  las de GitHub en los dos atlas [HV, `results/morpho_trace/mtc/gates.json`].
+* **23 nov 2026 — `analyze`: MT-C1 apoyada (r₂₂ = 0,206, IC 0,197–0,220) y MT-C2 apoyada (los landmarks 18, 19, 22,
+  17 y 21 llevan el 77 % de |a₂₂|²)** [HV, `results/morpho_trace/mtc/analisis.json`].
+* **Desviación (D4; no toca ningún cálculo):** la Tabla S2 solo se obtiene como PDF descargable y no se descargó sin
+  autorización expresa de ese archivo; los landmarks se informan por número, que es la alternativa escrita en D4.
+  Detalles en `docs/morpho_trace/RESULTADOS_HOMOLOGOS.md`.
