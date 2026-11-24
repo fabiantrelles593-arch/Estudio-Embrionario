@@ -128,9 +128,10 @@ def run_gates_pre(a, manifest: dict) -> dict:
         shape, affine, _ = minc.minc_header(img)
         read = minc.minc_box_reader(img)
         pts = aa.subset_rows(np.asarray(lm.read_tag(atlas_dir / gates.ATLAS_TAG[st]), float), aa.N_HOMOLOGOUS)
-        g_e[st] = ml.gate_space(pts, shape, affine,
-                                lambda idx: np.array([read([slice(i, i + 1) for i in p])[0, 0, 0] for p in idx]),
-                                otsu_of(img))
+        def box_at(i, r, read=read, shape=shape):
+            sl = [slice(max(0, int(i[k]) - r), min(shape[k], int(i[k]) + r + 1)) for k in range(3)]
+            return read(sl), np.asarray(i) - np.array([s.start for s in sl])
+        g_e[st] = ml.gate_space(pts, shape, affine, box_at, otsu_of(img))
     e_ok = all(v["passed"] for v in g_e.values())
     ph = manifest["phantom"]
     f = WORK / "annotations" / f"{ph['code']}.mrk.json"
