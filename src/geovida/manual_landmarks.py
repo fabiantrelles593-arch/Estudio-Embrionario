@@ -96,6 +96,19 @@ def write_markups(path, points: dict[int, np.ndarray], coordinate_system: str = 
     Path(path).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
 
 
+def write_template(path, landmarks) -> None:
+    """Plantilla ``.mrk.json`` con un punto **sin colocar** (``positionStatus: undefined``) por landmark y la etiqueta
+    ya escrita, para que el anotador solo tenga que situarlos. ``read_markups`` ignora los que sigan sin colocar."""
+    cps = [{"id": str(n + 1), "label": label(i), "position": [0.0, 0.0, 0.0], "positionStatus": "undefined"}
+           for n, i in enumerate(landmarks)]
+    doc = {"@schema": "https://raw.githubusercontent.com/slicer/slicer/master/Modules/Loadable/Markups/Resources/"
+                      "Schema/markups-schema-v1.0.3.json#",
+           "markups": [{"type": "Fiducial", "coordinateSystem": "LPS", "coordinateUnits": "mm",
+                        "controlPoints": cps}]}
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    Path(path).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
+
+
 def points_array(points: dict[int, np.ndarray], landmarks) -> np.ndarray:
     """(len(landmarks), 3) con NaN donde falta un landmark."""
     return np.array([points.get(int(i), np.full(3, np.nan)) for i in landmarks], float)
