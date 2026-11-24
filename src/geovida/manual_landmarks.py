@@ -39,6 +39,7 @@ Q_LOW, Q_HIGH, Q_NOT = 0.75, 1.25, 0.50  # MT-D1
 EPS_FACTOR = 0.5                         # G0-ε: εᵢ ≤ 0,5 · |aᵢ|
 REF_RATIO_MAX = 3.0                      # G0-r: mediana de δ/ε en las referencias ≤ 3
 PHANTOM_TOL_VOX = 1.0                    # G0-c: error ≤ 1 vóxel
+G0E_TOL_VOX = 1.0                        # G0-e enmendada: sobre Otsu o a ≤ 1 vóxel de un vóxel sobre Otsu
 PHANTOM_RADII_VOX = (3, 5, 7)            # P1 < P2 < P3, para que se distingan a simple vista
 STAGES = aa.STAGES
 
@@ -157,19 +158,31 @@ def phantom(affine3: np.ndarray, shape=(96, 96, 96)) -> tuple[np.ndarray, np.nda
 
 
 # ---------------------------------------------------------------- puertas previas
-def gate_space(points: np.ndarray, shape, affine, values_at, threshold: float) -> dict:
-    """G0-e para una imagen: cada punto dentro de los límites y con intensidad (vóxel más cercano) > umbral.
+def gate_space(points: np.ndarray, shape, affine, box_at, threshold: float, tol_vox: float = G0E_TOL_VOX) -> dict:
+    """G0-e (enmendada, §11): cada punto dentro de los límites y, en su vóxel más cercano, sobre el umbral o a una
+    distancia euclídea ≤ ``tol_vox`` vóxeles del vóxel sobre el umbral más cercano.
 
-    ``values_at(idx)`` devuelve las intensidades en los índices enteros ``idx`` (n, 3)."""
+    ``box_at(idx, r)`` devuelve (subvolumen alrededor del índice entero ``idx`` con radio ``r``, recortado a la imagen,
+    e índice de ``idx`` dentro de ese subvolumen)."""
+    from scipy import ndimage
     idx = np.rint(world_to_index(points, affine)).astype(int)
     inside = np.all((idx >= 0) & (idx < np.asarray(shape)), axis=1)
-    vals = np.full(len(points), np.nan)
-    if inside.any():
-        vals[inside] = values_at(idx[inside])
-    above = inside & (vals > threshold)
-    return {"n_points": int(len(points)), "n_inside": int(inside.sum()), "n_above_otsu": int(above.sum()),
-            "otsu": float(threshold), "failed_landmarks": [int(i) + 1 for i in np.flatnonzero(~above)],
-            "passed": bool(above.all())}
+    r = int(math.ceil(tol_vox)) + 1
+    dist = np.full(len(points), math.inf)
+    for n in np.flatnonzero(inside):
+        sub, local = box_at(idx[n], r)
+        mask = np.asarray(sub) > threshold
+        if mask[tuple(local)]:
+            dist[n] = 0.0
+        elif mask.any():
+            dist[n] = float(ndimage.distance_transform_edt(~mask)[tuple(local)])
+    on = dist == 0.0
+    ok = inside & (dist <= tol_vox)
+    return {"n_points": int(len(points)), "n_inside": int(inside.sum()), "n_above_otsu": int(on.sum()),
+            "n_within_tolerance": int(ok.sum()), "tolerance_vox": float(tol_vox), "otsu": float(threshold),
+            "distance_vox": [None if not math.isfinite(d) else float(d) for d in dist],
+            "below_otsu_landmarks": [int(i) + 1 for i in np.flatnonzero(inside & ~on)],
+            "failed_landmarks": [int(i) + 1 for i in np.flatnonzero(~ok)], "passed": bool(ok.all())}
 
 
 def gate_phantom(truth: dict[int, np.ndarray], placed: dict[int, np.ndarray], voxel_mm: float) -> dict:
