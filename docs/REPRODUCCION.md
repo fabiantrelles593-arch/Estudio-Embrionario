@@ -20,7 +20,7 @@ python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Script
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # primero, para no bajar la versión con CUDA
 pip install -e ".[dev]"                                   # incluye nibabel, h5py, SimpleITK y torch
 pip install monai                                         # solo para MEMOS en P3 (no está en los extras)
-pytest                                                    # 999 pruebas en 80 archivos (24 nov 2026)
+pytest                                                    # 1006 pruebas en 81 archivos (24 nov 2026)
 ```
 
 Las órdenes se ejecutan desde la raíz del repositorio con `PYTHONPATH=src` si el paquete no está instalado.
