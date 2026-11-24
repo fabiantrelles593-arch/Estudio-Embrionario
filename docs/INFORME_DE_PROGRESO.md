@@ -40,7 +40,7 @@ confusión del atlas identificado, método no original (`docs/onto_map/RESULTADO
 
 | Nivel | Estado |
 |---|---|
-| Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 999 pruebas recogidas por pytest en 80 archivos (24 nov). CI en verde en ed3a319; estuvo en rojo de fd8851b a d4062eb por una prueba desactualizada (errata E29) [HV] |
+| Software (pruebas, CI en Python 3.12 y 3.13) | Hecho: 1006 pruebas recogidas por pytest en 81 archivos (24 nov). CI en verde en 92a81c1; estuvo en rojo de fd8851b a d4062eb por una prueba desactualizada (errata E29) [HV] |
 | Datos sintéticos con verdad conocida | Confirmado para el certificado de volumen y de topología [HV] |
 | Datos reales animales | Piloto P3 completo; ONTO-MAP negativo; **H11 cerrado**: la guardia negó el verde a las 1188 medidas de ecografía real y, sin ella, 540 de 540 verdes habrían sido falsos; la primaria no fue evaluable. **H12R cerrado** con el mismo resultado (0 verdes; 180 de 180 verdes sin guardia falsos); la sensibilidad de vóxel no cambia la conclusión. H18–H20 cerrados (red aprendida; prueba sellada medida una vez en H20). P3 confirmatorio, QC-LM y MT-A v2 cerrados [HV] |
 | Comparación externa con software de referencia | **Hecha para el motor 3D** con SimpleITK 2.5.7 y una reimplementación independiente (`docs/COMPARACION_REFERENCIA.md`) [HV] |
