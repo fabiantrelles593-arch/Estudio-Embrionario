@@ -135,3 +135,22 @@ Un 10 % o más sería comparable a ella, o mayor.
 * Las fotos que se enviaron en la conversación no se guardaron en el proyecto y no se usarán hasta que exista G0-ética.
 * El código de medida (§9.1) se escribirá y subirá antes de medir. De momento solo está en la rama la herramienta de
   anonimización (`src/geovida/deidentify.py`, `scripts/anonimizar_imagen.py`, `tests/test_deidentify.py`).
+
+### Notas previas a medir
+
+* **24 nov 2026 — código de medida escrito y probado solo con impresiones sintéticas** (`src/geovida/print_measure.py`,
+  `tests/test_print_measure.py`). No se ha usado ninguna imagen humana.
+* **Propuestas de enmienda, pendientes de aprobación del autor.** Las pruebas sintéticas mostraron dos huecos en el
+  texto aprobado. Ninguna imagen se ha medido, así que corregirlos no puede sesgar el resultado.
+  * **A-1 (§3.2): razón del recuadro.** Llevar las 4 esquinas «a un rectángulo» exige conocer la razón ancho/alto real
+    del recuadro impreso. Si se estima a partir de la propia foto, queda una deformación anisótropa que la escala
+    vertical no corrige; en las pruebas sintéticas da un error mediano de varios por ciento, con la misma magnitud que
+    el umbral del 5 %. **Propuesta:** la persona de D2 mide con una regla, sobre el papel, el ancho y el alto del
+    recuadro de cada impresión, una vez. `rectify` exige esa razón y no la estima.
+  * **A-2 (§5): G0-homografía.** Con exactamente 4 esquinas, la homografía deja un rectángulo perfecto por
+    construcción, así que el criterio «desviación de 90° ≤ 2°» se cumpliría siempre y no comprobaría nada.
+    **Propuesta:** la persona marca también el punto medio de cada borde del recuadro. Esos puntos no se usan para
+    ajustar la homografía. La puerta mide cuánto se aparta de 180° el ángulo esquina–punto medio–esquina en los 4
+    bordes corregidos, con el mismo límite de 2°. Así detecta papel curvado o distorsión de la lente.
+  * Si el autor no las aprueba, el estudio no se ejecuta tal como está escrito, porque el §3.2 no se puede aplicar sin
+    una razón del recuadro.
