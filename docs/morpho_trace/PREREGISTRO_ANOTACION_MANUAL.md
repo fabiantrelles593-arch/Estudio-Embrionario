@@ -226,3 +226,11 @@ imágenes de embrión [HIP].
   * E18.5: 12 sobre Otsu y 10 a exactamente 1 vóxel.
 
   **G0-c sigue pendiente:** el anotador debe colocar los tres puntos del fantoma (sesión 0) antes de las sesiones 1–5.
+* **24 nov 2026 — D2: se aplica la alternativa escrita en §0**, por decisión del autor.
+  * El anotador obtiene la Tabla S2 por su cuenta, del material suplementario de Devine et al. 2022
+    (doi:10.1038/s41597-022-01338-x).
+  * El PDF no se descarga aquí ni entra en el repositorio.
+  * Al informe solo pasarán los nombres de los 10 landmarks usados (17–22 y 10, 15, 9, 8), con la cita, y no se
+    reproducirá la tabla.
+
+  No cambia ningún criterio.
