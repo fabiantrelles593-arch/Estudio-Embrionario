@@ -220,3 +220,9 @@ imágenes de embrión [HIP].
 
   **Según §6, el estudio queda parado en G0-e.** Seguir exige que el autor apruebe una enmienda a G0-e, que quedaría
   registrada como desviación decidida después de ver la puerta y antes de cualquier anotación.
+* **24 nov 2026 — enmienda D-1 aprobada y aplicada** (código y pruebas en la rama; cabeza 2e8ed79, CI en verde).
+  `gates-pre` repetida: **G0-e superada** con el criterio enmendado [HV, `results/morpho_trace/mtd/gates_pre.json`].
+  * E15.5: los 22 puntos sobre Otsu.
+  * E18.5: 12 sobre Otsu y 10 a exactamente 1 vóxel.
+
+  **G0-c sigue pendiente:** el anotador debe colocar los tres puntos del fantoma (sesión 0) antes de las sesiones 1–5.
