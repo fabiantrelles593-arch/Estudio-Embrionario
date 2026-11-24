@@ -164,3 +164,12 @@ intervalo, no como descubrimiento.
   configuraciones sintéticas ruidosas). Con 199 y 398 especímenes el desplazamiento esperado es pequeño [HIP], y
   va en contra de «apoyada» y a favor de «refutada». No se cambia el método aprobado (percentil, §3 paso 4); se informará
   el punto estimado junto al IC, y el desplazamiento se podrá ver comparando ambos.
+
+### Notas de ejecución (no cambian ningún criterio)
+
+* **23 nov 2026 — preregistro, código y pruebas en la rama** (preregistro en 838cd55; cabeza 36bc16c con CI en verde
+  en Python 3.12 y 3.13). Después, `gates`: **las tres puertas superadas** (|d| = 0,156785; diferencia de proyección
+  7,6·10⁻¹⁷; ρ de los atlas a la media 0,106 y 0,055) [HV, `results/morpho_trace/mtb/gates.json`]. Las 5
+  configuraciones de G0-p son las 5 primeras de la lista `confirm` de E15.5, que va primero.
+* **23 nov 2026 — `analyze`, sin desviaciones: MT-B1 apoyada (r = 0,200, IC 0,192–0,212) y MT-B2 apoyada**
+  [HV, `results/morpho_trace/mtb/analisis.json`]. Detalles en `docs/morpho_trace/RESULTADOS_ANCLAJE_ATLAS.md`.
