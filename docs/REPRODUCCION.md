@@ -20,7 +20,7 @@ python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Script
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # primero, para no bajar la versión con CUDA
 pip install -e ".[dev]"                                   # incluye nibabel, h5py, SimpleITK y torch
 pip install monai                                         # solo para MEMOS en P3 (no está en los extras)
-pytest                                                    # 975 pruebas en 76 archivos (23 nov 2026)
+pytest                                                    # 983 pruebas en 77 archivos (23 nov 2026)
 ```
 
 Las órdenes se ejecutan desde la raíz del repositorio con `PYTHONPATH=src` si el paquete no está instalado.
@@ -154,6 +154,10 @@ python scripts/mta_v3.py analyze
 # MT-B (docs/morpho_trace/PREREGISTRO_ANCLAJE_ATLAS.md): sin registro ni descargas, unos 3 min en total
 python scripts/mtb_anclaje.py gates    # G0-d‴, G0-p, G0-t
 python scripts/mtb_anclaje.py analyze  # MT-B1–MT-B3 y sensibilidad; se niega si las puertas no pasaron
+# MT-C (docs/morpho_trace/PREREGISTRO_HOMOLOGOS.md): G0-o compara con los .tag de atlas del repositorio MusMorph
+# en data/external/musmorph/atlas_github/ (SHA-256 en §11 del preregistro); unos 2 min en total
+python scripts/mtc_homologos.py gates
+python scripts/mtc_homologos.py analyze
 ```
 
 Los 80 registros de v2 tardaron 22,9 h de cálculo en el equipo de referencia. Si el proceso se corta, se relanza
