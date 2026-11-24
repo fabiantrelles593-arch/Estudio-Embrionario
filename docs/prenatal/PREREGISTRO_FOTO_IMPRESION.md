@@ -129,6 +129,16 @@ Un 10 % o más sería comparable a ella, o mayor.
 
 (Ninguna al subir este preregistro.)
 
+* **D-1 · 24 nov 2026 — enmienda A-1 aprobada por el autor, antes de medir ninguna imagen (§3.2).** El recuadro se
+  lleva a un rectángulo con la razón ancho/alto **medida con una regla sobre el papel**, una vez por impresión. Esa
+  razón no se estima a partir de la foto. Se aplica en `print_measure.rectify(corners, aspect)`.
+* **D-2 · 24 nov 2026 — enmienda A-2 aprobada por el autor, antes de medir ninguna imagen (§5).** G0-homografía pasa a
+  ser: la desviación de 180° del ángulo esquina–punto medio–esquina en cada uno de los 4 bordes corregidos es ≤ 2° en
+  cada foto. Los puntos medios los marca la persona de D2 y no se usan para ajustar la homografía. Se aplica en
+  `print_measure.edge_bend_deg`. El criterio original (desviación de 90° de las esquinas) se cumplía siempre por
+  construcción.
+* Motivo y pruebas sintéticas: «Notas previas a medir», más abajo.
+
 ### Estado al subir
 
 * **G0-ética no superada.** No hay consentimiento firmado de la gestante ni aval ético.
@@ -140,7 +150,7 @@ Un 10 % o más sería comparable a ella, o mayor.
 
 * **24 nov 2026 — código de medida escrito y probado solo con impresiones sintéticas** (`src/geovida/print_measure.py`,
   `tests/test_print_measure.py`). No se ha usado ninguna imagen humana.
-* **Propuestas de enmienda, pendientes de aprobación del autor.** Las pruebas sintéticas mostraron dos huecos en el
+* **Enmiendas A-1 y A-2: aprobadas por el autor el 24 nov 2026** y registradas como D-1 y D-2. Las pruebas sintéticas mostraron dos huecos en el
   texto aprobado. Ninguna imagen se ha medido, así que corregirlos no puede sesgar el resultado.
   * **A-1 (§3.2): razón del recuadro.** Llevar las 4 esquinas «a un rectángulo» exige conocer la razón ancho/alto real
     del recuadro impreso. Si se estima a partir de la propia foto, queda una deformación anisótropa que la escala
@@ -152,5 +162,5 @@ Un 10 % o más sería comparable a ella, o mayor.
     **Propuesta:** la persona marca también el punto medio de cada borde del recuadro. Esos puntos no se usan para
     ajustar la homografía. La puerta mide cuánto se aparta de 180° el ángulo esquina–punto medio–esquina en los 4
     bordes corregidos, con el mismo límite de 2°. Así detecta papel curvado o distorsión de la lente.
-  * Si el autor no las aprueba, el estudio no se ejecuta tal como está escrito, porque el §3.2 no se puede aplicar sin
-    una razón del recuadro.
+  * Con las dos aprobadas, el §3.2 y el §5 se aplican tal como quedan en D-1 y D-2. El estudio sigue bloqueado por
+    G0-ética.
