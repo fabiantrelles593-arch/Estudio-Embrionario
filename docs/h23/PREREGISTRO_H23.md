@@ -234,3 +234,11 @@ medida).**
 - **Qué se había visto al decidirlo:** solo las etiquetas de los casos de ajuste (G0-escala). Ninguna medida ni señal de
   ningún caso.
 - **Diseño original:** la versión sin D-1 está en la rama, en el commit `53eab8b`.
+
+**Cierre (25 nov 2026).**
+
+- G0-señales superada.
+- Puerta S superada: 22 de 34 casos a ≤ 10 %.
+- **Puerta C no superada: 0 verdes de 34.**
+- No se generó ningún congelado y la prueba no se abrió.
+- H23 se cierra como no evaluable: `docs/h23/RESULTADOS_H23.md`.
