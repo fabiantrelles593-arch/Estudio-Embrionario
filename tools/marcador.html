@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marcador FI-1s</title>
+<!--
+  Herramienta local de marcado para FI-1s (docs/prenatal/PREREGISTRO_FOTO_IMPRESION_SINTETICA.md, §3.4 y §7).
+  Abre una foto de TU equipo; nada se sube a ningún sitio (no hay red ni librerías externas).
+  Pide los puntos en orden fijo y guarda un JSON con el formato de geovida.print_measure.measure_photo.
+  No calcula ni muestra ninguna distancia. Los puntos los coloca una persona.
+-->
+<style>
+  :root { --bg:#f6f6f4; --fg:#1d1d1b; --muted:#666; --accent:#0b6bcb; --done:#2e7d32; --panel:#fff; --line:#ddd; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161616; --fg:#eee; --muted:#aaa; --panel:#202020; --line:#333; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.4 system-ui, sans-serif; background:var(--bg); color:var(--fg); display:flex; height:100vh; }
+  aside { width:320px; padding:14px; background:var(--panel); border-right:1px solid var(--line); overflow:auto; }
+  main { flex:1; position:relative; overflow:hidden; background:#000; cursor:crosshair; }
+  canvas { position:absolute; inset:0; }
+  h1 { font-size:16px; margin:0 0 8px; }
+  label { display:block; margin:6px 0 2px; color:var(--muted); font-size:12px; }
+  input, select, button { font:inherit; padding:5px 7px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); }
+  input[type=number] { width:100%; }
+  .row { display:flex; gap:8px; } .row > * { flex:1; }
+  button { cursor:pointer; margin-top:8px; width:100%; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  #step { margin:12px 0; padding:10px; border-left:4px solid var(--accent); background:var(--bg); font-weight:600; }
+  ol { padding-left:18px; margin:6px 0; font-size:12px; color:var(--muted); }
+  li.done { color:var(--done); } li.now { color:var(--fg); font-weight:600; }
+  .hint { font-size:12px; color:var(--muted); }
+  #msg { margin-top:8px; font-size:12px; min-height:1.4em; }
+</style>
+</head>
+<body>
+<aside>
+  <h1>Marcador FI-1s</h1>
+  <div class="hint">Todo ocurre en tu equipo. No se muestra ninguna distancia.</div>
+  <label for="file">Foto</label>
+  <input id="file" type="file" accept="image/*">
+  <div class="row">
+    <div><label for="sheet">Hoja</label><select id="sheet"></select></div>
+    <div><label for="photo">Foto</label><select id="photo"><option>F1</option><option>F2</option><option>F3</option></select></div>
+    <div><label for="rep">Sesión</label><select id="rep"><option value="1">r1</option><option value="2">r2</option><option value="3">r3</option></select></div>
+  </div>
+  <label>Recuadro medido con regla (mm)</label>
+  <div class="row"><input id="aw" type="number" step="0.5" placeholder="ancho"><input id="ah" type="number" step="0.5" placeholder="alto"></div>
+  <div id="step">Abre una foto para empezar.</div>
+  <button id="endTicks" hidden>Terminar marcas de escala</button>
+  <button id="undo">Deshacer último punto (Z)</button>
+  <button id="fit">Ajustar la foto a la ventana (F)</button>
+  <button id="save" class="primary" disabled>Guardar JSON</button>
+  <div id="msg"></div>
+  <ol id="list"></ol>
+  <p class="hint">Rueda: zoom. Arrastrar con el botón derecho o con la barra espaciadora pulsada: mover. Clic izquierdo: marcar
+    el punto pedido, en el centro exacto de la marca. <b>Haz zoom antes de cada punto</b>: con la foto entera en pantalla,
+    un píxel de pantalla son varios píxeles de la foto.</p>
+</aside>
+<main id="stage"><canvas id="cv"></canvas></main>
+<script>
+"use strict";
+const STEPS = [
+  ["corners", "Esquina superior izquierda del recuadro"], ["corners", "Esquina superior derecha del recuadro"],
+  ["corners", "Esquina inferior derecha del recuadro"], ["corners", "Esquina inferior izquierda del recuadro"],
+  ["midpoints", "Punto medio del borde superior"], ["midpoints", "Punto medio del borde derecho"],
+  ["midpoints", "Punto medio del borde inferior"], ["midpoints", "Punto medio del borde izquierdo"],
+  ["ticks", "Marcas de la escala: cada cruce, de arriba abajo; luego «Terminar marcas de escala»"],
+];
+for (let k = 1; k <= 4; k++) for (const e of ["a", "b"]) STEPS.push(["pair", `Centro del «+» ${k}${e}`, `P${k}`]);
+const sheetSel = document.getElementById("sheet");
+for (let s = 1; s <= 6; s++) sheetSel.add(new Option(`S0${s}`));
+
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d"), stage = document.getElementById("stage");
+let img = null, view = { s: 1, x: 0, y: 0 }, idx = 0, pts = [], ticks = [], panning = null, space = false;
+
+function resize() { cv.width = stage.clientWidth; cv.height = stage.clientHeight; draw(); }
+function fit() {
+  if (!img) return;
+  view.s = Math.min(cv.width / img.naturalWidth, cv.height / img.naturalHeight);
+  view.x = (cv.width - img.naturalWidth * view.s) / 2; view.y = (cv.height - img.naturalHeight * view.s) / 2; draw();
+}
+function toImg(ev) { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left - view.x) / view.s, (ev.clientY - r.top - view.y) / view.s]; }
+function current() { return STEPS[Math.min(idx, STEPS.length - 1)]; }
+
+function draw() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+  if (!img) return;
+  ctx.setTransform(view.s, 0, 0, view.s, view.x, view.y); ctx.drawImage(img, 0, 0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const all = pts.map((p, i) => [p, String(i + 1)]).filter(a => a[0] !== null)
+    .concat(ticks.map((p, i) => [p, "e" + (i + 1)]));
+  for (const [[x, y], lab] of all) {
+    const X = x * view.s + view.x, Y = y * view.s + view.y;
+    ctx.strokeStyle = "#ff3b30"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(X, Y, 6, 0, 2 * Math.PI); ctx.moveTo(X - 9, Y); ctx.lineTo(X + 9, Y); ctx.moveTo(X, Y - 9); ctx.lineTo(X, Y + 9); ctx.stroke();
+    ctx.fillStyle = "#ffcc00"; ctx.font = "12px system-ui"; ctx.fillText(lab, X + 8, Y - 8);
+  }
+}
+
+function refresh() {
+  const done = idx >= STEPS.length;
+  document.getElementById("step").textContent = done ? "Todos los puntos marcados. Revisa y guarda." :
+    `${idx + 1}/${STEPS.length} · ${current()[1]}` + (current()[0] === "ticks" ? ` (${ticks.length} marcadas)` : "");
+  document.getElementById("endTicks").hidden = done || current()[0] !== "ticks";
+  document.getElementById("save").disabled = !done;
+  const list = document.getElementById("list"); list.innerHTML = "";
+  STEPS.forEach((s, i) => { const li = document.createElement("li"); li.textContent = s[1].replace(/:.*/, "");
+    li.className = i < idx ? "done" : i === idx ? "now" : ""; list.appendChild(li); });
+  draw();
+}
+
+document.getElementById("file").addEventListener("change", ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  const url = URL.createObjectURL(f); const im = new Image();
+  im.onload = () => { img = im; idx = 0; pts = []; ticks = []; fit(); refresh(); msg(`${im.naturalWidth} × ${im.naturalHeight} px`); };
+  im.src = url;
+});
+cv.addEventListener("wheel", ev => {
+  ev.preventDefault(); if (!img) return;
+  const r = cv.getBoundingClientRect(), mx = ev.clientX - r.left, my = ev.clientY - r.top, k = Math.exp(-ev.deltaY * 0.0015);
+  view.x = mx - (mx - view.x) * k; view.y = my - (my - view.y) * k; view.s *= k; draw();
+}, { passive: false });
+cv.addEventListener("contextmenu", ev => ev.preventDefault());
+cv.addEventListener("mousedown", ev => {
+  if (!img) return;
+  if (ev.button === 2 || ev.button === 1 || space) { panning = [ev.clientX, ev.clientY, view.x, view.y]; return; }
+  if (ev.button !== 0 || idx >= STEPS.length) return;
+  const p = toImg(ev);
+  if (p[0] < 0 || p[1] < 0 || p[0] > img.naturalWidth || p[1] > img.naturalHeight) return;
+  if (current()[0] === "ticks") ticks.push(p); else { pts.push(p); idx++; }
+  refresh();
+});
+window.addEventListener("mousemove", ev => { if (panning) { view.x = panning[2] + ev.clientX - panning[0]; view.y = panning[3] + ev.clientY - panning[1]; draw(); } });
+window.addEventListener("mouseup", () => { panning = null; });
+window.addEventListener("keydown", ev => {
+  if (ev.target.tagName === "INPUT") return;
+  if (ev.code === "Space") { space = true; ev.preventDefault(); }
+  if (ev.key === "z" || ev.key === "Z") undo();
+  if (ev.key === "f" || ev.key === "F") fit();
+});
+window.addEventListener("keyup", ev => { if (ev.code === "Space") space = false; });
+
+function undo() {
+  // pts tiene un hueco (null) en el paso de la escala: deshacer pasa por él y vuelve a las marcas de escala
+  if (idx < STEPS.length && current()[0] === "ticks" && ticks.length) ticks.pop();
+  else if (idx > 0) { idx--; pts.pop(); }
+  refresh();
+}
+document.getElementById("undo").onclick = undo;
+document.getElementById("fit").onclick = fit;
+document.getElementById("endTicks").onclick = () => {
+  if (ticks.length < 3) { msg("Hacen falta al menos 3 marcas de escala."); return; }
+  pts.push(null); idx++; refresh();
+};
+function msg(t) { document.getElementById("msg").textContent = t; }
+
+function payload() {
+  const w = parseFloat(document.getElementById("aw").value), h = parseFloat(document.getElementById("ah").value);
+  if (!(w > 0 && h > 0)) throw new Error("Escribe el ancho y el alto del recuadro medidos con regla.");
+  const P = pts.filter(p => p !== null), r = v => [Math.round(v[0] * 100) / 100, Math.round(v[1] * 100) / 100];
+  const pairs = {};
+  STEPS.forEach((s, i) => { if (s[0] === "pair") { const p = pts[i]; (pairs[s[2]] = pairs[s[2]] || []).push(r(p)); } });
+  return { print: sheetSel.value, photo: document.getElementById("photo").value, aspect_mm: [w, h],
+           corners: P.slice(0, 4).map(r), midpoints: P.slice(4, 8).map(r), ticks: ticks.map(r), pairs,
+           image_size_px: [img.naturalWidth, img.naturalHeight], tool: "tools/marcador.html v1" };
+}
+document.getElementById("save").onclick = () => {
+  try {
+    const d = payload(), name = `${d.print}-${d.photo}_r${document.getElementById("rep").value}.json`;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(d, null, 1)], { type: "application/json" }));
+    a.download = name; a.click(); msg(`Guardado ${name}. Muévelo a data/fi1s/marcas/.`);
+  } catch (e) { msg(e.message); }
+};
+window.addEventListener("resize", resize); resize(); refresh();
+</script>
+</body>
+</html>
