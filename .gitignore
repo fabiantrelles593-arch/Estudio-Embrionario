@@ -8,6 +8,7 @@ dist/
 # Datos: nunca se versionan datos biológicos ni crudos
 data/raw/
 data/private/
+data/fi1s/
 data/biological/
 data/pending_permission/
 *.tif
