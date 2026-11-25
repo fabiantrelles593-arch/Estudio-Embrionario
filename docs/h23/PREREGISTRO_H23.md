@@ -213,3 +213,24 @@ conectada mayor de la máscara: el cuerpo es una sola pieza. No se cambia, porqu
 Si el ventrículo de referencia tuviera varias piezas, eso sesgaría el volumen a la baja, y la puerta S lo recogería.
 Para que se vea, `g0` registra, de forma solo descriptiva, la fracción de la referencia que cae en su pieza mayor en los
 casos de ajuste. Ese dato no cambia ninguna puerta ni ningún umbral.
+
+**G0-escala (25 nov 2026, `results/h23/g0_scale.json`): superada.** Los 142 casos de ajuste tienen ≥ 27 vóxeles a ¼
+(mínimo 90, mediana 355, máximo 758).
+
+Dato descriptivo de la nota anterior: la pieza mayor contiene una **mediana del 77 %** de la referencia (percentil 10:
+53 %). La referencia de ventrículo no es una sola pieza.
+
+**Desviación D-1 (aprobada por el autor el 25 nov 2026, antes de entrenar ninguna red y de calcular ninguna señal o
+medida).**
+
+- **Motivo.** Con el código de §4 sin cambios, la medida se queda solo con la pieza mayor. Aunque la segmentación fuera
+  perfecta, el volumen saldría un 23 % por debajo en la mediana, y la puerta S fallaría por diseño, no por la red.
+- **Qué cambia.**
+  - La medida cuenta todas las piezas con probabilidad ≥ 0,5: `h23.segment_all` en lugar de `h19.segment_full`.
+  - El volumen de la etapa 1 también cuenta todas sus piezas: `h23.coarse_volume_all`.
+  - Los 8 volteos de s_flip usan `segment_all`.
+- **Qué no cambia:** la red y su entrenamiento, el reparto, las señales, los umbrales, la guardia, las puertas, las
+  hipótesis y los criterios.
+- **Qué se había visto al decidirlo:** solo las etiquetas de los casos de ajuste (G0-escala). Ninguna medida ni señal de
+  ningún caso.
+- **Diseño original:** la versión sin D-1 está en la rama, en el commit `53eab8b`.
