@@ -65,6 +65,21 @@ def test_largest_fraction():
     assert math.isclose(h23.largest_fraction(ref), 64 / 88)
 
 
+def test_d1_counts_every_piece(monkeypatch):
+    """D-1: con dos piezas, segment_all las cuenta las dos; segment_full (H19) se queda con la mayor."""
+    from geovida import h19
+    prob = np.zeros((16, 16, 16), np.float32)
+    prob[1:5, 1:5, 1:5] = 0.9                        # 64
+    prob[10:12, 10:12, 10:12] = 0.9                  # 8
+    monkeypatch.setattr(h19, "segment_full", lambda c, f, im: (h20.largest_component(prob >= 0.5), prob))
+    mask, _ = h23.segment_all(None, None, prob)
+    assert mask.sum() == 72 and h19.segment_full(None, None, prob)[0].sum() == 64
+    coarse = np.zeros((4, 4, 4), np.float32)
+    coarse[0, 0, 0] = coarse[3, 3, 3] = 0.9
+    monkeypatch.setattr(h19, "predict", lambda net, x: coarse)
+    assert h23.coarse_volume_all(None, np.zeros((16, 16, 16), np.float32)) > 64   # dos bloques, no uno
+
+
 def test_gate_s():
     cal = pd.DataFrame({"rel_error_volume": [0.05, -0.08, 0.3, -0.5]})
     assert h23.gate_s(cal)["passed"] and h23.gate_s(cal)["fraction_ok10"] == 0.5
