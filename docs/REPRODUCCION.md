@@ -20,7 +20,7 @@ python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Script
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # primero, para no bajar la versión con CUDA
 pip install -e ".[dev]"                                   # incluye nibabel, h5py, SimpleITK y torch
 pip install monai                                         # solo para MEMOS en P3 (no está en los extras)
-pytest                                                    # 1012 pruebas en 82 archivos (24 nov 2026)
+pytest                                                    # 1021 pruebas en 82 archivos (25 nov 2026)
 ```
 
 Las órdenes se ejecutan desde la raíz del repositorio con `PYTHONPATH=src` si el paquete no está instalado.
@@ -32,7 +32,7 @@ reanudables: guardan un archivo por caso y no repiten los que ya existen.
 
 | Conjunto | Fuente | Licencia | Cómo se obtiene | Estudios |
 |---|---|---|---|---|
-| Ecografía 3D de embriones de ratón (Qiu et al. 2021) | IEEE DataPort, DOI 10.21227/drmd-xq36 | CC BY | Descarga **manual** con cuenta gratuita de IEEE DataPort (unos 1,94 GB); ver `docs/GUIA_DATOS_REALES.md` | H11, H12R, H18, H19, H20 |
+| Ecografía 3D de embriones de ratón (Qiu et al. 2021) | IEEE DataPort, DOI 10.21227/drmd-xq36 | CC BY | Descarga **manual** con cuenta gratuita de IEEE DataPort (unos 1,94 GB); ver `docs/GUIA_DATOS_REALES.md` | H11, H12R, H18, H19, H20, H23 |
 | MusMorph IMPC, especímenes (imágenes, segmentaciones, landmarks) | FaceBase, registro 3-JZA6 (Devine et al. 2022) | CC BY 4.0 | Automática desde el catálogo público, con MD5 del catálogo (`scripts/p3_pilot.py download`, `scripts/onto_map_pilot.py download`, `scripts/landmark_qc.py download`, `scripts/atlas_effect_gates.py download-images`) | P3, ONTO-MAP, QC-LM, MT-A |
 | MusMorph, atlas E15.5 y E18.5 y sus landmarks | FaceBase, registro 6-2EPY | CC BY 4.0 | `scripts/atlas_effect_gates.py download`: exige antes el tamaño y el MD5 fijados en el preregistro | P3 (grupos), MT-A |
 | Metadatos de MusMorph | `MusMorph_Metadata_Mar2024.csv`, repositorio de MusMorph (SHA-256 en `docs/p3/RESULTADOS_PILOTO.md`) | La del repositorio | Manual | P3, ONTO-MAP |
@@ -81,6 +81,20 @@ prueba se midió **una sola vez**, en H20. Quien reproduzca H20 la mide de nuevo
 lo mismo, no como un nuevo resultado. El entrenamiento de H19 en CPU tiene una parte no determinista (PyTorch):
 los pesos pueden no ser idénticos bit a bit [PV]. Por eso `run_h20.py` comprueba el SHA-256 de las redes contra
 `results/h19/calibrate.json`.
+
+### H23 — señales de H20 en ventrículos (mismo conjunto)
+
+```bash
+python scripts/run_h23.py g0             # G0-escala: solo etiquetas de los casos de ajuste
+python scripts/run_h23.py train-coarse   # unas 5 h de CPU
+python scripts/run_h23.py train-fine
+python scripts/run_h23.py g0-signals
+python scripts/run_h23.py calibrate      # puertas S y C; congela si pasan
+python scripts/run_h23.py test --sha <SHA-256 anotado en el §11 de docs/h23/PREREGISTRO_H23.md>
+```
+
+Cada orden se niega a correr si la puerta anterior no está superada. La medida cuenta todas las piezas de la máscara
+(desviación D-1, `h23.segment_all`).
 
 ### P3 — variación técnica frente a biológica (MusMorph E15.5)
 
