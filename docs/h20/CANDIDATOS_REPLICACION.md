@@ -82,7 +82,7 @@ Quedan tres caminos, ninguno equivalente a una replicación directa:
 
 El autor eligió **A y B en paralelo**.
 
-**A. Grupo de NYU.** El borrador del mensaje está en `docs/h20/BORRADOR_SOLICITUD_NYU.md`. Lo envía el autor desde su
+**A. Grupo de NYU.** El borrador del mensaje está en el equipo del autor: lleva datos personales, así que no se sube. Lo envía el autor desde su
 correo; Claude no envía mensajes. Estado: pendiente de envío.
 
 **B. UterUS.** El 24 nov se leyeron solo los archivos de texto del repositorio, sin ningún volumen:
@@ -99,6 +99,28 @@ Con la regla de §5, **B queda bloqueado** hasta leer el texto completo del art�
 - son unos 40–55 casos de prueba, parecido a los 44 de H20;
 - solo habría 3 centros, lo que limita la generalización.
 
+### Texto completo del artículo de UterUS (24 nov): B descartado
+
+El autor consiguió el PDF. Es un artículo de acceso abierto con licencia CC BY 4.0, de 13 páginas. Se leyó entero; el
+PDF se queda en el equipo del autor, fuera del repositorio.
+
+| Punto | Qué dice el artículo [HV] |
+|---|---|
+| Aval ético | **No lo menciona.** No aparece «ethic», «committee» ni «approval» |
+| Consentimiento informado | **No lo menciona.** No aparece «consent» |
+| Anonimización | **No la menciona** |
+| Anotación | Una sola anotadora que no es profesional sanitaria, formada por un ginecólogo. Las anotaciones las revisó un ginecólogo. 3D Slicer, unos 20 min por volumen. No hubo varias anotadoras ni se midió acuerdo; los autores reconocen el posible sesgo |
+| Datos | 298 volúmenes recogidos en centros europeos (estudio NURSE), uno por paciente. Vóxel isótropo de 0,50 mm. 141 anotados y 113 sin anotar, de 11 hospitales. Licencia CC BY-NC-SA 4.0 |
+
+**Decisión: B se descarta**, por la regla de §5 escrita antes de leer el artículo. Son datos de salud de personas
+publicados sin aval ético ni consentimiento declarados, y `docs/DATOS_REALES_Y_ETICA.md` no permite usarlos.
+
+Si los autores confirmaran por escrito el aval y el consentimiento, se podría reabrir con un preregistro nuevo. Aun
+así, la anotación de una sola persona no experta haría que la referencia fuera más débil que en H20.
+
+**Estado de la replicación de H20:** depende solo del camino A. Si A no prospera, queda el camino C (ventrículos del
+mismo conjunto), que es la evidencia más débil y no es una replicación.
+
 ## 7. Fuentes
 
 - Qiu et al. 2021, IEEE DataPort: <https://ieee-dataport.org/open-access/ultrasound-mouse-embryo-segmentation-and-classification>
@@ -107,3 +129,4 @@ Con la regla de §5, **B queda bloqueado** hasta leer el texto completo del art�
 - Bastiaansen et al.: <https://arxiv.org/abs/2202.06599> (doi:10.48550/arXiv.2202.06599; MELBA doi:10.59275/j.melba.2022-cb15).
 - FUSEP: <https://arxiv.org/pdf/2608.04766>
 - Boneš et al. 2024 en ScienceDirect: <https://www.sciencedirect.com/science/article/pii/S0010482524008795>
+  (Comput Biol Med 178:108794, PMID 38941903, CC BY 4.0).
