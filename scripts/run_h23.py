@@ -116,12 +116,12 @@ def _nets():
 
 
 def measure(coarse, fine, image, spacing, ref, case) -> dict:
-    """Medida de ``h19.segment_full`` y señales de H20 sobre la misma imagen."""
+    """Medida y señales de H20 sobre la misma imagen, con todas las piezas de la máscara (desviación D-1)."""
     t0 = time.time()
-    mask, prob = h19.segment_full(coarse, fine, image)
+    mask, prob = h23.segment_all(coarse, fine, image)
     v, vr = float(mask.sum()), float(ref.sum())
-    vols = h20.flip_volumes(coarse, fine, image)
-    s = h20.signals(vols, h20.coarse_volume(coarse, image))
+    vols = h20.flip_volumes(coarse, fine, image, segment=h23.segment_all)
+    s = h20.signals(vols, h23.coarse_volume_all(coarse, image))
     row = {"image": case["image"], "embryo_id": case["embryo_id"], "volumes": vols, **s,
            "rel_error_volume": (v - vr) / vr, "dice": 2 * float(np.logical_and(mask, ref).sum()) / (v + vr),
            "identity_matches": bool(v == s["v_identity"]), "seconds": round(time.time() - t0, 1),
@@ -161,7 +161,7 @@ def cmd_calibrate(a):
     df = roles(a.manifest)
     cal = _measure_all(a, df[df.role == "cal"], OUT / "cal_rows.jsonl", coarse, fine)
     if not cal["identity_matches"].all():
-        raise RuntimeError("la pasada identidad no reproduce segment_full: se para y se busca la causa")
+        raise RuntimeError("la pasada identidad no reproduce segment_all: se para y se busca la causa")
     s = h23.gate_s(cal)
     lit = h20.out_of_fold(cal)
     c = h20.gate_c(lit)
@@ -189,7 +189,7 @@ def cmd_test(a):
     test, _ = h23.cases(a.manifest, "test")
     rows = _measure_all(a, test, OUT / "test_rows.jsonl", coarse, fine)
     if not rows["identity_matches"].all():
-        raise RuntimeError("la pasada identidad no reproduce segment_full en algún caso de prueba")
+        raise RuntimeError("la pasada identidad no reproduce segment_all en algún caso de prueba")
     lit = h20.lights(rows, frozen["envelope"])
     out = {**h23.evaluate_test(lit), "frozen_sha256": a.sha, "provenance": git_state()}
     lit.drop(columns=["volumes"]).to_csv(OUT / "test_cases.csv", index=False)
