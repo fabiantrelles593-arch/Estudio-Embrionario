@@ -9,6 +9,9 @@ separación que faltó en H20:
 * ``separation``: Δ = fallos entre no verdes − fallos entre verdes, IC por remuestreo de embriones; «separa» si el
   límite inferior > 0, «no separa» si el superior ≤ 0,05.
 
+Desviación D-1 (aprobada antes de entrenar): ``segment_all`` y ``coarse_volume_all`` cuentan todas las piezas de la
+máscara en lugar de la mayor, porque el ventrículo de referencia no es una sola pieza.
+
 Red, señales, regla, guardia y puerta C son las de ``h19`` y ``h20`` sin tocar. Solo investigación con datos animales
 publicados; sin uso clínico.
 """
@@ -48,6 +51,19 @@ def largest_fraction(ref: np.ndarray) -> float:
     """Fracción de la referencia en su pieza conectada mayor (descriptivo: ``segment_full`` se queda con una)."""
     n = float(ref.sum())
     return float(h20.largest_component(ref).sum()) / n if n else math.nan
+
+
+def segment_all(coarse_net, fine_net, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Desviación D-1: la medida de ``h19.segment_full`` sin quedarse con la pieza mayor. El ventrículo de referencia
+    tiene varias piezas (mediana 77 % en la mayor en los casos de ajuste), así que se cuentan todas."""
+    _, prob = h19.segment_full(coarse_net, fine_net, image)
+    return prob >= 0.5, prob
+
+
+def coarse_volume_all(coarse_net, image: np.ndarray) -> float:
+    """D-1: volumen de la etapa 1 sola (umbral 0,5) sin quedarse con la pieza mayor."""
+    pc = h19.predict(coarse_net, h19.coarse_sample(image)[0])
+    return float((h19.upsample_prob(pc, h19.COARSE, image.shape) >= 0.5).sum())
 
 
 def g0_scale(counts: list[int]) -> dict:
