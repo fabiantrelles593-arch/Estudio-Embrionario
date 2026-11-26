@@ -208,6 +208,17 @@ En todos los casos la prueba de ventrículo queda usada después de H25.
 
 (Ninguna al subir este preregistro.)
 
+**Congelado (26 nov 2026, antes de `test`).**
+
+- `check` y G0 superados. En G0 la guardia nueva fue calculable en los 5 casos y coincidió exactamente con la antigua en
+  el único caso con C > 0.
+- Puerta S′ superada: 29 de 34 con e_b ≤ 0,5. Puerta C′ superada: 18 verdes, 1 con e_b > 0,5 (5,6 %).
+- Guardia nueva calculable en 34 de 34; dentro del dominio fuera de pliegue, 30 de 34. La medida coincide con la de H24
+  en los 34 casos.
+- `results/h25/h25_frozen.json` (fuera de git), SHA-256:
+  `91ba4f3dcff06281934e9e07207581db8b8e3c91167202869ac79c9737322f76`
+- `test` se corre una sola vez con esa huella.
+
 ## Anexo: corrección a `RESULTADOS_H24.md` (se sube con este preregistro)
 
 Los resultados de H24 atribuyen el rechazo de la guardia a una envolvente ajustada con pocos casos. La causa real es que
