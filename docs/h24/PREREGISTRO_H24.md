@@ -239,3 +239,13 @@ pequeño no tendrá un IC por encima de 0.
 ## 11. Desviaciones
 
 (Ninguna al subir este preregistro.)
+
+**Cierre (26 nov 2026).**
+
+- `check` y G0 superados.
+- Puerta S′ superada: 29 de 34 con e_b ≤ 0,5.
+- **Puerta C′ no superada: 3 verdes de 34** (1 falla).
+- La guardia de dominio, sin cambios respecto de H23, deja dentro solo 5 de 34. Eso ya se veía en H23, y este
+  preregistro debió advertir que hacía imposible la puerta C′.
+- No se generó ningún congelado y la prueba no se abrió.
+- H24 se cierra como no evaluable: `docs/h24/RESULTADOS_H24.md`.
