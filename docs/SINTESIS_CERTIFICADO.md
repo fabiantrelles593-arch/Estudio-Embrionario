@@ -1,6 +1,6 @@
-# Síntesis: el certificado de fiabilidad de MORPHO-TRACE, de la simulación a la ecografía real (H6–H23)
+# Síntesis: el certificado de fiabilidad de MORPHO-TRACE, de la simulación a la ecografía real (H6–H24)
 
-- **Fecha:** 25 nov 2026.
+- **Fecha:** 25 nov 2026; H24 añadido el 26 nov 2026.
 - **Qué es:** un resumen de los veredictos ya publicados en cada `RESULTADOS_*.md`. No hay ningún análisis nuevo, ni
   ningún número recalculado ni reinterpretado. Si un número de aquí no coincide con su documento de origen, manda el
   documento de origen.
@@ -33,6 +33,7 @@ El criterio común de todos los estudios: **entre las verdes, como mucho el 10 %
 | H21 | Sintético | Crofton frente a `area_sdf` como estimador de área | No concluyente; se mantiene `area_sdf` | `docs/h21/RESULTADOS_H21.md` |
 | H22 | Sintético | Un estado «inservible» además de «fuera de dominio» | No se añade: el rojo ya cubre el 99 % de los fallos groseros | `docs/h22/RESULTADOS_H22.md` |
 | H23 | Ecografía real, ventrículos | La regla de H20, sin cambios, en una estructura pequeña | **No evaluable:** puerta S superada (22 de 34), puerta C no (0 verdes de 34). Prueba sin abrir | `docs/h23/RESULTADOS_H23.md` |
+| H24 | Ecografía real, ventrículos | Tolerancia y señales en vóxeles de borde (0,5 vóxeles), mismas redes | **No evaluable:** puerta S′ superada (29 de 34), puerta C′ no (3 verdes de 34). La guardia de dominio, sin cambios, deja dentro solo 5 de 34. Prueba sin abrir | `docs/h24/RESULTADOS_H24.md` |
 
 ## 3. Lo que está establecido [HV]
 
@@ -45,7 +46,8 @@ El criterio común de todos los estudios: **entre las verdes, como mucho el 10 %
 4. **Los observables de la imagen no anticipan los fallos de una red** (H19, puerta C). **La estabilidad de la propia red
    sí dio una luz verde segura para el cuerpo** en embriones nuevos (H20b, prueba sellada medida una vez).
 5. **Esa luz no se traslada tal cual a una estructura pequeña** (H23: 0 verdes). Con umbrales fijos, la estabilidad
-   medida depende del tamaño de la estructura.
+   medida depende del tamaño de la estructura. Con la tolerancia en vóxeles de borde (H24), el límite pasó a ser la
+   guardia de dominio, que en ventrículo deja dentro solo 5 de 34 casos.
 6. **El protocolo funcionó.** Cada prueba sellada se abrió como mucho una vez:
    - H18, H19 y H23 se pararon en sus puertas sin abrirla;
    - H20 la abrió una vez;
@@ -87,5 +89,5 @@ Antes de publicar algo así hacen falta:
 | Hueco | Paso | Bloqueo |
 |---|---|---|
 | Otro conjunto o equipo | Replicación directa de H20 | Respuesta del grupo de NYU (mensaje pendiente de envío) |
-| ¿Separa la luz aciertos de fallos? | Una regla con umbrales relativos a la estructura, fijados por principio antes de abrir la prueba de ventrículo, que sigue intacta | Decisión del autor. Hay que declarar que la calibración de H23 ya se vio |
+| ¿Separa la luz aciertos de fallos? | H24 ya probó umbrales en vóxeles de borde y se paró en la guardia de dominio (5 de 34 dentro). La prueba de ventrículo sigue intacta | Decisión del autor. Revisar la guardia sobre este conjunto se haría sabiendo que, sin ella, la calibración dio 19 verdes con 1 fallo; es preferible un segundo conjunto |
 | Revisión sistemática completa | Scopus o Web of Science y un segundo revisor | Acceso a esas bases |
