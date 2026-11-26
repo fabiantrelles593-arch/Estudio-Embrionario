@@ -154,7 +154,7 @@ fracasó), [`PREREGISTRO_REAL2D_PILOTO.md`](docs/PREREGISTRO_REAL2D_PILOTO.md) (
 * **Cómo se comprueba**: el núcleo matemático se ejecuta con Node y se compara con `geovida.dating`, `geovida.trajectory` y `geovida.chainguard` (`tests/test_prototype_core.py`); la interfaz se recorre en Chromium (`tests/test_prototype_ui.py`). Construir: `python scripts/build_prototype.py`.
 * **Lo que no es**: no está validado con imágenes reales ni con lectores humanos (la incertidumbre al marcar es un supuesto); no predice el crecimiento ni el aspecto de nadie.
 
-## v0.12 · Datos reales de ratón (16–23 nov 2026)
+## v0.12 · Datos reales de ratón (16–26 nov 2026)
 
 Todos estos estudios fijaron criterios en git antes de medir. Los veredictos completos están en cada documento
 de resultados y en [`TRAZABILIDAD.md`](docs/clinico/TRAZABILIDAD.md); aquí solo se resume qué se aprendió.
@@ -164,10 +164,12 @@ Cómo rehacerlos: [`REPRODUCCION.md`](docs/REPRODUCCION.md).
 |---|---|---|
 | H11, H12R ([H11](docs/h11/RESULTADOS_H11.md), [H12R](docs/h11/RESULTADOS_H12R.md)) | Ecografía 3D real, 213 embriones | La guardia de dominio funcionó: se negó a dar verde, y sin ella el 100 % de los verdes habrían sido falsos. La primaria no fue evaluable: el certificado calibrado en simulación no transfiere al equipo real |
 | H18, H19, H20 ([H18](docs/h18/RESULTADOS_H18.md), [H19](docs/h19/RESULTADOS_H19.md), [H20](docs/h20/RESULTADOS_H20.md)) | Ecografía 3D real, prueba sellada medida una vez | Una red de dos etapas mide bien el volumen en embriones nuevos (93 % a ≤ 10 %); la luz verde basada en su estabilidad acertó (H20b apoyada), pero separa poco los fallos |
+| H23, H24, H25 ([H23](docs/h23/RESULTADOS_H23.md), [H24](docs/h24/RESULTADOS_H24.md), [H25](docs/h25/RESULTADOS_H25.md)) | Ecografía 3D real, ventrículos cerebrales; prueba medida una vez en H25 | La red mide bien los ventrículos en embriones nuevos (95 % a ≤ 0,5 vóxeles de borde), pero con 2 fallos en 40 casos no se puede saber si la luz separa aciertos de fallos. Ninguna primaria dio veredicto |
 | P3 ([resultados](docs/p3/RESULTADOS_P3.md)) | Micro-TC MusMorph E15.5, 60 especímenes | Cuánta variación de cada estructura es técnica y cuánta del espécimen; H-P3a apoyada, H-P3b no interpretable |
 | ONTO-MAP ([resultados](docs/onto_map/RESULTADOS_P4.md)) | Landmarks MusMorph, 259 + 458 | Resultado negativo: la dirección E15.5 → E18.5 no se puede atribuir al desarrollo porque cada estadio usa un atlas distinto |
 | QC-LM ([resultados](docs/morpho_trace/RESULTADOS_QC_LANDMARKS.md)) | Landmarks e imágenes MusMorph, 60 + 60 | Un tercio de los especímenes E15.5 tiene landmarks publicados desplazados, pero no explican la diferencia entre estadios |
-| MT-A v1.0–v2 ([v2](docs/morpho_trace/RESULTADOS_ATLAS_v2.md)) | Imágenes y atlas MusMorph | Las tres versiones, no evaluables. En v2 falla el registro propio del proyecto, que aleja los landmarks de lo publicado; se está verificando su cadena |
+| MT-A v1.0–v3 ([v3](docs/morpho_trace/RESULTADOS_ATLAS_v3.md)) | Imágenes y atlas MusMorph | Las cuatro versiones, no evaluables: ningún registro propio supera a no registrar |
+| MT-B, MT-C ([MT-B](docs/morpho_trace/RESULTADOS_ANCLAJE_ATLAS.md), [MT-C](docs/morpho_trace/RESULTADOS_HOMOLOGOS.md)) | Landmarks publicados MusMorph, sin registro | A lo largo de la dirección E15.5 → E18.5, la separación entre estadios es la diferencia entre los dos atlas; se concentra en los landmarks 17–22. Falta saber si es biológica o de anotación (MT-D, a la espera de un anotador) |
 
 **Ninguno de estos resultados es clínico ni se refiere a humanos.**
 
@@ -194,7 +196,7 @@ Cómo rehacerlos: [`REPRODUCCION.md`](docs/REPRODUCCION.md).
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                                           # 1028 casos (25 nov 2026); el prototipo en navegador necesita Playwright y Chromium
+pytest                                           # 1051 casos (26 nov 2026); el prototipo en navegador necesita Playwright y Chromium
 python scripts/run_h6.py --phase test && python scripts/analyze_h6.py     # ~17 min, 2 núcleos
 python scripts/run_h7.py && python scripts/analyze_h7.py                  # ~1 min
 python scripts/run_h8.py && python scripts/analyze_h8.py                  # ~5 min
@@ -243,10 +245,10 @@ tenido revisión científica humana externa.** Autor del proyecto: Fabián Trell
 
 ## Siguiente paso real
 
-El certificado ya se probó con ecografía real de ratón (H11–H20): con una red aprendida mide bien, pero
-la luz verde todavía separa poco los fallos. Lo siguiente es replicarlo en otro conjunto con licencia
-verificada, verificar la cadena de registro de MT-A antes de medir el efecto del atlas, y conseguir revisión
-externa. Las prioridades están en [`INFORME_DE_PROGRESO.md`](docs/INFORME_DE_PROGRESO.md). Esto sigue siendo una
+El certificado ya se probó con ecografía real de ratón (H11–H25): con una red aprendida mide bien el cuerpo y los
+ventrículos, pero no se ha demostrado que la luz verde separe aciertos de fallos, porque la red casi no falla. Las
+pruebas selladas de este conjunto ya están usadas. Lo siguiente es un segundo conjunto con licencia verificada, la
+anotación manual independiente de MT-D y conseguir revisión externa. Las prioridades están en [`INFORME_DE_PROGRESO.md`](docs/INFORME_DE_PROGRESO.md). Esto sigue siendo una
 herramienta de método, no un resultado biológico ni clínico.
 
 ## Licencia
