@@ -32,7 +32,7 @@ reanudables: guardan un archivo por caso y no repiten los que ya existen.
 
 | Conjunto | Fuente | Licencia | Cómo se obtiene | Estudios |
 |---|---|---|---|---|
-| Ecografía 3D de embriones de ratón (Qiu et al. 2021) | IEEE DataPort, DOI 10.21227/drmd-xq36 | CC BY | Descarga **manual** con cuenta gratuita de IEEE DataPort (unos 1,94 GB); ver `docs/GUIA_DATOS_REALES.md` | H11, H12R, H18, H19, H20, H23 |
+| Ecografía 3D de embriones de ratón (Qiu et al. 2021) | IEEE DataPort, DOI 10.21227/drmd-xq36 | CC BY | Descarga **manual** con cuenta gratuita de IEEE DataPort (unos 1,94 GB); ver `docs/GUIA_DATOS_REALES.md` | H11, H12R, H18, H19, H20, H23, H24, H25 |
 | MusMorph IMPC, especímenes (imágenes, segmentaciones, landmarks) | FaceBase, registro 3-JZA6 (Devine et al. 2022) | CC BY 4.0 | Automática desde el catálogo público, con MD5 del catálogo (`scripts/p3_pilot.py download`, `scripts/onto_map_pilot.py download`, `scripts/landmark_qc.py download`, `scripts/atlas_effect_gates.py download-images`) | P3, ONTO-MAP, QC-LM, MT-A |
 | MusMorph, atlas E15.5 y E18.5 y sus landmarks | FaceBase, registro 6-2EPY | CC BY 4.0 | `scripts/atlas_effect_gates.py download`: exige antes el tamaño y el MD5 fijados en el preregistro | P3 (grupos), MT-A |
 | Metadatos de MusMorph | `MusMorph_Metadata_Mar2024.csv`, repositorio de MusMorph (SHA-256 en `docs/p3/RESULTADOS_PILOTO.md`) | La del repositorio | Manual | P3, ONTO-MAP |
@@ -95,6 +95,24 @@ python scripts/run_h23.py test --sha <SHA-256 anotado en el §11 de docs/h23/PRE
 
 Cada orden se niega a correr si la puerta anterior no está superada. La medida cuenta todas las piezas de la máscara
 (desviación D-1, `h23.segment_all`).
+
+### H24 y H25 — tolerancia en vóxeles de borde y guardia sin signo de contraste
+
+Usan las redes de H23 sin reentrenar; `check` compara sus SHA-256 con los del preregistro.
+
+```bash
+python scripts/run_h24.py check
+python scripts/run_h24.py g0
+python scripts/run_h24.py calibrate      # puertas S′ y C′; en H24 no se superó C′ y no se congeló
+python scripts/run_h25.py check
+python scripts/run_h25.py g0
+python scripts/run_h25.py calibrate      # puertas S′ y C′; congela results/h25/h25_frozen.json
+python scripts/run_h25.py test --sha 91ba4f3dcff06281934e9e07207581db8b8e3c91167202869ac79c9737322f76
+```
+
+H24 terminó en la puerta C′, así que su `test` no se ejecutó. La prueba de ventrículo se midió **una sola vez**, en H25,
+con la huella anotada en el §11 de `docs/h25/PREREGISTRO_H25.md`. Quien la reproduzca la mide de nuevo como
+comprobación del código, no como un resultado nuevo.
 
 ### P3 — variación técnica frente a biológica (MusMorph E15.5)
 
