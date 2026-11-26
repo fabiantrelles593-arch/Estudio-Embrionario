@@ -84,3 +84,12 @@ Las alternativas honestas son dos:
 - revisar la guardia con un criterio fijado por principio, declarando todo lo que ya se vio, y aceptando que la
   calibración ya no frena nada;
 - o reservar la pregunta para un segundo conjunto de datos (la petición al grupo de NYU sigue pendiente de envío).
+
+## Nota del 26 nov 2026 (después del cierre): la causa real del rechazo de la guardia
+
+Este documento atribuía el rechazo a una envolvente ajustada con pocos casos. **La causa real es otra:** en 27 de los 34
+casos, `snr_hat` y `edge_width` no se pudieron calcular (NaN en `results/h24/cal_rows.jsonl`). El ventrículo es más
+oscuro que el fondo lejano, y `domain.domain_observables` declara no calculable cualquier contraste ≤ 0. Un índice no
+calculable cuenta como fuera del dominio. Con las máscaras de referencia, el contraste es ≤ 0 en 27 de 34 casos.
+
+El veredicto de H24 y todos sus números no cambian. La guardia corregida se prueba en `docs/h25/PREREGISTRO_H25.md`.
