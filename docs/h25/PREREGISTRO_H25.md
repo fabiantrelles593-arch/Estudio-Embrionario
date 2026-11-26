@@ -219,6 +219,9 @@ En todos los casos la prueba de ventrículo queda usada después de H25.
   `91ba4f3dcff06281934e9e07207581db8b8e3c91167202869ac79c9737322f76`
 - `test` se corre una sola vez con esa huella.
 
+**Cierre (26 nov 2026).** `test` corrido una vez. H25b no evaluable (19 verdes en 19 embriones); H25d no concluyente
+(Δ = −0,5 puntos, IC [−15,0; +13,0]). La prueba de ventrículo queda usada. Resultados: `docs/h25/RESULTADOS_H25.md`.
+
 ## Anexo: corrección a `RESULTADOS_H24.md` (se sube con este preregistro)
 
 Los resultados de H24 atribuyen el rechazo de la guardia a una envolvente ajustada con pocos casos. La causa real es que
