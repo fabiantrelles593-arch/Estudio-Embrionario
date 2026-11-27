@@ -85,7 +85,7 @@ reenviar una versión revisada.
 | Financiación y conflictos de interés | **Falta** (autor) |
 | Autoría, afiliación y biografía | **Falta** (autor) |
 | Revisión del inglés | **Falta**: recomendable una revisión profesional o de un hablante nativo |
-| Búsqueda en Scopus o Web of Science y revisor externo | **Parcial:** búsqueda en PubMed hecha el 27 nov 2026 (`docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`), que añadió 10 referencias. Faltan Scopus o Web of Science y el revisor externo (`docs/SINTESIS_CERTIFICADO.md` §6) |
+| Búsqueda en Scopus o Web of Science y revisor externo | **Parcial:** búsquedas en PubMed y en OpenAlex (actas de MICCAI e ISBI) hechas el 27 nov 2026 (`docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`), que añadieron 14 referencias (19 en total, más el repositorio). Faltan Scopus o Web of Science y el revisor externo (`docs/SINTESIS_CERTIFICADO.md` §6) |
 | Extensión dentro de 10 páginas (Original Research) o 14 (Methods and Concepts) | Hecho: 6 páginas sin biografías ni fotos (tras añadir los trabajos relacionados), muy por debajo de las 14 |
 
 ## 5. La plantilla LaTeX (27 nov 2026) [HV]
@@ -110,7 +110,7 @@ reenviar una versión revisada.
   libre estándar. El `.tex` los deja desactivados con un interruptor (`\tusonfontstrue` para activarlos).
 - **Compilación (27 nov 2026):** con Tectonic 0.17.0 (versión oficial para Windows, MIT; SHA-256 del zip comprobado
   contra el publicado en GitHub), fuera del repositorio y con `TUSON.sty` de la plantilla. Sin errores ni referencias
-  sin resolver; 5 páginas. Las únicas cajas desbordadas son las de la caja coloreada del resumen, que vienen de la
+  sin resolver; 5 páginas en la primera compilación y 6 con los trabajos relacionados (19 referencias). Las únicas cajas desbordadas son las de la caja coloreada del resumen, que vienen de la
   propia plantilla. Como `mathtime` está desactivado, el texto sale en Nimbus Roman (clon de Times): la extensión
   puede variar algo con las fuentes de IEEE, pero hay margen de sobra.
 - **Para recompilar:** generar las figuras con `scripts/figure_manuscript.py`, copiar `TUSON.sty` junto al `.tex` y
