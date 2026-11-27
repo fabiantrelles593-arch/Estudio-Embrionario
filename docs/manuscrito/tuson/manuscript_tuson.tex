@@ -35,7 +35,7 @@
 \usepackage{TUSON}
 
 \graphicspath{{../../figures/}}
-\newcommand{\repo}[1]{[\texttt{#1}]}   % a results document in the public repository
+\newcommand{\repo}[1]{[\nolinkurl{#1}]}   % a results document in the public repository (breakable path)
 \newcommand{\TBC}[1]{\textbf{[TO BE COMPLETED by the author: #1]}}
 
 % The template's \GA box fixes the width at 6.25 in. The journal's web guidelines ask for a 660 x 295 px image,
@@ -217,22 +217,22 @@ All studies below follow Section~\ref{sec:protocol}. Each cites its results docu
 \subsection{A Domain Guard Refuses Where a Simulation-Calibrated Certificate Fails}\label{sec:exA}
 A certificate calibrated on synthetic data was applied to 1188 real measurements: 180 body and 216 ventricle cases,
 each with 3 threshold segmenters. The guard gave no green. Without it, all 540 greens would have been false
-\repo{docs/h11/RESULTADOS\_H11.md}. Recalibrating on simulated ultrasound did not change this: 180 of 180 false
-greens without the guard \repo{docs/h11/RESULTADOS\_H12R.md}.
+\repo{docs/h11/RESULTADOS_H11.md}. Recalibrating on simulated ultrasound did not change this: 180 of 180 false
+greens without the guard \repo{docs/h11/RESULTADOS_H12R.md}.
 
 \emph{Lesson (step 3):} the guard is what made the certificate safe on a domain it had never seen.
 
 \subsection{A Calibration Gate Stops a Flag Before It Consumes the Test Set}\label{sec:exB}
 A two-stage network, reimplemented from \cite{qiu2021,xu2020}, put 24 of 27 calibration cases within 10\% (median
 Dice 0.938). A certificate based on image observables then failed the calibration gate: 2 of 16 greens failed, more
-than giving green to every case. The test set was not opened \repo{docs/h19/RESULTADOS\_H19.md}.
+than giving green to every case. The test set was not opened \repo{docs/h19/RESULTADOS_H19.md}.
 
 \emph{Lesson (step 7):} the gate saved the test set for a better candidate.
 
 \subsection{A Stability Flag Passes and Is Tested Once}\label{sec:exC}
 The flag of step 2 passed the calibration gate with 12 greens and no failures. After freezing (fingerprint recorded
 in the preregistration), the sealed test set (44 cases from 43 embryos) was measured once
-\repo{docs/h20/RESULTADOS\_H20.md}; Table~\ref{tab:h20} and Figs.~\ref{fig:lights}(a) and \ref{fig:signals}
+\repo{docs/h20/RESULTADOS_H20.md}; Table~\ref{tab:h20} and Figs.~\ref{fig:lights}(a) and \ref{fig:signals}
 summarize the result.
 
 \begin{table}[!t]
@@ -277,15 +277,15 @@ Generated from already-measured cases by \texttt{scripts/figure\_manuscript.py},
 
 \subsection{Changing the Structure Exposes the Units of the Tolerance and a Guard Defect}\label{sec:exD}
 The same rule, unchanged, gave no green at all on brain ventricles: 0 of 34 in calibration
-\repo{docs/h23/RESULTADOS\_H23.md}.
+\repo{docs/h23/RESULTADOS_H23.md}.
 
 With the tolerance and signals re-expressed in boundary voxels, the calibration gate still failed: 3 greens of 34.
 The guard admitted only 5 of 34 cases, because its indices were not computable for a structure darker than the
-background (27 of 34 cases) \repo{docs/h24/RESULTADOS\_H24.md}.
+background (27 of 34 cases) \repo{docs/h24/RESULTADOS_H24.md}.
 
 A new preregistration corrected the guard to use the absolute contrast. It then admitted 90\% of test cases, against
 22.5\% for the old guard. The gates passed, and the ventricle test set was opened once (40 cases)
-\repo{docs/h25/RESULTADOS\_H25.md}; see Fig.~\ref{fig:lights}(b). The network was within 0.5 voxels in 95\% of cases;
+\repo{docs/h25/RESULTADOS_H25.md}; see Fig.~\ref{fig:lights}(b). The network was within 0.5 voxels in 95\% of cases;
 the primary hypothesis was not evaluable (19 greens, where 20 were required); and separation was inconclusive (1 of
 19 greens and 1 of 21 non-greens failed).
 
@@ -294,7 +294,7 @@ checked for computability on each new structure; and the gates caught both probl
 
 \subsection{A Sample-Size Simulation Exposes a Defect in the ``No Separation'' Rule}\label{sec:exE}
 To plan a future study, we simulated the separation rule of Section~\ref{sec:separation}
-\repo{docs/h25/TAMANO\_MUESTRAL\_SEPARACION.md}.
+\repo{docs/h25/TAMANO_MUESTRAL_SEPARACION.md}.
 
 \emph{Power.} With about 80 cases and a failure gap like that seen in calibration (5\% versus 27\%), the rule detects
 separation 83\% of the time. A gap of 10 points needs about 270 cases. What matters is the number of failures, not
@@ -324,7 +324,7 @@ conclusions the data could not support, not a failure of the protocol.
 A flag based on stability cannot see a consistent error. A flag cannot be shown to separate correct from failed
 measurements without enough failures, which an accurate network rarely produces on one dataset. The examples come
 from one public dataset, one system and one species; a direct replication with new volumes is preregistered as a
-base document \repo{docs/h26/PREREGISTRO\_H26\_BORRADOR.md}.
+base document \repo{docs/h26/PREREGISTRO_H26_BORRADOR.md}.
 
 \subsection{Adapting the Protocol}
 Steps 1--10 and rules S-1 to S-3 do not depend on the modality or the network. To reuse them, an author needs a
@@ -343,8 +343,8 @@ needs enough failures to be evaluable; rules S-1 to S-3 make that requirement ex
 % =================================================================================================================
 \section*{Data and Code Availability}
 The data are public on IEEE DataPort \cite{dataport} (CC BY) and are not redistributed. Code, preregistrations,
-results and the protocol rules (\texttt{docs/REGLAS\_PREREGISTRO.md}) are in the project repository \cite{repo}
-(MIT license); reproduction steps are in \texttt{docs/REPRODUCCION.md}.
+results and the protocol rules (\nolinkurl{docs/REGLAS_PREREGISTRO.md}) are in the project repository \cite{repo}
+(MIT license); reproduction steps are in \nolinkurl{docs/REPRODUCCION.md}.
 
 \section*{Ethics Statement}
 Only previously published animal data were used; no new animal experiments were performed and no human data were
