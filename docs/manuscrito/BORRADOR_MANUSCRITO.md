@@ -69,6 +69,21 @@ tres condiciones poco habituales:
 
 Informamos también los resultados negativos que llevaron a esa regla.
 
+**Aportaciones y diferencia con trabajos previos.** Los trabajos previos con aumento en tiempo de prueba estimaron la
+incertidumbre por vóxel y por estructura en resonancia cerebral, y mostraron que puede señalar posibles errores de
+segmentación (Wang et al. 2019a; 2019b). Los trabajos que crearon este conjunto informaron la exactitud de la
+segmentación, no la fiabilidad por caso (Xu et al. 2020; Qiu et al. 2021). Aquí:
+
+1. la salida de fiabilidad es una decisión por caso (verde, amarillo o rojo) con una regla fija y una tolerancia
+   declarada;
+2. su seguridad se prueba en una prueba sellada, abierta una vez tras el congelado;
+3. se compara, con los mismos datos, con un certificado calibrado en simulación y con observables de imagen, y se
+   informan los fallos de esas alternativas;
+4. se declara la pregunta que no responde (separar aciertos de fallos), con el tamaño muestral que haría falta.
+
+La búsqueda bibliográfica cubrió PubMed y Europe PMC; falta la de Scopus o Web of Science, así que no afirmamos que sea
+la primera evaluación de este tipo.
+
 ## 2. Métodos
 
 ### 2.1. Datos
