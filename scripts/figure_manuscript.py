@@ -22,6 +22,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
+from matplotlib import font_manager  # noqa: E402
+
+# Plantilla de T-USON (27 nov 2026): figuras en color a 300 ppp o más, rótulos en Arial si se puede, resumen gráfico
+# con fondo blanco. Si Arial no está instalada se usa la fuente por defecto.
+if any(f.name == "Arial" for f in font_manager.fontManager.ttflist):
+    plt.rcParams["font.family"] = "Arial"
+DPI = 300
 
 OUT = Path("docs/figures")
 ORDER = ["verde", "amarillo", "rojo"]
@@ -80,13 +87,13 @@ def main():
 
     fig, axes = plt.subplots(1, 2, figsize=(8.6, 3.8), constrained_layout=True)
     _strip(axes[0], body, b_err, b_bad, 10, "|volume error| (%)",
-           "A. Body, sealed test (H20): 44 cases")
+           "(a) Body, sealed test (H20): 44 cases")
     _strip(axes[1], vent, v_eb, v_bad, 0.5, "boundary error e_b (voxels)",
-           "B. Ventricles, test (H25): 40 cases")
+           "(b) Ventricles, test (H25): 40 cases")
     h_ok = axes[1].scatter([], [], s=36, color="white", edgecolor=INK, label="within tolerance")
     h_bad = axes[1].scatter([], [], s=70, marker="X", color="white", edgecolor=INK, label="failure")
     fig.legend(handles=[h_ok, h_bad], loc="outside lower center", ncol=2, frameon=False, fontsize=8.5)
-    fig.savefig(OUT / "manuscript_fig1_lights.png", dpi=200)
+    fig.savefig(OUT / "manuscript_fig1_lights.png", dpi=DPI)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(5.2, 4.0), constrained_layout=True)
@@ -105,13 +112,13 @@ def main():
     ax.axhline(0.10, color=MUTED, linewidth=0.9, linestyle=(0, (4, 3)))
     ax.text(0.003, 0.101, "τ", va="bottom", ha="left", fontsize=8, color=MUTED)
     ax.scatter([], [], s=80, marker="X", color="white", edgecolor=INK, label="failure (|error| > 10%)")
-    ax.set_xlabel("s_flip: spread of volume across the 8 flips / V₀", color=INK, fontsize=9)
-    ax.set_ylabel("s_stage: |stage 1 − stage 2| / V₀", color=INK, fontsize=9)
+    ax.set_xlabel("s_flip: spread of volume across the 8 flips / $V_0$", color=INK, fontsize=9)
+    ax.set_ylabel("s_stage: |stage 1 − stage 2| / $V_0$", color=INK, fontsize=9)
     ax.set_title("Body, sealed test (H20): the two stability signals", color=INK, fontsize=10, loc="left")
     ax.legend(frameon=False, fontsize=8, loc="center right", bbox_to_anchor=(1.0, 0.62))
     _style(ax)
     ax.grid(axis="x", color=GRID, linewidth=0.8)
-    fig.savefig(OUT / "manuscript_fig2_signals.png", dpi=200)
+    fig.savefig(OUT / "manuscript_fig2_signals.png", dpi=DPI)
     plt.close(fig)
     graphical_abstract()
     print("figuras escritas en", OUT)
@@ -119,7 +126,9 @@ def main():
 
 def graphical_abstract():
     """Resumen gráfico de 660 × 295 px (norma de T-USON): el protocolo y dónde se paró cada estudio.
-    Los recuentos son los de los documentos de resultados de H19, H20, H23, H24 y H25."""
+    Los recuentos son los de los documentos de resultados de H19, H20, H23, H24 y H25.
+    Escribe además ``manuscript_graphical_abstract_300dpi.png`` (1980 × 885 px, misma proporción) para la caja de la
+    plantilla LaTeX, que pide al menos 300 ppp."""
     from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
     fig = plt.figure(figsize=(6.6, 2.95), dpi=100)
@@ -127,7 +136,7 @@ def graphical_abstract():
     ax.set_xlim(0, 660)
     ax.set_ylim(0, 295)
     ax.axis("off")
-    fig.patch.set_facecolor("#fcfcfb")
+    fig.patch.set_facecolor("#ffffff")
     ax.text(14, 276, "A preregistered, sealed-test protocol for per-case reliability flags", fontsize=10.5,
             color=INK, weight="bold", va="center")
     steps = ["Preregister\ntolerance, rule,\nminimums", "Feasibility\ngate (G0)", "Calibration\ngate",
@@ -156,6 +165,7 @@ def graphical_abstract():
     ax.text(14, 12, "3D high-frequency ultrasound, mouse embryos (public dataset). No human or clinical data.",
             fontsize=7, color=MUTED)
     fig.savefig(OUT / "manuscript_graphical_abstract.png", dpi=100, facecolor=fig.get_facecolor())
+    fig.savefig(OUT / "manuscript_graphical_abstract_300dpi.png", dpi=DPI, facecolor=fig.get_facecolor())
     plt.close(fig)
 
 
