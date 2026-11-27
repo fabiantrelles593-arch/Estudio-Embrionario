@@ -140,7 +140,26 @@ We add three rules learned in Section III-E:
 - Record every deviation with its date, approved before the affected quantity is computed.
 - Publish negative and non-evaluable studies with the same detail as positive ones.
 
-Table I lists the protocol as a checklist **[to be typeset from Sections II-A to II-D]**.
+Table I lists the protocol as a checklist.
+
+**TABLE I. Checklist for testing a per-case reliability flag**
+
+| # | Item | When | Done if | Example in Section III |
+|---|---|---|---|---|
+| 1 | Tolerance and failure definition | Before any data | Written in the preregistration, in units the structure can meet | D (relative → boundary voxels) |
+| 2 | Flag rule | Before any data | Thresholds derived from the tolerance; nothing fitted | C |
+| 3 | Domain guard | Before any data | Indices defined and checked to be computable on the target structure | A, D |
+| 4 | Split by subject | Before any data | No subject in two parts | All |
+| 5 | Preregistration | Before computing anything decisive | Hypotheses, criteria, minimums, predictions and meanings uploaded with code and tests | All |
+| 6 | Feasibility gate (G0) | On fitting cases | Signals computable; pipeline reproduces the measurement exactly | C |
+| 7 | Calibration gate | On calibration subjects | Passed; otherwise the test is not opened | B, D |
+| 8 | Freeze and fingerprint | Before the test | SHA-256 recorded in the preregistration; code refuses mismatches | C, D |
+| 9 | Single test | Once | Test opened once, then marked as used | C, D |
+| 10 | Three-state verdicts | At closing | Supported / not supported / not evaluable or inconclusive; uncomputable is never "not supported" | All |
+| S-1 | Separation evaluability | At planning | ≥ 10 failures in total and ≥ 1 in each group | E |
+| S-2 | Separation planning | At planning | Expected failure rate and number of cases declared; about 25 expected failures | E |
+| S-3 | Resampling unit | At planning | Bootstrap by subject | C, D |
+| R | Reporting | At closing | Predictions compared with outcomes; dated deviations; negative results published | All |
 
 ## III. Worked examples
 
