@@ -76,14 +76,20 @@ dominio.
 
 ## 5. Orden de ejecución
 
-`scripts/run_h26.py` **[POR ESCRIBIR, cuando se conozca el formato]**, con sus pruebas, subido con el preregistro
-final y con el CI en verde antes de abrir ningún volumen:
+`scripts/run_h26.py` y `src/geovida/h26.py`, con sus pruebas en `tests/test_h26.py`. Están escritos para el formato
+del conjunto público; si los datos nuevos llegan en otro formato, solo cambia la lectura, y el cambio se sube con el
+preregistro final y con el CI en verde antes de abrir ningún volumen:
 
-1. `check`: huellas de §4.
-2. `g0-datos`: los puntos de §3 que se comprueban con archivos (huellas, solapamiento, formato, recuento).
-3. `g0`: en 5 volúmenes elegidos con semilla, **solo imagen, sin leer la referencia**: señales calculables y como
-   mucho 300 s por caso. No ajusta nada; los 5 siguen en la prueba.
-4. `test`: una sola vez, sobre todos los volúmenes. Lee las referencias por primera vez.
+1. `check`: huellas de §4 y umbrales del código iguales a los congelados.
+2. `g0-datos`: los puntos de §3 que se comprueban con archivos: columnas, archivos presentes, huella del documento de
+   condiciones de uso y solapamiento con el conjunto público (por huella SHA-256 de cada imagen y por embrión).
+3. `g0`: en 5 volúmenes de cuerpo elegidos con la semilla 20261128, **solo imagen, sin leer la referencia**: señales
+   calculables y como mucho 300 s por caso. No ajusta nada; los 5 siguen en la prueba.
+4. `test`: una sola vez, sobre todos los volúmenes. Lee las referencias por primera vez. Deja un candado al empezar y
+   se niega a empezar otra vez.
+
+Además, `replay-public` rehace la evaluación de H20 y H25 desde sus filas ya medidas, sin calcular ninguna red, y
+comprueba que R1b y V1b dan exactamente los veredictos publicados de H20b y H25b.
 
 ## 6. Hipótesis y criterios
 
@@ -165,3 +171,15 @@ En todos los casos, el conjunto nuevo queda usado como prueba de H26.
 
 **Aprobación como base (26 nov 2026).** El autor aprueba este texto como base. Cualquier cambio entre esta base y el
 preregistro final, salvo rellenar los huecos [POR COMPLETAR], se anotará aquí con fecha y motivo.
+
+**Cambio 1 (26 nov 2026): código escrito antes de tener datos.** §5 decía «por escribir cuando se conozca el formato».
+Se escribió ya para el formato del conjunto público, para no retrasar el estudio cuando lleguen los datos. No cambia
+ninguna regla, umbral ni criterio. Comprobaciones hechas sin datos nuevos:
+
+- `check`: congelados y redes con las huellas de §4.
+- `replay-public`: R1b reproduce exactamente H20b y V1b reproduce exactamente H25b. Con S-1, la separación de H20 y
+  la de H25 habrían sido «no evaluables» (menos de 10 fallos), como se esperaba.
+- `g0-datos` con 4 volúmenes públicos presentados como nuevos: los 4 se excluyen por huella y por embrión, y G0-datos
+  no se supera.
+
+Se fija la semilla de `g0` (20261128).
