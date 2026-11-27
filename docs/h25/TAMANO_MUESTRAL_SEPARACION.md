@@ -79,7 +79,7 @@ H23d y H24d no se evaluaron. Ninguno dijo «no separa». Pero un estudio futuro 
    un IC degenerado.
 
 Esto **no cambia** ningún estudio cerrado. Solo se aplicaría a un preregistro nuevo, que necesita la aprobación del
-autor.
+autor. **Adoptado por el autor el 26 nov 2026** como reglas S-1 a S-3 de `docs/REGLAS_PREREGISTRO.md`.
 
 ## 6. Qué significa para el segundo conjunto de datos
 
