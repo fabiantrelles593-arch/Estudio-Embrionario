@@ -1,6 +1,8 @@
 # Notas de envío: IEEE Transactions on Ultrasonics (26 nov 2026)
 
 > **Decisión del autor (26 nov 2026): ruta A, revista T-UFFC por la vía tradicional, sin cargo de acceso abierto.**
+> **Categoría elegida el mismo día: Methods and Concepts.** El texto para enviar es
+> `docs/manuscrito/MANUSCRIPT_MC_EN.md` (v0.3-en).
 > Las normas se leyeron ese día en la página oficial:
 > <https://ieee-uffc.org/publication/t-uffc/guidelines-authors>. Hay que volver a comprobarlas antes de enviar.
 >
@@ -73,7 +75,8 @@ reenviar una versión revisada.
 | Discussion separada | Hecho |
 | Referencias en estilo IEEE numerado | Hecho (v0.2-en) |
 | Figuras | Hechas, generadas por `scripts/figure_manuscript.py`; falta colocarlas dentro del texto en la plantilla |
-| Resumen gráfico de 660 × 295 | **Falta** |
+| Resumen gráfico de 660 × 295 | Hecho: `docs/figures/manuscript_graphical_abstract.png`, generado por `scripts/figure_manuscript.py` (solo en local) |
+| Reestructurar como Methods and Concepts | Hecho (v0.3-en): protocolo en la sección II y estudios como ejemplos en la III. Falta la tabla de verificación (Table I) maquetada |
 | Plantilla de T-USON (Word o LaTeX) | **Falta**: pasar el texto a la plantilla oficial |
 | Ética con animales | Hecho: datos ya publicados, sin experimentos nuevos |
 | Financiación y conflictos de interés | **Falta** (autor) |
