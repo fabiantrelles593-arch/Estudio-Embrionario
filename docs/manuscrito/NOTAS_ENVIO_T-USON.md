@@ -80,13 +80,13 @@ reenviar una versión revisada.
 | Plantilla de T-USON (LaTeX, elegida el 27 nov 2026) | Hecho: `docs/manuscrito/tuson/manuscript_tuson.tex` (v0.4-tex). Ver §5 |
 | Resumen de un solo párrafo, 150–250 palabras (norma de la plantilla) | Hecho: 240 palabras |
 | Tres Highlights de 200 caracteres como máximo (norma de la plantilla) | Hecho: 165, 162 y 166 caracteres |
-| Compilar el `.tex` y comprobar la extensión | **Falta**: no hay compilador LaTeX en el equipo; ver §5 |
+| Compilar el `.tex` y comprobar la extensión | Hecho (27 nov 2026): compila sin errores con Tectonic 0.17.0; ver §5 |
 | Ética con animales | Hecho: datos ya publicados, sin experimentos nuevos |
 | Financiación y conflictos de interés | **Falta** (autor) |
 | Autoría, afiliación y biografía | **Falta** (autor) |
 | Revisión del inglés | **Falta**: recomendable una revisión profesional o de un hablante nativo |
 | Búsqueda en Scopus o Web of Science y revisor externo | **Falta** (`docs/SINTESIS_CERTIFICADO.md` §6) |
-| Extensión dentro de 10 páginas (Original Research) o 14 (Methods and Concepts) | Probable; se comprueba al compilar |
+| Extensión dentro de 10 páginas (Original Research) o 14 (Methods and Concepts) | Hecho: 5 páginas sin biografías ni fotos, muy por debajo de las 14 |
 
 ## 5. La plantilla LaTeX (27 nov 2026) [HV]
 
@@ -108,5 +108,10 @@ reenviar una versión revisada.
   1980 × 885 px (300 ppp) para la plantilla. Conviene confirmarlo con la revista si el editor lo señala.
 - **Paquetes no libres:** el preámbulo de la plantilla carga `mathtime` y `linex`, que no están en una distribución
   libre estándar. El `.tex` los deja desactivados con un interruptor (`\tusonfontstrue` para activarlos).
-- **Pendiente:** compilar. Opciones: instalar un compilador (MiKTeX o Tectonic, descarga que requiere permiso) o
-  compilar en Overleaf con los archivos de la plantilla.
+- **Compilación (27 nov 2026):** con Tectonic 0.17.0 (versión oficial para Windows, MIT; SHA-256 del zip comprobado
+  contra el publicado en GitHub), fuera del repositorio y con `TUSON.sty` de la plantilla. Sin errores ni referencias
+  sin resolver; 5 páginas. Las únicas cajas desbordadas son las de la caja coloreada del resumen, que vienen de la
+  propia plantilla. Como `mathtime` está desactivado, el texto sale en Nimbus Roman (clon de Times): la extensión
+  puede variar algo con las fuentes de IEEE, pero hay margen de sobra.
+- **Para recompilar:** generar las figuras con `scripts/figure_manuscript.py`, copiar `TUSON.sty` junto al `.tex` y
+  ejecutar `tectonic manuscript_tuson.tex` desde `docs/manuscrito/tuson/`. El PDF no se sube al repositorio.
