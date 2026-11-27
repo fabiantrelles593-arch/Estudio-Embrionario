@@ -102,18 +102,25 @@ Disagreement between predictions on transformed inputs is an established estimat
 \cite{wang2019a}, and it has been used to indicate potential mis-segmentations \cite{wang2019b}. Per-case quality
 control has mostly been approached by predicting a quality score: reverse classification accuracy predicted the Dice
 coefficient of each case in thousands of cardiac magnetic resonance scans \cite{robinson2019}, and calibrated
-ensembles were used to predict segmentation quality and to detect out-of-distribution inputs \cite{mehrtash2020}. In
-ultrasound, uncertainty from Monte Carlo dropout, test-time augmentation and ensembles did not reliably predict
-bone-surface segmentation performance \cite{pandey2022}, a warning against assuming that low uncertainty means a
-reliable measurement. On the evaluation side, reviews and guidelines describe how bias enters medical imaging studies
+ensembles were used to predict segmentation quality and to detect out-of-distribution inputs \cite{mehrtash2020}.
+Voxel-wise uncertainty that is well calibrated over a whole dataset can still be miscalibrated for individual
+subjects \cite{jungo2019}. In ultrasound, uncertainty from Monte Carlo dropout, test-time augmentation and ensembles
+did not reliably predict bone-surface segmentation performance \cite{pandey2022}, a warning against assuming that low
+uncertainty means a reliable measurement; in fetal ultrasound, segmentation quality has been assessed with a
+classifier that separates good from poor masks \cite{cengiz2023}. On the evaluation side, reviews and guidelines describe how bias enters medical imaging studies
 \cite{varoquaux2022}, how validation metrics should be chosen \cite{maierhein2024} and what reports of artificial
 intelligence in imaging should contain \cite{tejani2024}; publicly registering a frozen model before its external
 validation has been proposed for predictive modelling \cite{gallitto2025}. Closest to the decision problem, recent
 work accepts or rejects segmentations by thresholding uncertainty, with the threshold chosen from the distributions of
 correct and incorrect cases \cite{vanlente2025} or by a search that balances the risk of keeping errors against
 unnecessary rejections \cite{norajitra2026}; test-time augmentation and dropout have also been used to score volume
-segmentations without a reference \cite{li2024}. Our flag rule instead derives its thresholds from the measurement
-tolerance and fixes them before any data are seen, because with few failures a fitted threshold is unstable. The
+segmentations without a reference \cite{li2024}. A benchmark on five public 3D collections recommended risk--coverage
+analysis for evaluating failure detection and found the pairwise Dice score between ensemble members a strong
+baseline \cite{zenk2025}, and split conformal prediction has been used to turn sampling-based estimates into
+performance ranges with a guaranteed coverage, given an exchangeable calibration set \cite{wundram2024}. Our flag
+rule instead derives its thresholds from the measurement tolerance and fixes them before any data are seen, because
+with few failures a fitted threshold is unstable, and a conformal guarantee holds on average over cases rather than
+for the cases a flag marks. The
 protocol below brings these elements
 together for a narrower question, whether a per-case flag can support a decision, and adds evaluability rules for the
 separation question that we did not find in the sources we reviewed.
@@ -377,7 +384,7 @@ scientific review. \TBC{other acknowledgments}
 \TBC{competing interests statement}
 
 % =================================================================================================================
-\begin{thebibliography}{16}
+\begin{thebibliography}{20}
 % Ordered by first citation, as IEEE style requires.
 
 \bibitem{wang2019a}
@@ -400,10 +407,19 @@ A.~Mehrtash, W.~M. Wells, C.~M. Tempany, P.~Abolmaesumi, and T.~Kapur, ``Confide
 uncertainty estimation for deep medical image segmentation,'' \emph{IEEE Trans. Med. Imag.}, vol.~39, no.~12,
 pp.~3868--3878, Dec. 2020, doi: 10.1109/TMI.2020.3006437.
 
+\bibitem{jungo2019}
+A.~Jungo and M.~Reyes, ``Assessing reliability and challenges of uncertainty estimations for medical image
+segmentation,'' in \emph{Proc. Med. Image Comput. Comput. Assist. Interv. (MICCAI)}, 2019, pp.~48--56,
+doi: 10.1007/978-3-030-32245-8\_6.
+
 \bibitem{pandey2022}
 P.~U. Pandey, P.~Guy, and A.~J. Hodgson, ``Can uncertainty estimation predict segmentation performance in
 ultrasound bone imaging?'' \emph{Int. J. Comput. Assist. Radiol. Surg.}, vol.~17, no.~5, pp.~825--832, May 2022,
 doi: 10.1007/s11548-022-02597-0.
+
+\bibitem{cengiz2023}
+S.~Cengiz, I.~Almakky, and M.~Yaqub, ``FUSQA: Fetal ultrasound segmentation quality assessment,'' 2023,
+\emph{arXiv:2303.04418}.
 
 \bibitem{varoquaux2022}
 G.~Varoquaux and V.~Cheplygina, ``Machine learning for medical imaging: Methodological failures and
@@ -434,6 +450,16 @@ population imaging,'' \emph{Med. Image Anal.}, vol.~116, 2026, Art. no.~104351, 
 Y.~Li \emph{et al.}, ``Deep learning models for separate segmentations of intracerebral and intraventricular
 hemorrhage on head CT and segmentation quality assessment,'' \emph{Med. Phys.}, vol.~51, no.~11, pp.~8317--8333,
 2024, doi: 10.1002/mp.17343.
+
+\bibitem{zenk2025}
+M.~Zenk \emph{et al.}, ``Comparative benchmarking of failure detection methods in medical image segmentation:
+Unveiling the role of confidence aggregation,'' \emph{Med. Image Anal.}, vol.~101, Apr. 2025, Art. no.~103392,
+doi: 10.1016/j.media.2024.103392.
+
+\bibitem{wundram2024}
+A.~M. Wundram, P.~Fischer, M.~M\"{u}hlebach, L.~M. Koch, and C.~F. Baumgartner, ``Conformal performance range
+prediction for segmentation output quality control,'' in \emph{Uncertainty for Safe Utilization of Machine Learning
+in Medical Imaging}, 2024, pp.~81--91, doi: 10.1007/978-3-031-73158-7\_8.
 
 \bibitem{qiu2021}
 Z.~Qiu \emph{et al.}, ``A deep learning approach for segmentation, classification, and visualization of 3-D
