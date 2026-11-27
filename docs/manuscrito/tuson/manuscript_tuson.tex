@@ -108,7 +108,13 @@ bone-surface segmentation performance \cite{pandey2022}, a warning against assum
 reliable measurement. On the evaluation side, reviews and guidelines describe how bias enters medical imaging studies
 \cite{varoquaux2022}, how validation metrics should be chosen \cite{maierhein2024} and what reports of artificial
 intelligence in imaging should contain \cite{tejani2024}; publicly registering a frozen model before its external
-validation has been proposed for predictive modelling \cite{gallitto2025}. The protocol below brings these elements
+validation has been proposed for predictive modelling \cite{gallitto2025}. Closest to the decision problem, recent
+work accepts or rejects segmentations by thresholding uncertainty, with the threshold chosen from the distributions of
+correct and incorrect cases \cite{vanlente2025} or by a search that balances the risk of keeping errors against
+unnecessary rejections \cite{norajitra2026}; test-time augmentation and dropout have also been used to score volume
+segmentations without a reference \cite{li2024}. Our flag rule instead derives its thresholds from the measurement
+tolerance and fixes them before any data are seen, because with few failures a fitted threshold is unstable. The
+protocol below brings these elements
 together for a narrower question, whether a per-case flag can support a decision, and adds evaluability rules for the
 separation question that we did not find in the sources we reviewed.
 
@@ -371,7 +377,7 @@ scientific review. \TBC{other acknowledgments}
 \TBC{competing interests statement}
 
 % =================================================================================================================
-\begin{thebibliography}{13}
+\begin{thebibliography}{16}
 % Ordered by first citation, as IEEE style requires.
 
 \bibitem{wang2019a}
@@ -415,6 +421,19 @@ A.~S. Tejani \emph{et al.}, ``Checklist for Artificial Intelligence in Medical I
 \bibitem{gallitto2025}
 G.~Gallitto \emph{et al.}, ``External validation of machine learning models: Registered models and adaptive sample
 splitting,'' \emph{GigaScience}, vol.~14, 2025, Art. no.~giaf036, doi: 10.1093/gigascience/giaf036.
+
+\bibitem{vanlente2025}
+M.~van Lente \emph{et al.}, ``Enhancing online adaptive radiotherapy with uncertainty based segmentation error and
+out-of-distribution detection,'' \emph{Front. Oncol.}, vol.~15, 2025, Art. no.~1637198, doi: 10.3389/fonc.2025.1637198.
+
+\bibitem{norajitra2026}
+T.~Norajitra \emph{et al.}, ``Ensemble-based uncertainty enables large-scale 3D segmentation quality control in
+population imaging,'' \emph{Med. Image Anal.}, vol.~116, 2026, Art. no.~104351, doi: 10.1016/j.media.2026.104351.
+
+\bibitem{li2024}
+Y.~Li \emph{et al.}, ``Deep learning models for separate segmentations of intracerebral and intraventricular
+hemorrhage on head CT and segmentation quality assessment,'' \emph{Med. Phys.}, vol.~51, no.~11, pp.~8317--8333,
+2024, doi: 10.1002/mp.17343.
 
 \bibitem{qiu2021}
 Z.~Qiu \emph{et al.}, ``A deep learning approach for segmentation, classification, and visualization of 3-D
