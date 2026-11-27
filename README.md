@@ -236,6 +236,8 @@ del mismo barrido dan tablas idénticas (comprobado en H8). Los estudios con dat
 * Una pieza calibrada se prueba también con condiciones que su calibración no vio.
 * La suite completa corre antes de cada commit; cada figura se mira antes de publicarla.
 * Los hallazgos *post hoc* se marcan como tales.
+* Las reglas comunes que debe seguir todo preregistro nuevo están en
+  [`REGLAS_PREREGISTRO.md`](docs/REGLAS_PREREGISTRO.md).
 
 ## Origen y transparencia
 
