@@ -1,8 +1,9 @@
-# Manuscript draft (v0.1-en, 26 Nov 2026)
+# Manuscript draft (v0.2-en, IEEE T-USON format, 26 Nov 2026)
 
-> **Status: internal draft. Not submitted to any journal.** English translation of
-> `docs/manuscrito/BORRADOR_MANUSCRITO.md` (v0.1); if the two disagree, the Spanish version and the cited results
-> documents prevail. Before submission, per §6 of `docs/SINTESIS_CERTIFICADO.md`:
+> **Status: internal draft. Not submitted to any journal.** English version of
+> `docs/manuscrito/BORRADOR_MANUSCRITO.md`, adapted to IEEE Transactions on Ultrasonics (T-USON): Index Terms,
+> numbered IEEE references and a contributions paragraph (`docs/manuscrito/NOTAS_ENVIO_T-USON.md`). If a figure
+> disagrees with the cited results documents, those documents prevail. Before submission, per §6 of `docs/SINTESIS_CERTIFICADO.md`:
 >
 > 1. a Scopus or Web of Science search and a second reviewer;
 > 2. review by an external advisor;
@@ -25,7 +26,7 @@ high-frequency ultrasound: a preregistered evaluation with a sealed test set**
 measurement of a mouse embryo in 3D ultrasound is reliable (within 10% of the manual reference).
 
 **Methods.** We used a public dataset of 3D high-frequency ultrasound (HFU) volumes of mouse embryos with manual
-segmentations (Qiu et al. 2021). Every study was preregistered before computing the quantity that decided it. Sealed
+segmentations [1], [2]. Every study was preregistered before computing the quantity that decided it. Sealed
 test sets were opened only once, after the SHA-256 fingerprint of the frozen parameters had been recorded. We compared
 three sources of reliability:
 
@@ -51,6 +52,9 @@ three sources of reliability:
 Whether it separates correct from failed measurements remains unshown, because the network rarely fails on these data.
 A second dataset is needed, with more failures or many more cases.
 
+**Index Terms**—Deep learning, high-frequency ultrasound, mouse embryo, preregistration, quality control, segmentation,
+uncertainty estimation.
+
 ## 1. Introduction
 
 Measuring embryo volume in 3D ultrasound requires segmentation. No segmenter is always right, and in practice the
@@ -58,8 +62,7 @@ reference is not available to tell whether a given case was measured well. A use
 per-case indication of whether it can be trusted.
 
 Using the disagreement between predictions on transformed inputs as a measure of segmentation uncertainty has been
-published (Wang et al. 2019a), as has its use to flag erroneous segmentations in cascaded networks (Wang et al.
-2019b). Here we test it on 3D HFU of mouse embryos under three less common conditions:
+published [4], as has its use to flag erroneous segmentations in cascaded networks [5]. Here we test it on 3D HFU of mouse embryos under three less common conditions:
 
 1. a fixed rule, with thresholds derived from the tolerance and not fitted to the data;
 2. calibration gates that must be passed before the test set is opened;
@@ -67,12 +70,26 @@ published (Wang et al. 2019a), as has its use to flag erroneous segmentations in
 
 We also report the negative results that led to this rule.
 
+**Contributions and difference from prior work.** Earlier work on test-time augmentation estimated voxel- and
+structure-level uncertainty in brain MRI and showed that it can indicate potential mis-segmentations [4], [5]. The
+work that produced this dataset reported segmentation accuracy, not per-case reliability [1], [3]. Here:
+
+1. the reliability output is a per-case decision (green, yellow or red) with a fixed rule and a declared tolerance;
+2. its safety is tested on a sealed test set, opened once after freezing;
+3. it is compared, on the same data, with a simulation-calibrated certificate and with image observables, and the
+   failures of those alternatives are reported;
+4. the question it does not answer (separating correct from failed measurements) is stated, with the sample size
+   needed to answer it.
+
+Our literature search covered PubMed and Europe PMC; a Scopus or Web of Science search is still pending, so we do not
+claim this is the first such evaluation.
+
 ## 2. Methods
 
 ### 2.1. Data
 
 Public dataset of 3D HFU volumes of mouse embryos with manual segmentation of the body and the brain ventricles
-(Qiu et al. 2021; IEEE DataPort, doi:10.21227/drmd-xq36; CC BY license). The public archive contains 180 body cases and
+[1], [2] (IEEE DataPort, doi:10.21227/drmd-xq36; CC BY license). The public archive contains 180 body cases and
 216 ventricle cases [`docs/h11/RESULTADOS_H11.md`]. No new animal data were generated and no human data were used.
 
 **Split.** We used the dataset authors' train/test split, by embryo: no embryo appears on both sides. Training
@@ -81,8 +98,7 @@ body test set has 44 cases from 43 embryos [`docs/h20/PREREGISTRO_H20.md` §3].
 
 ### 2.2. Segmentation network
 
-An independent reimplementation, from the publications, of the two-stage idea of Xu et al. (2020) and Qiu et al.
-(2021); no code or weights were copied. Stage 1 is a small 3D U-Net at ¼ resolution over the whole volume. Stage 2
+An independent reimplementation, from the publications, of the two-stage idea of [3] and [1]; no code or weights were copied. Stage 1 is a small 3D U-Net at ¼ resolution over the whole volume. Stage 2
 works at ½ resolution in a box around the stage-1 result, with its probability as a second channel. It was trained on
 CPU with random flips along the three axes. The measurement is the volume of the full-resolution mask, keeping the
 largest connected component [`src/geovida/h19.py`].
@@ -232,18 +248,18 @@ could not show.
 
 References 1, 3, 4 and 5 were checked in PubMed on 26 Nov 2026 (PMID in parentheses).
 
-1. Qiu Z, Xu T, Langerman J, Das W, Wang C, Nair N, Aristizabal O, Mamou J, Turnbull DH, Ketterling JA, Wang Y. A
+[1] Qiu Z, Xu T, Langerman J, Das W, Wang C, Nair N, Aristizabal O, Mamou J, Turnbull DH, Ketterling JA, Wang Y. A
    deep learning approach for segmentation, classification, and visualization of 3-D high-frequency ultrasound images
    of mouse embryos. IEEE Trans Ultrason Ferroelectr Freq Control. 2021;68(7):2460–2471.
    doi:10.1109/TUFFC.2021.3068156 (PMID 33755564).
-2. Ultrasound Mouse Embryo Segmentation and Classification [dataset]. IEEE DataPort. doi:10.21227/drmd-xq36. CC BY.
-3. Xu T, Qiu Z, Das W, Wang C, Langerman J, Nair N, Aristizábal O, Mamou J, Turnbull DH, Ketterling JA, Wang Y. Deep
+[2] Ultrasound Mouse Embryo Segmentation and Classification [dataset]. IEEE DataPort. doi:10.21227/drmd-xq36. CC BY.
+[3] Xu T, Qiu Z, Das W, Wang C, Langerman J, Nair N, Aristizábal O, Mamou J, Turnbull DH, Ketterling JA, Wang Y. Deep
    Mouse: an end-to-end auto-context refinement framework for brain ventricle & body segmentation in embryonic mice
    ultrasound volumes. Proc IEEE Int Symp Biomed Imaging. 2020;2020:122–126. doi:10.1109/isbi45749.2020.9098387
    (PMID 33381278).
-4. Wang G, Li W, Aertsen M, Deprest J, Ourselin S, Vercauteren T. Aleatoric uncertainty estimation with test-time
+[4] Wang G, Li W, Aertsen M, Deprest J, Ourselin S, Vercauteren T. Aleatoric uncertainty estimation with test-time
    augmentation for medical image segmentation with convolutional neural networks. Neurocomputing. 2019;335:34–45.
-   doi:10.1016/j.neucom.2019.01.103 (PMID 31595105). [Wang et al. 2019a in the text]
-5. Wang G, Li W, Ourselin S, Vercauteren T. Automatic brain tumor segmentation based on cascaded convolutional neural
+   doi:10.1016/j.neucom.2019.01.103 (PMID 31595105).
+[5] Wang G, Li W, Ourselin S, Vercauteren T. Automatic brain tumor segmentation based on cascaded convolutional neural
    networks with uncertainty estimation. Front Comput Neurosci. 2019;13:56. doi:10.3389/fncom.2019.00056
-   (PMID 31456678). [Wang et al. 2019b in the text]
+   (PMID 31456678).
