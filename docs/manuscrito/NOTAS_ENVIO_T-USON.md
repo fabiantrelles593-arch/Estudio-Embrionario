@@ -76,7 +76,7 @@ reenviar una versión revisada.
 | Referencias en estilo IEEE numerado | Hecho (v0.2-en) |
 | Figuras | Hechas, generadas por `scripts/figure_manuscript.py`; falta colocarlas dentro del texto en la plantilla |
 | Resumen gráfico de 660 × 295 | Hecho: `docs/figures/manuscript_graphical_abstract.png`, generado por `scripts/figure_manuscript.py` (solo en local) |
-| Reestructurar como Methods and Concepts | Hecho (v0.3-en): protocolo en la sección II y estudios como ejemplos en la III. Falta la tabla de verificación (Table I) maquetada |
+| Reestructurar como Methods and Concepts | Hecho (v0.3-en): protocolo en la sección II y estudios como ejemplos en la III. Tabla de verificación (Table I) hecha |
 | Plantilla de T-USON (Word o LaTeX) | **Falta**: pasar el texto a la plantilla oficial |
 | Ética con animales | Hecho: datos ya publicados, sin experimentos nuevos |
 | Financiación y conflictos de interés | **Falta** (autor) |
