@@ -113,7 +113,50 @@ def main():
     ax.grid(axis="x", color=GRID, linewidth=0.8)
     fig.savefig(OUT / "manuscript_fig2_signals.png", dpi=200)
     plt.close(fig)
+    graphical_abstract()
     print("figuras escritas en", OUT)
+
+
+def graphical_abstract():
+    """Resumen gráfico de 660 × 295 px (norma de T-USON): el protocolo y dónde se paró cada estudio.
+    Los recuentos son los de los documentos de resultados de H19, H20, H23, H24 y H25."""
+    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+
+    fig = plt.figure(figsize=(6.6, 2.95), dpi=100)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, 660)
+    ax.set_ylim(0, 295)
+    ax.axis("off")
+    fig.patch.set_facecolor("#fcfcfb")
+    ax.text(14, 276, "A preregistered, sealed-test protocol for per-case reliability flags", fontsize=10.5,
+            color=INK, weight="bold", va="center")
+    steps = ["Preregister\ntolerance, rule,\nminimums", "Feasibility\ngate (G0)", "Calibration\ngate",
+             "Freeze +\nSHA-256\nfingerprint", "Open test\nonce", "Three-state\nverdict"]
+    w, h, y, gap = 92, 70, 160, 14
+    xs = [14 + i * (w + gap) for i in range(len(steps))]
+    for i, (x, s) in enumerate(zip(xs, steps)):
+        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0,rounding_size=6",
+                                    facecolor="#ffffff", edgecolor=MUTED, linewidth=1))
+        ax.text(x + w / 2, y + h / 2, s, ha="center", va="center", fontsize=8, color=INK, linespacing=1.15)
+        if i < len(steps) - 1:
+            ax.add_patch(FancyArrowPatch((x + w + 1, y + h / 2), (x + w + gap - 1, y + h / 2),
+                                         arrowstyle="-|>", mutation_scale=8, color=MUTED, linewidth=1))
+    notes = [
+        (xs[2], "Stopped here,\ntest not opened:", "#d03b3b",
+         "image observables\n(2 of 16 greens failed)\nventricles, first rules\n(0 and 3 greens of 34)"),
+        (xs[4], "Opened once:", "#0ca30c",
+         "body: 1 of 21 greens\nfailed (CI 0–14%)\nventricles: 19 greens,\nnot evaluable"),
+    ]
+    for x, head, col, body in notes:
+        ax.plot([x + w / 2, x + w / 2], [y - 2, 132], color=col, linewidth=1.2)
+        ax.text(x + w / 2, 126, head, ha="center", va="top", fontsize=7.5, color=INK, weight="bold")
+        ax.text(x + w / 2, 100, body, ha="center", va="top", fontsize=7.2, color=INK, linespacing=1.15)
+    ax.text(xs[5] + w / 2, 126, "Separation needs\n≥ 10 failures\n(rule S-1)", ha="center", va="top", fontsize=7.2,
+            color=MUTED, linespacing=1.15)
+    ax.text(14, 12, "3D high-frequency ultrasound, mouse embryos (public dataset). No human or clinical data.",
+            fontsize=7, color=MUTED)
+    fig.savefig(OUT / "manuscript_graphical_abstract.png", dpi=100, facecolor=fig.get_facecolor())
+    plt.close(fig)
 
 
 if __name__ == "__main__":
