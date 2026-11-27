@@ -85,8 +85,8 @@ reenviar una versión revisada.
 | Financiación y conflictos de interés | **Falta** (autor) |
 | Autoría, afiliación y biografía | **Falta** (autor) |
 | Revisión del inglés | **Falta**: recomendable una revisión profesional o de un hablante nativo |
-| Búsqueda en Scopus o Web of Science y revisor externo | **Parcial:** búsqueda en PubMed hecha el 27 nov 2026 (`docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`), que añadió 7 referencias. Faltan Scopus o Web of Science y el revisor externo (`docs/SINTESIS_CERTIFICADO.md` §6) |
-| Extensión dentro de 10 páginas (Original Research) o 14 (Methods and Concepts) | Hecho: 5 páginas sin biografías ni fotos, muy por debajo de las 14 |
+| Búsqueda en Scopus o Web of Science y revisor externo | **Parcial:** búsqueda en PubMed hecha el 27 nov 2026 (`docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`), que añadió 10 referencias. Faltan Scopus o Web of Science y el revisor externo (`docs/SINTESIS_CERTIFICADO.md` §6) |
+| Extensión dentro de 10 páginas (Original Research) o 14 (Methods and Concepts) | Hecho: 6 páginas sin biografías ni fotos (tras añadir los trabajos relacionados), muy por debajo de las 14 |
 
 ## 5. La plantilla LaTeX (27 nov 2026) [HV]
 
