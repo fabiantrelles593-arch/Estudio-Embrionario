@@ -11,7 +11,12 @@
 > - a Scopus or Web of Science search and an external reviewer;
 > - authorship, affiliation, funding, competing interests and biographies **[TO BE COMPLETED by the author]**;
 > - an English language review;
-> - transfer to the official T-USON template.
+> - compiling the LaTeX version and checking its length (no compiler on the working machine yet).
+>
+> **27 Nov 2026:** transferred to the official T-USON LaTeX template as
+> `docs/manuscrito/tuson/manuscript_tuson.tex` (v0.4-tex). The template requires a single-paragraph abstract of
+> 150–250 words and three Highlights; both are below and in the `.tex`. The list form of the abstract in v0.3 was
+> rewritten as one paragraph with the same content.
 >
 > No affiliation is invented.
 
@@ -24,33 +29,29 @@ worked examples in 3D high-frequency mouse embryo imaging**
 
 ## Abstract
 
-A segmentation network that measures well on average still fails on some cases, and in practice the reference is not
-available to tell which. A per-case reliability flag (green: trust the measurement; yellow or red: do not) addresses
-this, but such flags are easy to overrate: thresholds tuned on the evaluation data, test sets reused, failures too few
-to show anything, and negative results left unreported.
+A segmentation network that measures well on average still fails on some cases, and the reference needed to tell
+which is rarely available. A per-case reliability flag (green: trust the measurement; yellow or red: do not)
+addresses this, but such flags are easily overrated when thresholds are tuned on evaluation data, test sets are
+reused, failures are too few to show anything, or negative results go unreported. We describe a protocol for testing
+such flags: a tolerance and failure definition fixed in advance; a flag rule derived from the tolerance rather than
+fitted to data; a domain guard; calibration gates that must be passed before the test set is opened; frozen
+parameters whose cryptographic fingerprint is recorded beforehand and checked by the code; a test set opened once;
+three-state verdicts; and evaluability and sample-size rules for asking whether a flag separates correct from failed
+measurements. We illustrate each step with preregistered studies on a public dataset of three-dimensional
+high-frequency ultrasound volumes of mouse embryos. The gates stopped two flags before they consumed the test set; a
+guard withheld green where a certificate calibrated on simulations would have given 540 false greens out of 540; a
+stability-based flag passed its gate and, on a sealed test set opened once, failed in 1 of 21 green cases; and a
+sample-size simulation exposed a defect in a common rule for declaring no separation, which we correct. The
+protocol, code and preregistrations are public. *(240 words; the template asks for 150–250.)*
 
-We describe a protocol for testing such flags. Its core steps are:
+**Highlights** (required by the template; at most 200 characters each):
 
-1. a tolerance and a failure definition fixed in advance;
-2. a flag rule derived from the tolerance, not fitted to data;
-3. a domain guard;
-4. calibration gates that must be passed before the test set is opened;
-5. frozen parameters whose SHA-256 fingerprint is recorded before the test, with code that refuses to run otherwise;
-6. a test set opened once;
-7. three-state verdicts (supported, not supported, not evaluable or inconclusive);
-8. evaluability rules and sample-size planning for the question of whether a flag separates correct from failed
-   measurements.
-
-We illustrate each step with a series of preregistered studies on a public 3D high-frequency ultrasound dataset of
-mouse embryos. In those studies:
-
-- the gates stopped two flags before they consumed the test set;
-- a guard refused to give green where a simulation-calibrated certificate would have given 100% false greens (540 of
-  540);
-- a stability-based flag passed its gate and, on a sealed test set opened once, failed in 1 of 21 green cases;
-- a sample-size simulation exposed a defect in a common rule for declaring "no separation", which we correct.
-
-The protocol, code and all preregistrations are public.
+1. A preregistered, sealed-test protocol for testing per-case reliability flags of learned ultrasound segmentation,
+   with evaluability rules for the separation question.
+2. In 3-D high-frequency mouse embryo ultrasound, gates stopped two flags before the test; a stability flag tested
+   once failed in 1 of 21 green cases (95% CI 0–14%).
+3. Simulation shows a common no-separation rule misfires when failures are few; requiring at least 10 failures guards
+   small validation studies against false conclusions.
 
 **Index Terms**—Deep learning, high-frequency ultrasound, mouse embryo, preregistration, quality control,
 reproducibility, segmentation, uncertainty estimation.
