@@ -27,7 +27,7 @@
 | 4 | `Robinson R[Author] automated quality control image segmentation UK Biobank` | 1 | Robinson et al. 2019 |
 | 5 | `Metrics reloaded recommendations image analysis validation[Title]` | 1 | Maier-Hein et al. 2024 |
 | 6 | `Checklist for Artificial Intelligence in Medical Imaging CLAIM[Title]` | 12 | Tejani et al. 2024 (actualización de CLAIM) |
-| 7 | `segmentation quality estimation without ground truth deep learning` | 48 | 0 en esta ronda (sin revisar uno a uno; ver §5) |
+| 7 | `segmentation quality estimation without ground truth deep learning` | 48 | 3, tras revisar los 48 (ver §3b) |
 | 8 | `preregistration machine learning research reproducibility` | 5 | Gallitto et al. 2025 |
 | 9 | `ultrasound segmentation uncertainty test-time augmentation` | 15 | Pandey et al. 2022 |
 
@@ -43,6 +43,27 @@
 | [8] | Tejani et al., Radiol Artif Intell 2024;6(4):e240300 | 38809149 | 10.1148/ryai.240300 | Lista CLAIM de comunicación de estudios de IA en imagen |
 | [9] | Gallitto et al., Gigascience 2025;14:giaf036 | 40366867 | 10.1093/gigascience/giaf036 | Registro público de un modelo congelado antes de su validación externa |
 
+## 3b. Revisión de los 48 registros de la consulta 7 (27 nov 2026) [HV]
+
+- **Cribado por título:** 48 registros. 40 se descartaron por tema ajeno (imágenes de satélite, alimentos,
+  dosimetría, síntesis de imágenes, eliminación de ruido, etiquetas ruidosas, etc.).
+- **Lectura del resumen:** 8 registros (PMID 42981922, 41613551, 35976491, 39133935, 40250215, 41129432, 40934552 y
+  29875312).
+- **Incluidos (3):**
+
+| Ref. | Trabajo | PMID | DOI | Para qué se cita |
+|---|---|---|---|---|
+| [10] | van Lente et al., Front Oncol 2025;15:1637198 | 41613551 | 10.3389/fonc.2025.1637198 | Umbral de incertidumbre elegido a partir de las distribuciones de casos correctos e incorrectos |
+| [11] | Norajitra et al., Med Image Anal 2026;116:104351 | 42981922 | 10.1016/j.media.2026.104351 | Aceptar o rechazar segmentaciones con un umbral buscado para equilibrar riesgo y cobertura; el trabajo más cercano a nuestra pregunta de decisión |
+| [12] | Li et al., Med Phys 2024;51(11):8317–8333 | 39133935 | 10.1002/mp.17343 | Puntuaciones de calidad sin referencia (aumentos en la prueba, dropout) en segmentaciones para medir volúmenes |
+
+- **Leídos y no incluidos (5):** predicción del Dice con otra red (35976491) y con modelos bayesianos (40250215),
+  predicción del esfuerzo de corrección manual (41129432), un desafío de calibración con varios anotadores
+  (40934552) y segmentación de la placenta en ecografía 3D (29875312). Son pertinentes, pero no añaden a lo que ya
+  citan [3] y [4].
+- **Consecuencia:** los tres incluidos eligen el umbral a partir de datos. El manuscrito lo dice y explica por qué
+  nuestra regla deriva los umbrales de la tolerancia: con pocos fallos, un umbral ajustado es inestable.
+
 ## 4. Consecuencias para el manuscrito
 
 - **Gallitto et al. 2025 es un antecedente directo** del paso «congelar y registrar la huella antes de la prueba».
@@ -57,12 +78,11 @@
 
 - Solo PubMed. Muchos trabajos de visión por computador y aprendizaje automático (actas de MICCAI, IEEE ISBI,
   NeurIPS; arXiv) no están indexados en PubMed o lo están de forma incompleta.
-- La consulta 7 devolvió 48 registros que no se revisaron uno a uno.
+- La revisión de la consulta 7 se hizo por título y, para 8 registros, por resumen; no se leyeron textos completos.
 - No hubo segundo revisor.
 
 ## 6. Pendiente [PROP]
 
 1. Repetir la búsqueda en Scopus o Web of Science (necesita acceso institucional del autor).
-2. Revisar los 48 registros de la consulta 7.
-3. Buscar en actas de MICCAI e IEEE ISBI trabajos sobre fiabilidad de la incertidumbre en segmentación y sobre
+2. Buscar en actas de MICCAI e IEEE ISBI trabajos sobre fiabilidad de la incertidumbre en segmentación y sobre
    detección de fallos por caso.
