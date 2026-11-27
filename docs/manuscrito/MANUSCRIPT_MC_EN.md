@@ -8,11 +8,13 @@
 >
 > **Still pending before submission:**
 >
-> - a Scopus or Web of Science search and an external reviewer (a PubMed search was done on 27 Nov 2026 and added
->   references [3]–[12]; see `docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`);
+> - a Scopus or Web of Science search and an external reviewer (on 27 Nov 2026 a PubMed search added references
+>   [3], [4], [6] and [8]–[14], and an OpenAlex search covering MICCAI and ISBI proceedings added [5], [7], [15] and [16];
+>   see `docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`);
 > - authorship, affiliation, funding, competing interests and biographies **[TO BE COMPLETED by the author]**;
 > - an English language review;
-> - compiling the LaTeX version and checking its length (no compiler on the working machine yet).
+> - the LaTeX version (`docs/manuscrito/tuson/manuscript_tuson.tex`) compiles and fits well within the page limit;
+>   it must be kept in step with this file.
 >
 > **27 Nov 2026:** transferred to the official T-USON LaTeX template as
 > `docs/manuscrito/tuson/manuscript_tuson.tex` (v0.4-tex). The template requires a single-paragraph abstract of
@@ -67,17 +69,23 @@ Disagreement between predictions on transformed inputs is an established estimat
 it has been used to indicate potential mis-segmentations [2]. Per-case quality control has mostly been approached by
 predicting a quality score: reverse classification accuracy predicted the Dice coefficient of each case in thousands of
 cardiac magnetic resonance scans [3], and calibrated ensembles were used to predict segmentation quality and to detect
-out-of-distribution inputs [4]. In ultrasound, uncertainty from Monte Carlo dropout, test-time augmentation and
-ensembles did not reliably predict bone-surface segmentation performance [5], a warning against assuming that low
-uncertainty means a reliable measurement. On the evaluation side, reviews and guidelines describe how bias enters
-medical imaging studies [6], how validation metrics should be chosen [7] and what reports of artificial intelligence in
-imaging should contain [8]; publicly registering a frozen model before its external validation has been proposed for
-predictive modelling [9]. Closest to the decision problem, recent work accepts or rejects segmentations by
-thresholding uncertainty, with the threshold chosen from the distributions of correct and incorrect cases [10] or by a
-search that balances the risk of keeping errors against unnecessary rejections [11]; test-time augmentation and dropout
-have also been used to score volume segmentations without a reference [12]. Our flag rule instead derives its
-thresholds from the measurement tolerance and fixes them before any data are seen, because with few failures a fitted
-threshold is unstable. The protocol below brings these elements together for a narrower question, whether a per-case
+out-of-distribution inputs [4]. Voxel-wise uncertainty that is well calibrated over a whole dataset can still be
+miscalibrated for individual subjects [5]. In ultrasound, uncertainty from Monte Carlo dropout, test-time augmentation
+and ensembles did not reliably predict bone-surface segmentation performance [6], a warning against assuming that low
+uncertainty means a reliable measurement; in fetal ultrasound, segmentation quality has been assessed with a
+classifier that separates good from poor masks [7]. On the evaluation side, reviews and guidelines describe how bias
+enters medical imaging studies [8], how validation metrics should be chosen [9] and what reports of artificial
+intelligence in imaging should contain [10]; publicly registering a frozen model before its external validation has
+been proposed for predictive modelling [11]. Closest to the decision problem, recent work accepts or rejects
+segmentations by thresholding uncertainty, with the threshold chosen from the distributions of correct and incorrect
+cases [12] or by a search that balances the risk of keeping errors against unnecessary rejections [13]; test-time
+augmentation and dropout have also been used to score volume segmentations without a reference [14]. A benchmark on
+five public 3D collections recommended risk–coverage analysis for evaluating failure detection and found the pairwise
+Dice score between ensemble members a strong baseline [15], and split conformal prediction has been used to turn
+sampling-based estimates into performance ranges with a guaranteed coverage, given an exchangeable calibration set
+[16]. Our flag rule instead derives its thresholds from the measurement tolerance and fixes them before any data are
+seen, because with few failures a fitted threshold is unstable, and a conformal guarantee holds on average over cases
+rather than for the cases a flag marks. The protocol below brings these elements together for a narrower question, whether a per-case
 flag can support a decision, and adds evaluability rules for the separation question that we did not find in the
 sources we reviewed.
 
@@ -95,7 +103,7 @@ result. Section II describes the protocol, Section III works through each step w
 discusses what the protocol costs and what it does not solve.
 
 The examples use a public dataset of 3D high-frequency ultrasound volumes of mouse embryos with manual segmentations of
-the body and brain ventricles [13]–[15]. No new animal data were generated and no human data were used.
+the body and brain ventricles [17]–[19]. No new animal data were generated and no human data were used.
 
 ## II. The protocol
 
@@ -195,7 +203,7 @@ without the guard [`docs/h11/RESULTADOS_H12R.md`].
 
 ### B. A calibration gate stops a flag before it consumes the test set
 
-A two-stage network, reimplemented from [13], [15], put 24 of 27 calibration cases within 10% (median Dice 0.938). A
+A two-stage network, reimplemented from [17], [19], put 24 of 27 calibration cases within 10% (median Dice 0.938). A
 certificate based on image observables then failed the calibration gate: 2 of 16 greens failed, more than giving green
 to every case. The test set was not opened [`docs/h19/RESULTADOS_H19.md`].
 
@@ -319,9 +327,10 @@ Generated by `scripts/figure_manuscript.py` from already-measured cases, with no
 
 ## References
 
-Numbered in order of first citation (IEEE style; renumbered on 27 Nov 2026). All references except the dataset [14]
-were checked in PubMed (PMID in parentheses): [1], [2], [13] and [15] on 26 Nov 2026, [3]–[12] on 27 Nov 2026 (search
-recorded in `docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`).
+Numbered in order of first citation (IEEE style; renumbered on 27 Nov 2026). References with a PMID were checked in
+PubMed: [1], [2], [17] and [19] on 26 Nov 2026, the rest on 27 Nov 2026. [5], [7] and [16] are not in PubMed; their
+metadata were checked in Crossref (or arXiv for [7]) and their abstracts read on arXiv on 27 Nov 2026. The dataset [18]
+is not indexed in PubMed. Searches recorded in `docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`.
 
 [1] Wang G, Li W, Aertsen M, Deprest J, Ourselin S, Vercauteren T. Aleatoric uncertainty estimation with test-time
    augmentation for medical image segmentation with convolutional neural networks. Neurocomputing. 2019;335:34–45.
@@ -335,33 +344,44 @@ recorded in `docs/manuscrito/BUSQUEDA_PUBMED_2026-11-27.md`).
 [4] Mehrtash A, Wells WM, Tempany CM, Abolmaesumi P, Kapur T. Confidence calibration and predictive uncertainty
    estimation for deep medical image segmentation. IEEE Trans Med Imaging. 2020;39(12):3868–3878.
    doi:10.1109/TMI.2020.3006437 (PMID 32746129).
-[5] Pandey PU, Guy P, Hodgson AJ. Can uncertainty estimation predict segmentation performance in ultrasound bone
+[5] Jungo A, Reyes M. Assessing reliability and challenges of uncertainty estimations for medical image segmentation.
+   In: Medical Image Computing and Computer Assisted Intervention – MICCAI 2019. Lecture Notes in Computer Science.
+   Cham: Springer; 2019. p. 48–56. doi:10.1007/978-3-030-32245-8_6.
+[6] Pandey PU, Guy P, Hodgson AJ. Can uncertainty estimation predict segmentation performance in ultrasound bone
    imaging? Int J Comput Assist Radiol Surg. 2022;17(5):825–832. doi:10.1007/s11548-022-02597-0 (PMID 35377036).
-[6] Varoquaux G, Cheplygina V. Machine learning for medical imaging: methodological failures and recommendations for
+[7] Cengiz S, Almakky I, Yaqub M. FUSQA: fetal ultrasound segmentation quality assessment [preprint]. arXiv. 2023.
+   arXiv:2303.04418.
+[8] Varoquaux G, Cheplygina V. Machine learning for medical imaging: methodological failures and recommendations for
    the future. NPJ Digit Med. 2022;5(1):48. doi:10.1038/s41746-022-00592-y (PMID 35413988).
-[7] Maier-Hein L, Reinke A, Godau P, Tizabi MD, Buettner F, Christodoulou E, et al. Metrics reloaded: recommendations
+[9] Maier-Hein L, Reinke A, Godau P, Tizabi MD, Buettner F, Christodoulou E, et al. Metrics reloaded: recommendations
    for image analysis validation. Nat Methods. 2024;21(2):195–212. doi:10.1038/s41592-023-02151-z (PMID 38347141).
-[8] Tejani AS, Klontzas ME, Gatti AA, Mongan JT, Moy L, Park SH, et al. Checklist for Artificial Intelligence in
+[10] Tejani AS, Klontzas ME, Gatti AA, Mongan JT, Moy L, Park SH, et al. Checklist for Artificial Intelligence in
    Medical Imaging (CLAIM): 2024 update. Radiol Artif Intell. 2024;6(4):e240300. doi:10.1148/ryai.240300
    (PMID 38809149).
-[9] Gallitto G, Englert R, Kincses B, Kotikalapudi R, Li J, Hoffschlag K, Bingel U, Spisak T. External validation of
+[11] Gallitto G, Englert R, Kincses B, Kotikalapudi R, Li J, Hoffschlag K, Bingel U, Spisak T. External validation of
    machine learning models: registered models and adaptive sample splitting. Gigascience. 2025;14:giaf036.
    doi:10.1093/gigascience/giaf036 (PMID 40366867).
-[10] van Lente M, Pluim J, Fransson S, Strand R, et al. Enhancing online adaptive radiotherapy with uncertainty based
+[12] van Lente M, Pluim J, Fransson S, Strand R, et al. Enhancing online adaptive radiotherapy with uncertainty based
    segmentation error and out-of-distribution detection. Front Oncol. 2025;15:1637198. doi:10.3389/fonc.2025.1637198
    (PMID 41613551).
-[11] Norajitra T, Nonnenmacher T, Haueise T, Isensee F, et al. Ensemble-based uncertainty enables large-scale 3D
+[13] Norajitra T, Nonnenmacher T, Haueise T, Isensee F, et al. Ensemble-based uncertainty enables large-scale 3D
    segmentation quality control in population imaging. Med Image Anal. 2026;116:104351.
    doi:10.1016/j.media.2026.104351 (PMID 42981922).
-[12] Li Y, Zhang R, Li Y, Zuo X, et al. Deep learning models for separate segmentations of intracerebral and
+[14] Li Y, Zhang R, Li Y, Zuo X, et al. Deep learning models for separate segmentations of intracerebral and
    intraventricular hemorrhage on head CT and segmentation quality assessment. Med Phys. 2024;51(11):8317–8333.
    doi:10.1002/mp.17343 (PMID 39133935).
-[13] Qiu Z, Xu T, Langerman J, Das W, Wang C, Nair N, Aristizabal O, Mamou J, Turnbull DH, Ketterling JA, Wang Y. A
+[15] Zenk M, Zimmerer D, Isensee F, Traub J, Norajitra T, Jäger PF, Maier-Hein K. Comparative benchmarking of failure
+   detection methods in medical image segmentation: unveiling the role of confidence aggregation. Med Image Anal.
+   2025;101:103392. doi:10.1016/j.media.2024.103392 (PMID 39657400).
+[16] Wundram AM, Fischer P, Mühlebach M, Koch LM, Baumgartner CF. Conformal performance range prediction for
+   segmentation output quality control. In: Uncertainty for Safe Utilization of Machine Learning in Medical Imaging.
+   Lecture Notes in Computer Science. Cham: Springer; 2024. p. 81–91. doi:10.1007/978-3-031-73158-7_8.
+[17] Qiu Z, Xu T, Langerman J, Das W, Wang C, Nair N, Aristizabal O, Mamou J, Turnbull DH, Ketterling JA, Wang Y. A
    deep learning approach for segmentation, classification, and visualization of 3-D high-frequency ultrasound images
    of mouse embryos. IEEE Trans Ultrason Ferroelectr Freq Control. 2021;68(7):2460–2471.
    doi:10.1109/TUFFC.2021.3068156 (PMID 33755564).
-[14] Ultrasound Mouse Embryo Segmentation and Classification [dataset]. IEEE DataPort. doi:10.21227/drmd-xq36. CC BY.
-[15] Xu T, Qiu Z, Das W, Wang C, Langerman J, Nair N, Aristizábal O, Mamou J, Turnbull DH, Ketterling JA, Wang Y. Deep
+[18] Ultrasound Mouse Embryo Segmentation and Classification [dataset]. IEEE DataPort. doi:10.21227/drmd-xq36. CC BY.
+[19] Xu T, Qiu Z, Das W, Wang C, Langerman J, Nair N, Aristizábal O, Mamou J, Turnbull DH, Ketterling JA, Wang Y. Deep
    Mouse: an end-to-end auto-context refinement framework for brain ventricle & body segmentation in embryonic mice
    ultrasound volumes. Proc IEEE Int Symp Biomed Imaging. 2020;2020:122–126. doi:10.1109/isbi45749.2020.9098387
    (PMID 33381278).
