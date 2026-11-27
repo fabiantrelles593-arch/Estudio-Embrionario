@@ -99,7 +99,20 @@ accurate networks fail on some inputs, and the user rarely has a reference to ch
 reliability output is therefore useful: it tells the user when to trust a number.
 
 Disagreement between predictions on transformed inputs is an established estimate of segmentation uncertainty
-\cite{wang2019a}, and it has been used to indicate potential mis-segmentations \cite{wang2019b}. Evaluating whether
+\cite{wang2019a}, and it has been used to indicate potential mis-segmentations \cite{wang2019b}. Per-case quality
+control has mostly been approached by predicting a quality score: reverse classification accuracy predicted the Dice
+coefficient of each case in thousands of cardiac magnetic resonance scans \cite{robinson2019}, and calibrated
+ensembles were used to predict segmentation quality and to detect out-of-distribution inputs \cite{mehrtash2020}. In
+ultrasound, uncertainty from Monte Carlo dropout, test-time augmentation and ensembles did not reliably predict
+bone-surface segmentation performance \cite{pandey2022}, a warning against assuming that low uncertainty means a
+reliable measurement. On the evaluation side, reviews and guidelines describe how bias enters medical imaging studies
+\cite{varoquaux2022}, how validation metrics should be chosen \cite{maierhein2024} and what reports of artificial
+intelligence in imaging should contain \cite{tejani2024}; publicly registering a frozen model before its external
+validation has been proposed for predictive modelling \cite{gallitto2025}. The protocol below brings these elements
+together for a narrower question, whether a per-case flag can support a decision, and adds evaluability rules for the
+separation question that we did not find in the sources we reviewed.
+
+Evaluating whether
 such an estimate can support a \emph{decision} about a single case is harder than showing that it correlates with
 error. Common pitfalls are:
 \begin{itemize}
@@ -358,7 +371,50 @@ scientific review. \TBC{other acknowledgments}
 \TBC{competing interests statement}
 
 % =================================================================================================================
-\begin{thebibliography}{6}
+\begin{thebibliography}{13}
+% Ordered by first citation, as IEEE style requires.
+
+\bibitem{wang2019a}
+G.~Wang, W.~Li, M.~Aertsen, J.~Deprest, S.~Ourselin, and T.~Vercauteren, ``Aleatoric uncertainty estimation with
+test-time augmentation for medical image segmentation with convolutional neural networks,''
+\emph{Neurocomputing}, vol.~335, pp.~34--45, Mar. 2019, doi: 10.1016/j.neucom.2019.01.103.
+
+\bibitem{wang2019b}
+G.~Wang, W.~Li, S.~Ourselin, and T.~Vercauteren, ``Automatic brain tumor segmentation based on cascaded
+convolutional neural networks with uncertainty estimation,'' \emph{Front. Comput. Neurosci.}, vol.~13, 2019,
+Art. no.~56, doi: 10.3389/fncom.2019.00056.
+
+\bibitem{robinson2019}
+R.~Robinson \emph{et al.}, ``Automated quality control in image segmentation: Application to the UK Biobank
+cardiovascular magnetic resonance imaging study,'' \emph{J. Cardiovasc. Magn. Reson.}, vol.~21, no.~1, 2019,
+Art. no.~18, doi: 10.1186/s12968-019-0523-x.
+
+\bibitem{mehrtash2020}
+A.~Mehrtash, W.~M. Wells, C.~M. Tempany, P.~Abolmaesumi, and T.~Kapur, ``Confidence calibration and predictive
+uncertainty estimation for deep medical image segmentation,'' \emph{IEEE Trans. Med. Imag.}, vol.~39, no.~12,
+pp.~3868--3878, Dec. 2020, doi: 10.1109/TMI.2020.3006437.
+
+\bibitem{pandey2022}
+P.~U. Pandey, P.~Guy, and A.~J. Hodgson, ``Can uncertainty estimation predict segmentation performance in
+ultrasound bone imaging?'' \emph{Int. J. Comput. Assist. Radiol. Surg.}, vol.~17, no.~5, pp.~825--832, May 2022,
+doi: 10.1007/s11548-022-02597-0.
+
+\bibitem{varoquaux2022}
+G.~Varoquaux and V.~Cheplygina, ``Machine learning for medical imaging: Methodological failures and
+recommendations for the future,'' \emph{npj Digit. Med.}, vol.~5, no.~1, 2022, Art. no.~48,
+doi: 10.1038/s41746-022-00592-y.
+
+\bibitem{maierhein2024}
+L.~Maier-Hein \emph{et al.}, ``Metrics reloaded: Recommendations for image analysis validation,'' \emph{Nat.
+Methods}, vol.~21, no.~2, pp.~195--212, Feb. 2024, doi: 10.1038/s41592-023-02151-z.
+
+\bibitem{tejani2024}
+A.~S. Tejani \emph{et al.}, ``Checklist for Artificial Intelligence in Medical Imaging (CLAIM): 2024 update,''
+\emph{Radiol. Artif. Intell.}, vol.~6, no.~4, 2024, Art. no.~e240300, doi: 10.1148/ryai.240300.
+
+\bibitem{gallitto2025}
+G.~Gallitto \emph{et al.}, ``External validation of machine learning models: Registered models and adaptive sample
+splitting,'' \emph{GigaScience}, vol.~14, 2025, Art. no.~giaf036, doi: 10.1093/gigascience/giaf036.
 
 \bibitem{qiu2021}
 Z.~Qiu \emph{et al.}, ``A deep learning approach for segmentation, classification, and visualization of 3-D
@@ -373,16 +429,6 @@ https://doi.org/10.21227/drmd-xq36
 T.~Xu \emph{et al.}, ``Deep Mouse: An end-to-end auto-context refinement framework for brain ventricle \& body
 segmentation in embryonic mice ultrasound volumes,'' in \emph{Proc. IEEE 17th Int. Symp. Biomed. Imag. (ISBI)},
 2020, pp.~122--126, doi: 10.1109/ISBI45749.2020.9098387.
-
-\bibitem{wang2019a}
-G.~Wang, W.~Li, M.~Aertsen, J.~Deprest, S.~Ourselin, and T.~Vercauteren, ``Aleatoric uncertainty estimation with
-test-time augmentation for medical image segmentation with convolutional neural networks,''
-\emph{Neurocomputing}, vol.~335, pp.~34--45, Mar. 2019, doi: 10.1016/j.neucom.2019.01.103.
-
-\bibitem{wang2019b}
-G.~Wang, W.~Li, S.~Ourselin, and T.~Vercauteren, ``Automatic brain tumor segmentation based on cascaded
-convolutional neural networks with uncertainty estimation,'' \emph{Front. Comput. Neurosci.}, vol.~13, 2019,
-Art. no.~56, doi: 10.3389/fncom.2019.00056.
 
 \bibitem{repo}
 Geometr\'{\i}a de la Vida project repository, branch \texttt{geovida/v0.1-desde-cero}. [Online]. Available:
