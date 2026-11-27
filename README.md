@@ -196,7 +196,7 @@ Cómo rehacerlos: [`REPRODUCCION.md`](docs/REPRODUCCION.md).
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                                           # 1051 casos (26 nov 2026); el prototipo en navegador necesita Playwright y Chromium
+pytest                                           # 1062 casos (26 nov 2026); el prototipo en navegador necesita Playwright y Chromium
 python scripts/run_h6.py --phase test && python scripts/analyze_h6.py     # ~17 min, 2 núcleos
 python scripts/run_h7.py && python scripts/analyze_h7.py                  # ~1 min
 python scripts/run_h8.py && python scripts/analyze_h8.py                  # ~5 min
