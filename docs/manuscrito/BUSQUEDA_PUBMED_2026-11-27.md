@@ -4,8 +4,12 @@
 > manuscrito `docs/manuscrito/MANUSCRIPT_MC_EN.md` y su versión LaTeX.
 > **Qué no es:** la búsqueda en Scopus o Web of Science que pide `docs/SINTESIS_CERTIFICADO.md` §6. Esa sigue
 > pendiente.
+> **Ampliación del mismo día:** búsqueda complementaria en OpenAlex, que indexa actas de MICCAI e IEEE ISBI (§3c).
 >
-> **Etiquetas:** [HV] verificado en PubMed · [HIP] hipótesis · [PROP] propuesta.
+> **Etiquetas:** [HV] verificado en PubMed, o en Crossref y arXiv cuando se indica · [HIP] hipótesis · [PROP] propuesta.
+>
+> **Numeración:** las referencias se renumeraron al añadir las de §3c. Los números de §3 y §3b son los de entonces;
+> la equivalencia con la numeración actual del manuscrito está en §3c.
 
 ## 1. Método
 
@@ -64,6 +68,43 @@
 - **Consecuencia:** los tres incluidos eligen el umbral a partir de datos. El manuscrito lo dice y explica por qué
   nuestra regla deriva los umbrales de la tolerancia: con pocos fallos, un umbral ajustado es inestable.
 
+## 3c. Búsqueda complementaria en OpenAlex (27 nov 2026)
+
+- **Por qué:** PubMed recoge mal las actas de congresos de análisis de imagen (§5). Elicit no se pudo usar: el plan
+  de la cuenta no incluye acceso por API. Se usó la API pública de OpenAlex, sin datos personales en las consultas.
+- **Consultas** (desde 2018; se revisaron los 25 primeros resultados por relevancia de cada una):
+
+| # | Consulta | Resultados totales |
+|---|---|---|
+| O1 | `failure detection medical image segmentation` | 78 076 |
+| O2 | `segmentation quality control uncertainty` | 167 912 |
+| O3 | `fetal ultrasound segmentation quality control` | 5 732 |
+| O4 | `segmentation failure prediction without ground truth` | 57 518 |
+
+- **Cribado:** 100 títulos; la mayoría trataban de arquitecturas de segmentación, revisiones generales o escenas
+  urbanas. Se leyó el resumen de 4 (en PubMed o arXiv) y se comprobaron sus metadatos en Crossref.
+- **Incluidos (4) [HV]:**
+
+| Ref. actual | Trabajo | Identificadores | Para qué se cita |
+|---|---|---|---|
+| [5] | Jungo y Reyes, MICCAI 2019, LNCS, pp. 48–56 | doi:10.1007/978-3-030-32245-8_6; arXiv:1907.03338 | La incertidumbre por vóxel, bien calibrada en el conjunto, está mal calibrada por sujeto |
+| [7] | Cengiz, Almakky y Yaqub, preprint 2023 | arXiv:2303.04418 | En ecografía fetal, un clasificador separa máscaras buenas de malas (longitud cráneo-caudal) |
+| [15] | Zenk et al., Med Image Anal 2025;101:103392 | PMID 39657400; doi:10.1016/j.media.2024.103392 | Banco de pruebas de detección de fallos: propone el análisis riesgo-cobertura y halla en el Dice por pares entre miembros de un ensamble una línea base fuerte |
+| [16] | Wundram et al., Uncertainty for Safe Utilization of Machine Learning in Medical Imaging (LNCS) 2024, pp. 81–91 | doi:10.1007/978-3-031-73158-7_8; arXiv:2407.13307 | Predicción conformal de rangos de rendimiento con cobertura garantizada, dado un conjunto de calibración intercambiable |
+
+- **Hallados y no incluidos (2):** Fournel et al., MICCAI 2025 (doi:10.1007/978-3-032-05169-1_12), y Lennartz y
+  Schultz, ISBI 2026 (doi:10.1109/ISBI61048.2026.11515947). No se encontró su resumen en las fuentes consultadas, y
+  no se citan sin leerlos.
+- **Hallazgo sobre la búsqueda anterior:** Zenk et al. está en PubMed, pero ninguna de las 9 consultas de §2 lo
+  recuperó. Confirma que esas consultas no eran exhaustivas.
+- **Consecuencia:** la predicción conformal es la alternativa con más fundamento a fijar el umbral por la tolerancia,
+  y el manuscrito la nombra. Lo que la distingue de nuestra pregunta es que su garantía es de cobertura media sobre
+  los casos, no sobre los casos que una bandera marca.
+- **El FUSQA se cita como preprint:** OpenAlex lo asocia a Medical Imaging with Deep Learning, pero no se pudo
+  comprobar la versión publicada. Hay que revisarlo antes de enviar.
+- **Equivalencia de números:** antiguo → actual: [1]–[4] sin cambio; [5] → [6]; [6]–[12] → [8]–[14]; [13]–[15] →
+  [17]–[19].
+
 ## 4. Consecuencias para el manuscrito
 
 - **Gallitto et al. 2025 es un antecedente directo** del paso «congelar y registrar la huella antes de la prueba».
@@ -76,13 +117,13 @@
 
 ## 5. Límites de esta búsqueda
 
-- Solo PubMed. Muchos trabajos de visión por computador y aprendizaje automático (actas de MICCAI, IEEE ISBI,
-  NeurIPS; arXiv) no están indexados en PubMed o lo están de forma incompleta.
+- PubMed, más una búsqueda complementaria en OpenAlex (§3c) limitada a los 25 primeros resultados de cada consulta.
+  OpenAlex no sustituye a Scopus o Web of Science, y NeurIPS y arXiv quedan cubiertos solo en parte.
 - La revisión de la consulta 7 se hizo por título y, para 8 registros, por resumen; no se leyeron textos completos.
 - No hubo segundo revisor.
 
 ## 6. Pendiente [PROP]
 
 1. Repetir la búsqueda en Scopus o Web of Science (necesita acceso institucional del autor).
-2. Buscar en actas de MICCAI e IEEE ISBI trabajos sobre fiabilidad de la incertidumbre en segmentación y sobre
-   detección de fallos por caso.
+2. ~~Buscar en actas de MICCAI e IEEE ISBI~~: hecho en parte con OpenAlex (§3c). Falta leer Fournel et al. 2025
+   y Lennartz y Schultz 2026 si se consigue el texto, y comprobar la versión publicada del FUSQA.
