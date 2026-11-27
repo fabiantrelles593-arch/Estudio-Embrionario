@@ -77,10 +77,36 @@ reenviar una versión revisada.
 | Figuras | Hechas, generadas por `scripts/figure_manuscript.py`; falta colocarlas dentro del texto en la plantilla |
 | Resumen gráfico de 660 × 295 | Hecho: `docs/figures/manuscript_graphical_abstract.png`, generado por `scripts/figure_manuscript.py` (solo en local) |
 | Reestructurar como Methods and Concepts | Hecho (v0.3-en): protocolo en la sección II y estudios como ejemplos en la III. Tabla de verificación (Table I) hecha |
-| Plantilla de T-USON (Word o LaTeX) | **Falta**: pasar el texto a la plantilla oficial |
+| Plantilla de T-USON (LaTeX, elegida el 27 nov 2026) | Hecho: `docs/manuscrito/tuson/manuscript_tuson.tex` (v0.4-tex). Ver §5 |
+| Resumen de un solo párrafo, 150–250 palabras (norma de la plantilla) | Hecho: 240 palabras |
+| Tres Highlights de 200 caracteres como máximo (norma de la plantilla) | Hecho: 165, 162 y 166 caracteres |
+| Compilar el `.tex` y comprobar la extensión | **Falta**: no hay compilador LaTeX en el equipo; ver §5 |
 | Ética con animales | Hecho: datos ya publicados, sin experimentos nuevos |
 | Financiación y conflictos de interés | **Falta** (autor) |
 | Autoría, afiliación y biografía | **Falta** (autor) |
 | Revisión del inglés | **Falta**: recomendable una revisión profesional o de un hablante nativo |
 | Búsqueda en Scopus o Web of Science y revisor externo | **Falta** (`docs/SINTESIS_CERTIFICADO.md` §6) |
-| Extensión dentro de 10 páginas (Original Research) o 14 (Methods and Concepts) | Probable; se comprueba con la plantilla |
+| Extensión dentro de 10 páginas (Original Research) o 14 (Methods and Concepts) | Probable; se comprueba al compilar |
+
+## 5. La plantilla LaTeX (27 nov 2026) [HV]
+
+- **Origen:** IEEE Template Selector → Transactions, Journals and Letters → IEEE Transactions on Ultrasonics →
+  Original Research → LaTeX. El selector no ofrece una plantilla aparte para Methods and Concepts.
+- **Archivo:** `TUSON LaTeX Template.zip`, 4 670 624 bytes, SHA-256
+  `9c614865e91fb2185551e817b1abfb6323d33cfe2cf49a6d323f08b063141804`. Contiene `Sample.tex`, `TUSON.sty`,
+  `IEEEtran.cls` (V1.8b), dos logotipos, `GA.pdf` y `Sample.pdf`.
+- **No se redistribuye** en el repositorio: `TUSON.sty` no declara licencia. Para compilar, descargar el zip y copiar
+  `IEEEtran.cls` y `TUSON.sty` junto a `manuscript_tuson.tex`.
+- **Normas de la plantilla que no estaban en la página web:**
+  - tres Highlights, de 200 caracteres como máximo cada uno;
+  - resumen de un solo párrafo, de 150 a 250 palabras, sin abreviaturas, notas ni referencias;
+  - resumen gráfico de 6,25 × 2,5 pulgadas como máximo, al menos 300 ppp, fondo blanco y rótulos en Arial;
+  - figuras en color a 300 ppp como mínimo; rótulos de subfiguras (a), (b).
+- **Conflicto entre fuentes:** la página web pide un resumen gráfico de 660 × 295 píxeles; con el ancho fijo de 6,25
+  pulgadas de la caja de la plantilla, esa proporción supera las 2,5 pulgadas de alto. El `.tex` ajusta la imagen por
+  la altura (orden `\GAfit`). `scripts/figure_manuscript.py` escribe las dos versiones: 660 × 295 px para la web y
+  1980 × 885 px (300 ppp) para la plantilla. Conviene confirmarlo con la revista si el editor lo señala.
+- **Paquetes no libres:** el preámbulo de la plantilla carga `mathtime` y `linex`, que no están en una distribución
+  libre estándar. El `.tex` los deja desactivados con un interruptor (`\tusonfontstrue` para activarlos).
+- **Pendiente:** compilar. Opciones: instalar un compilador (MiKTeX o Tectonic, descarga que requiere permiso) o
+  compilar en Overleaf con los archivos de la plantilla.
