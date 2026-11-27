@@ -214,6 +214,26 @@ base, con un mínimo de fallos para evaluar la separación [`docs/h26/PREREGISTR
   revisión científica humana externa.
 - **Financiación y conflictos de interés:** **[POR COMPLETAR por el autor]**.
 
+## Figuras
+
+Se generan con `scripts/figure_manuscript.py` a partir de los casos de prueba ya medidos de H20 y H25, sin análisis
+nuevos. El script comprueba antes que los recuentos son los publicados. Las imágenes
+(`docs/figures/manuscript_fig1_lights.png` y `docs/figures/manuscript_fig2_signals.png`) se crean al ejecutarlo.
+
+**Figura 1. Error de cada caso de prueba según su luz.**
+
+- **A. Cuerpo, prueba sellada de H20 (44 casos):** |error de volumen| en %; la línea discontinua marca la tolerancia
+  del 10 %.
+- **B. Ventrículos, prueba de H25 (40 casos):** error de borde e_b en vóxeles; la tolerancia es de 0,5 vóxeles.
+
+Las cruces son fallos. En A falla 1 de las 21 verdes: infraestima un 12,9 % con las dos señales bajas. En B, la verde
+que falla queda justo por encima del límite (0,51), y el fallo grosero (2,34) es amarillo.
+
+**Figura 2. Las dos señales de estabilidad en la prueba de cuerpo (H20).** Las líneas discontinuas marcan los umbrales
+de la regla: τ/2 y 2τ para s_flip, y τ para s_stage. Los amarillos que caen dentro de la zona verde están fuera del
+dominio según la guardia. Las tres cruces son los fallos: ninguna señal los distingue con claridad de los aciertos, que
+es lo que H20d no pudo mostrar.
+
 ## Referencias
 
 Las referencias 1, 3, 4 y 5 se comprobaron en PubMed el 26 nov 2026 (PMID entre paréntesis).
