@@ -88,7 +88,7 @@
 | Ref. actual | Trabajo | Identificadores | Para qué se cita |
 |---|---|---|---|
 | [5] | Jungo y Reyes, MICCAI 2019, LNCS, pp. 48–56 | doi:10.1007/978-3-030-32245-8_6; arXiv:1907.03338 | La incertidumbre por vóxel, bien calibrada en el conjunto, está mal calibrada por sujeto |
-| [7] | Cengiz, Almakky y Yaqub, preprint 2023 | arXiv:2303.04418 | En ecografía fetal, un clasificador separa máscaras buenas de malas (longitud cráneo-caudal) |
+| [7] | Cengiz, Almakky y Yaqub, Medical Imaging with Deep Learning (PMLR 227), 2024, pp. 1666–1679 | arXiv:2303.04418; PMLR cengiz24a | En ecografía fetal, un clasificador separa máscaras buenas de malas (longitud cráneo-caudal) |
 | [15] | Zenk et al., Med Image Anal 2025;101:103392 | PMID 39657400; doi:10.1016/j.media.2024.103392 | Banco de pruebas de detección de fallos: propone el análisis riesgo-cobertura y halla en el Dice por pares entre miembros de un ensamble una línea base fuerte |
 | [16] | Wundram et al., Uncertainty for Safe Utilization of Machine Learning in Medical Imaging (LNCS) 2024, pp. 81–91 | doi:10.1007/978-3-031-73158-7_8; arXiv:2407.13307 | Predicción conformal de rangos de rendimiento con cobertura garantizada, dado un conjunto de calibración intercambiable |
 
@@ -100,8 +100,11 @@
 - **Consecuencia:** la predicción conformal es la alternativa con más fundamento a fijar el umbral por la tolerancia,
   y el manuscrito la nombra. Lo que la distingue de nuestra pregunta es que su garantía es de cobertura media sobre
   los casos, no sobre los casos que una bandera marca.
-- **El FUSQA se cita como preprint:** OpenAlex lo asocia a Medical Imaging with Deep Learning, pero no se pudo
-  comprobar la versión publicada. Hay que revisarlo antes de enviar.
+- **Versión publicada del FUSQA (comprobada el 27 nov 2026):** está en las actas de Medical Imaging with Deep
+  Learning (MIDL 2023), Proceedings of Machine Learning Research, vol. 227, pp. 1666–1679, publicadas en 2024
+  (página del volumen y metadatos de la página del artículo en proceedings.mlr.press). Crossref no devolvió
+  ningún registro de la versión publicada. dblp y OpenReview pedían una verificación anti-bot y no se usaron. Ahora se cita la
+  versión publicada en lugar del preprint. El resumen se leyó en arXiv (v2); no se comparó con el texto de PMLR.
 - **Equivalencia de números:** antiguo → actual: [1]–[4] sin cambio; [5] → [6]; [6]–[12] → [8]–[14]; [13]–[15] →
   [17]–[19].
 
@@ -126,4 +129,4 @@
 
 1. Repetir la búsqueda en Scopus o Web of Science (necesita acceso institucional del autor).
 2. ~~Buscar en actas de MICCAI e IEEE ISBI~~: hecho en parte con OpenAlex (§3c). Falta leer Fournel et al. 2025
-   y Lennartz y Schultz 2026 si se consigue el texto, y comprobar la versión publicada del FUSQA.
+   y Lennartz y Schultz 2026 si se consigue el texto. La versión publicada del FUSQA ya se comprobó (§3c).
