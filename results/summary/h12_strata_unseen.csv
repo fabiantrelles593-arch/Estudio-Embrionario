@@ -1,0 +1,7 @@
+stratum,n,n_green_volume,false_green_volume,fg_lo_volume,fg_hi_volume,coverage_volume,n_green_free_volume,retained_volume,in_domain_volume,auc_volume,ece_volume,p_ok_volume,calibration_evaluable_volume,evaluable_volume,n_green_topology,false_green_topology,fg_lo_topology,fg_hi_topology,coverage_topology,n_green_free_topology,retained_topology,in_domain_topology,auc_topology,ece_topology,p_ok_topology,calibration_evaluable_topology,evaluable_topology
+global|us_compound,384,0,,,,0.0,0,,0.0,,,0.0,False,False,0,,,,0.0,0,,0.0,,,0.0052,False,False
+global|us_raw,384,0,,,,0.0,0,,0.0,,,0.026,False,False,0,,,,0.0,0,,0.0,,,0.0,False,False
+otsu|us_compound,384,0,,,,0.0,0,,0.0,0.3202,0.0913,0.0651,True,False,0,,,,0.0,0,,0.0,,,0.0,False,False
+otsu|us_raw,384,0,,,,0.0,0,,0.0,,,0.0156,False,False,0,,,,0.0,0,,0.0,,,0.0,False,False
+smoothed_otsu|us_compound,384,130,0.0,0.0,0.0287,0.628,160,0.8125,0.487,0.9818,0.0347,0.5391,True,True,66,0.1667,0.0957,0.2743,0.2709,80,0.825,0.5859,0.9031,0.1407,0.5286,True,False
+smoothed_otsu|us_raw,384,129,0.0,0.0,0.0289,0.5945,161,0.8012,0.5078,0.9788,0.049,0.5651,True,True,0,,,,0.0,0,,0.0,,,0.026,False,False

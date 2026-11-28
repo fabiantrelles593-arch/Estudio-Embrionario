@@ -1,0 +1,7 @@
+segmenter,profile,auc_right,auc_wrong,ece_right,ece_wrong,n_green_right,fg_right,n_green_wrong,fg_wrong
+global,ideal,0.9255,0.9255,0.0249,0.077,3771,0.0228,3367,0.0113
+global,realistic,0.9366,0.9366,0.0239,0.0802,3309,0.0187,3680,0.0356
+otsu,ideal,0.9253,0.9253,0.0286,0.0826,2528,0.0257,2583,0.0298
+otsu,realistic,0.9689,0.9689,0.0104,0.0779,2492,0.0193,2437,0.0144
+smoothed_otsu,ideal,0.9809,0.9809,0.0284,0.0318,917,0.0044,830,0.0036
+smoothed_otsu,realistic,0.985,0.985,0.02,0.0267,854,0.0199,926,0.0184

@@ -1,0 +1,490 @@
+% ---------------------------------------------------------------------------------------------------------------
+% Geometria de la Vida -- Methods and Concepts manuscript for IEEE Transactions on Ultrasonics (T-USON).
+% Version v0.4-tex (27 Nov 2026). INTERNAL DRAFT, NOT SUBMITTED.
+%
+% Source text: docs/manuscrito/MANUSCRIPT_MC_EN.md (v0.3-en). If they disagree, the results documents cited in the
+% text prevail, then the markdown draft.
+%
+% Template: "TUSON LaTeX Template.zip", IEEE Template Selector (template-selector.ieee.org), path
+% Transactions, Journals and Letters -> IEEE Transactions on Ultrasonics -> Original Research -> LaTeX
+% (the selector offers no separate Methods and Concepts template). Obtained 27 Nov 2026, 4 670 624 bytes,
+% SHA-256 9c614865e91fb2185551e817b1abfb6323d33cfe2cf49a6d323f08b063141804.
+% The template files (IEEEtran.cls, TUSON.sty, logos) are NOT redistributed in this repository: download them and
+% place IEEEtran.cls and TUSON.sty next to this file before compiling.
+%
+% Figures: run `python scripts/figure_manuscript.py` from the repository root; it writes docs/figures/*.png.
+% ---------------------------------------------------------------------------------------------------------------
+\documentclass[journal,twoside]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage[]{graphicx}
+\usepackage[mathlines,switch]{lineno}
+\usepackage{multicol,multirow}
+\usepackage{epsfig}
+\usepackage{array}
+% The template also loads \usepackage[mtbold]{mathtime} and \usepackage{linex}. They are not part of a standard
+% free TeX distribution; set \tusonfontstrue when compiling where they are available (for example, IEEE's own setup).
+\newif\iftusonfonts
+\tusonfontsfalse
+\iftusonfonts
+  \usepackage[mtbold]{mathtime}
+  \usepackage{linex}
+\fi
+\usepackage{TUSON}
+
+\graphicspath{{../../figures/}}
+\newcommand{\repo}[1]{[\nolinkurl{#1}]}   % a results document in the public repository (breakable path)
+\newcommand{\TBC}[1]{\textbf{[TO BE COMPLETED by the author: #1]}}
+
+% The template's \GA box fixes the width at 6.25 in. The journal's web guidelines ask for a 660 x 295 px image,
+% whose height at that width would exceed the template's 2.5 in limit, so the image is fitted by height instead.
+\newcommand{\GAfit}[1]{\vspace{-0.9\baselineskip}\htlne\rightskip=4pt
+{\colorbox{mycolor}{\parbox{\linewidth}{\centering\vspace{10pt}\includegraphics[height=2.5in]{#1}\vspace{5pt}}}}\\}
+
+%\linenumbers
+
+\markboth{IEEE Transactions on Ultrasonics}{\TBC{AUTHOR} \lowercase{et al.}: Testing Per-Case Reliability Flags}
+
+\title{Testing Per-Case Reliability Flags for Learned Ultrasound Segmentation: A Preregistered, Sealed-Test Protocol
+With Worked Examples in 3-D High-Frequency Mouse Embryo Imaging}
+\author{{\TBC{author names and IEEE membership}}
+\thanks{Manuscript submitted \TBC{date}. \TBC{funding statement, or ``This work received no external funding.''}}
+\thanks{\TBC{affiliation, address and e-mail of each author}. No affiliation is stated until the author provides it.}}
+
+\IEEEaftertitletext{\GAfit{manuscript_graphical_abstract_300dpi.png}
+\Abstract{\begin{abstract}
+A segmentation network that measures well on average still fails on some cases, and the reference needed to tell
+which is rarely available. A per-case reliability flag (green: trust the measurement; yellow or red: do not)
+addresses this, but such flags are easily overrated when thresholds are tuned on evaluation data, test sets are
+reused, failures are too few to show anything, or negative results go unreported. We describe a protocol for testing
+such flags: a tolerance and failure definition fixed in advance; a flag rule derived from the tolerance rather than
+fitted to data; a domain guard; calibration gates that must be passed before the test set is opened; frozen
+parameters whose cryptographic fingerprint is recorded beforehand and checked by the code; a test set opened once;
+three-state verdicts; and evaluability and sample-size rules for asking whether a flag separates correct from failed
+measurements. We illustrate each step with preregistered studies on a public dataset of three-dimensional
+high-frequency ultrasound volumes of mouse embryos. The gates stopped two flags before they consumed the test set; a
+guard withheld green where a certificate calibrated on simulations would have given 540 false greens out of 540; a
+stability-based flag passed its gate and, on a sealed test set opened once, failed in 1 of 21 green cases; and a
+sample-size simulation exposed a defect in a common rule for declaring no separation, which we correct. The
+protocol, code and preregistrations are public.
+\hblne
+\end{abstract}}
+\vspace{1\baselineskip}\vspace*{-1pt}
+}
+
+\begin{document}
+
+\maketitle
+
+\Highlights[1]{A preregistered, sealed-test protocol for testing per-case reliability flags of learned ultrasound
+segmentation, with evaluability rules for the separation question.}
+
+\Highlights[2]{In 3-D high-frequency mouse embryo ultrasound, gates stopped two flags before the test; a stability
+flag tested once failed in 1 of 21 green cases (95\% CI 0--14\%).}
+
+\Highlights[3]{Simulation shows a common no-separation rule misfires when failures are few; requiring at least 10
+failures guards small validation studies against false conclusions.}
+
+\Keywords{Deep learning, high-frequency ultrasound, mouse embryo, preregistration, quality control,
+reproducibility, segmentation, uncertainty estimation}
+
+\PrintHighlights
+
+% =================================================================================================================
+\section{Introduction}
+\IEEEPARstart{V}{olume} and shape measurements from ultrasound increasingly come from learned segmentation. Even
+accurate networks fail on some inputs, and the user rarely has a reference to check a given case. A per-case
+reliability output is therefore useful: it tells the user when to trust a number.
+
+Disagreement between predictions on transformed inputs is an established estimate of segmentation uncertainty
+\cite{wang2019a}, and it has been used to indicate potential mis-segmentations \cite{wang2019b}. Per-case quality
+control has mostly been approached by predicting a quality score: reverse classification accuracy predicted the Dice
+coefficient of each case in thousands of cardiac magnetic resonance scans \cite{robinson2019}, and calibrated
+ensembles were used to predict segmentation quality and to detect out-of-distribution inputs \cite{mehrtash2020}.
+Voxel-wise uncertainty that is well calibrated over a whole dataset can still be miscalibrated for individual
+subjects \cite{jungo2019}. In ultrasound, uncertainty from Monte Carlo dropout, test-time augmentation and ensembles
+did not reliably predict bone-surface segmentation performance \cite{pandey2022}, a warning against assuming that low
+uncertainty means a reliable measurement; in fetal ultrasound, segmentation quality has been assessed with a
+classifier that separates good from poor masks \cite{cengiz2023}. On the evaluation side, reviews and guidelines describe how bias enters medical imaging studies
+\cite{varoquaux2022}, how validation metrics should be chosen \cite{maierhein2024} and what reports of artificial
+intelligence in imaging should contain \cite{tejani2024}; publicly registering a frozen model before its external
+validation has been proposed for predictive modelling \cite{gallitto2025}. Closest to the decision problem, recent
+work accepts or rejects segmentations by thresholding uncertainty, with the threshold chosen from the distributions of
+correct and incorrect cases \cite{vanlente2025} or by a search that balances the risk of keeping errors against
+unnecessary rejections \cite{norajitra2026}; test-time augmentation and dropout have also been used to score volume
+segmentations without a reference \cite{li2024}. A benchmark on five public 3D collections recommended risk--coverage
+analysis for evaluating failure detection and found the pairwise Dice score between ensemble members a strong
+baseline \cite{zenk2025}, and split conformal prediction has been used to turn sampling-based estimates into
+performance ranges with a guaranteed coverage, given an exchangeable calibration set \cite{wundram2024}. Our flag
+rule instead derives its thresholds from the measurement tolerance and fixes them before any data are seen, because
+with few failures a fitted threshold is unstable, and a conformal guarantee holds on average over cases rather than
+for the cases a flag marks. The
+protocol below brings these elements
+together for a narrower question, whether a per-case flag can support a decision, and adds evaluability rules for the
+separation question that we did not find in the sources we reviewed.
+
+Evaluating whether
+such an estimate can support a \emph{decision} about a single case is harder than showing that it correlates with
+error. Common pitfalls are:
+\begin{itemize}
+\item thresholds chosen while looking at the evaluation data;
+\item the same data used to design and to judge the flag;
+\item test sets reused after a first look;
+\item conclusions about whether the flag separates correct from failed cases drawn from a handful of failures;
+\item failed attempts left out of the report.
+\end{itemize}
+
+This paper documents a protocol that guards against those pitfalls, as a reusable practice rather than a single
+result. Section~\ref{sec:protocol} describes the protocol, Section~\ref{sec:examples} works through each step with
+real studies, and Section~\ref{sec:discussion} discusses what the protocol costs and what it does not solve.
+
+The examples use a public dataset of 3-D high-frequency ultrasound volumes of mouse embryos with manual
+segmentations of the body and brain ventricles \cite{qiu2021,dataport,xu2020}. No new animal data were generated and
+no human data were used.
+
+% =================================================================================================================
+\section{The Protocol}\label{sec:protocol}
+
+\subsection{Before Any Data Are Seen}\label{sec:before}
+\begin{enumerate}
+\item \textbf{Fix the tolerance and the failure definition.} Example: a volume measurement fails if it differs from
+the reference by more than $\tau = 10\%$. For a small structure, a relative tolerance can be unreachable, and a
+tolerance in boundary voxels, $e_b = |V_M - V_R| / A_R \le 0.5$ voxels, is more appropriate
+(Section~\ref{sec:exD}).
+\item \textbf{Derive the flag rule from the tolerance, not from data.} Example (Section~\ref{sec:exC}): green if the
+spread of the measured volume across the 8 flips of the image is at most $\tau/2$ and the disagreement between the
+two network stages is at most $\tau$; red if either exceeds $2\tau$ or $3\tau$, respectively; yellow otherwise. With
+few failures, any fitted threshold learns noise.
+\item \textbf{Add a domain guard.} It is an envelope of simple image indices (here, an estimated signal-to-noise
+ratio and the edge width, 1--99\% percentiles) outside which the flag never gives green. Check that the guard is
+\emph{computable} on the target structure (Section~\ref{sec:exD}).
+\item \textbf{Split by subject} (embryo), never by image, into a part for fitting the network, a calibration part
+and a test part.
+\item \textbf{Write the preregistration:} hypotheses and criteria; minimum numbers for each hypothesis to be
+evaluable; predictions with probabilities; and what each outcome will mean. Upload it with the code and its tests
+before computing anything that decides.
+\end{enumerate}
+
+\subsection{Gates, Freezing and the Single Test}
+\begin{enumerate}\setcounter{enumi}{5}
+\item \textbf{Feasibility gate (G0)} on a few fitting cases: the signals must be computable and the pipeline must
+reproduce the measurement exactly.
+\item \textbf{Calibration gate} on held-out calibration subjects. Example: at least 10 greens, and at most 10\% of
+them failing. If the gate fails, \emph{the test set is not opened}, and a new preregistration is needed.
+\item \textbf{Freeze and fingerprint.} Write rules, envelope and network hashes to one file, and record its SHA-256
+in the preregistration before the test. The test command checks the fingerprint, the network hashes and the code
+thresholds, and refuses to run if any differ.
+\item \textbf{Open the test once.} Afterwards the test set is \emph{used}: no later study may decide with it.
+\item \textbf{Report three states.} A hypothesis is supported, not supported, or not evaluable or inconclusive. A
+value that cannot be computed is never ``not supported.''
+\end{enumerate}
+
+\subsection{The Separation Question}\label{sec:separation}
+Showing that greens rarely fail is not the same as showing that the flag adds information. With a low base failure
+rate, almost any rule that leaves enough greens meets a ``greens rarely fail'' criterion. The separation question
+compares failure rates between non-greens and greens: $\Delta$ is the failure rate among non-greens minus that among
+greens, with a 95\% confidence interval (CI) by percentile bootstrap, resampling subjects. The flag ``separates'' if
+the lower bound is above 0, ``does not separate'' if the upper bound is at most 5 points, and the result is
+``inconclusive'' otherwise.
+
+We add three rules learned in Section~\ref{sec:exE}:
+\begin{itemize}
+\item \textbf{S-1, evaluability by failures:} require at least 10 failures in total and at least 1 in each group.
+Otherwise the separation hypothesis is not evaluable.
+\item \textbf{S-2, planning:} declare the expected failure rate and aim for about 25 expected failures. With fewer,
+state in advance that ``inconclusive'' is the likely outcome.
+\item \textbf{S-3:} keep resampling by subject.
+\end{itemize}
+
+\subsection{Reporting}
+Compare the written predictions with the outcomes. Record every deviation with its date, approved before the
+affected quantity is computed. Publish negative and non-evaluable studies with the same detail as positive ones.
+Table~\ref{tab:checklist} lists the protocol as a checklist.
+
+\begin{table*}[!t]
+\centering
+\caption{Checklist for Testing a Per-Case Reliability Flag}\label{tab:checklist}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}l p{3.3cm} p{3.1cm} p{6.4cm} p{2.6cm}@{}}
+\hline
+\# & Item & When & Done if & Example in Section~\ref{sec:examples} \\
+\hline
+1 & Tolerance and failure definition & Before any data & Written in the preregistration, in units the structure can
+meet & D (relative $\to$ boundary voxels) \\
+2 & Flag rule & Before any data & Thresholds derived from the tolerance; nothing fitted & C \\
+3 & Domain guard & Before any data & Indices defined and checked to be computable on the target structure & A, D \\
+4 & Split by subject & Before any data & No subject in two parts & All \\
+5 & Preregistration & Before computing anything decisive & Hypotheses, criteria, minimums, predictions and meanings
+uploaded with code and tests & All \\
+6 & Feasibility gate (G0) & On fitting cases & Signals computable; pipeline reproduces the measurement exactly & C \\
+7 & Calibration gate & On calibration subjects & Passed; otherwise the test is not opened & B, D \\
+8 & Freeze and fingerprint & Before the test & SHA-256 recorded in the preregistration; code refuses mismatches & C,
+D \\
+9 & Single test & Once & Test opened once, then marked as used & C, D \\
+10 & Three-state verdicts & At closing & Supported / not supported / not evaluable or inconclusive; uncomputable is
+never ``not supported'' & All \\
+S-1 & Separation evaluability & At planning & $\ge 10$ failures in total and $\ge 1$ in each group & E \\
+S-2 & Separation planning & At planning & Expected failure rate and number of cases declared; about 25 expected
+failures & E \\
+S-3 & Resampling unit & At planning & Bootstrap by subject & C, D \\
+R & Reporting & At closing & Predictions compared with outcomes; dated deviations; negative results published & All \\
+\hline
+\end{tabular}
+\end{table*}
+
+% =================================================================================================================
+\section{Worked Examples}\label{sec:examples}
+All studies below follow Section~\ref{sec:protocol}. Each cites its results document in the public repository
+\cite{repo}.
+
+\subsection{A Domain Guard Refuses Where a Simulation-Calibrated Certificate Fails}\label{sec:exA}
+A certificate calibrated on synthetic data was applied to 1188 real measurements: 180 body and 216 ventricle cases,
+each with 3 threshold segmenters. The guard gave no green. Without it, all 540 greens would have been false
+\repo{docs/h11/RESULTADOS_H11.md}. Recalibrating on simulated ultrasound did not change this: 180 of 180 false
+greens without the guard \repo{docs/h11/RESULTADOS_H12R.md}.
+
+\emph{Lesson (step 3):} the guard is what made the certificate safe on a domain it had never seen.
+
+\subsection{A Calibration Gate Stops a Flag Before It Consumes the Test Set}\label{sec:exB}
+A two-stage network, reimplemented from \cite{qiu2021,xu2020}, put 24 of 27 calibration cases within 10\% (median
+Dice 0.938). A certificate based on image observables then failed the calibration gate: 2 of 16 greens failed, more
+than giving green to every case. The test set was not opened \repo{docs/h19/RESULTADOS_H19.md}.
+
+\emph{Lesson (step 7):} the gate saved the test set for a better candidate.
+
+\subsection{A Stability Flag Passes and Is Tested Once}\label{sec:exC}
+The flag of step 2 passed the calibration gate with 12 greens and no failures. After freezing (fingerprint recorded
+in the preregistration), the sealed test set (44 cases from 43 embryos) was measured once
+\repo{docs/h20/RESULTADOS_H20.md}; Table~\ref{tab:h20} and Figs.~\ref{fig:lights}(a) and \ref{fig:signals}
+summarize the result.
+
+\begin{table}[!t]
+\centering
+\caption{Sealed Body Test (44 Cases, Opened Once)}\label{tab:h20}
+\footnotesize
+\begin{tabular}{@{}p{4.0cm} p{4.1cm}@{}}
+\hline
+Measure & Value \\
+\hline
+Flags & 21 green, 22 yellow, 1 red \\
+Failures among greens (primary) & 1 of 21: 4.8\% (CI 0.0--14.3\%); supported \\
+Failures among non-greens & 2 of 23: 8.7\% \\
+Difference (non-green $-$ green) & 3.9 points (CI $-11.4$ to 20.0) \\
+Failure rate in all cases & 3 of 44: 6.8\% \\
+Cases within 10\% & 93.2\% (median Dice 0.939) \\
+\hline
+\end{tabular}
+\end{table}
+
+\emph{Lesson (Section~\ref{sec:separation}):} the primary criterion was met, but with a 6.8\% base failure rate
+almost any rule would have met it. The separation interval includes 0. The failing green underestimates volume by
+12.9\% with both signals low: the network made the same error on all 8 inputs, which a stability flag cannot see.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{manuscript_fig1_lights.png}
+\caption{Error of each test case by flag. (a) Body, sealed test (H20, 44 cases): absolute volume error, tolerance
+10\%. (b) Brain ventricles, test (H25, 40 cases): boundary error $e_b$, tolerance 0.5 voxels. Crosses are failures.
+Generated from already-measured cases by \texttt{scripts/figure\_manuscript.py}, with no new analysis.}
+\label{fig:lights}
+\end{figure*}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{manuscript_fig2_signals.png}
+\caption{The two stability signals on the sealed body test set (H20), with the thresholds of the flag rule
+($\tau/2$ and $2\tau$ for the flip spread; $\tau$ for the stage disagreement). Crosses are failures
+($|\text{error}| > 10\%$).}
+\label{fig:signals}
+\end{figure}
+
+\subsection{Changing the Structure Exposes the Units of the Tolerance and a Guard Defect}\label{sec:exD}
+The same rule, unchanged, gave no green at all on brain ventricles: 0 of 34 in calibration
+\repo{docs/h23/RESULTADOS_H23.md}.
+
+With the tolerance and signals re-expressed in boundary voxels, the calibration gate still failed: 3 greens of 34.
+The guard admitted only 5 of 34 cases, because its indices were not computable for a structure darker than the
+background (27 of 34 cases) \repo{docs/h24/RESULTADOS_H24.md}.
+
+A new preregistration corrected the guard to use the absolute contrast. It then admitted 90\% of test cases, against
+22.5\% for the old guard. The gates passed, and the ventricle test set was opened once (40 cases)
+\repo{docs/h25/RESULTADOS_H25.md}; see Fig.~\ref{fig:lights}(b). The network was within 0.5 voxels in 95\% of cases;
+the primary hypothesis was not evaluable (19 greens, where 20 were required); and separation was inconclusive (1 of
+19 greens and 1 of 21 non-greens failed).
+
+\emph{Lessons (steps 1, 3 and 7):} a tolerance must be expressed in units the structure can meet; the guard must be
+checked for computability on each new structure; and the gates caught both problems without touching the test set.
+
+\subsection{A Sample-Size Simulation Exposes a Defect in the ``No Separation'' Rule}\label{sec:exE}
+To plan a future study, we simulated the separation rule of Section~\ref{sec:separation}
+\repo{docs/h25/TAMANO_MUESTRAL_SEPARACION.md}.
+
+\emph{Power.} With about 80 cases and a failure gap like that seen in calibration (5\% versus 27\%), the rule detects
+separation 83\% of the time. A gap of 10 points needs about 270 cases. What matters is the number of failures, not
+the number of cases.
+
+\emph{A defect.} With no true separation and 40 cases, the rule declared ``does not separate'' in 35\% of
+simulations. In 140 of those 144 simulations there were no failures among non-greens, and the bootstrap interval
+degenerated.
+
+No published verdict in the series was affected, but a future study could have concluded ``no separation'' from this
+artefact. Rules S-1 to S-3 (Section~\ref{sec:separation}) prevent it.
+
+% =================================================================================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{What the Protocol Buys}
+Every claim can be traced to a preregistration fixed before the decisive computation. No threshold was changed after
+seeing test data. Each sealed test set was opened at most once. Two candidate flags were stopped at their gates
+(Sections~\ref{sec:exB} and \ref{sec:exD}) before they could consume a test set.
+
+\subsection{What It Costs}
+Test sets are used up: in this series, both the body and the ventricle test sets are now spent. Many studies end as
+``not evaluable''; half of the studies on real data in this series did. This is the protocol declining to draw
+conclusions the data could not support, not a failure of the protocol.
+
+\subsection{What It Does Not Solve}
+A flag based on stability cannot see a consistent error. A flag cannot be shown to separate correct from failed
+measurements without enough failures, which an accurate network rarely produces on one dataset. The examples come
+from one public dataset, one system and one species; a direct replication with new volumes is preregistered as a
+base document \repo{docs/h26/PREREGISTRO_H26_BORRADOR.md}.
+
+\subsection{Adapting the Protocol}
+Steps 1--10 and rules S-1 to S-3 do not depend on the modality or the network. To reuse them, an author needs a
+tolerance meaningful for the structure, signals available without the reference, a guard computable on the target
+images, and enough subjects for gates and a single test.
+
+None of the examples concerns humans or clinical use.
+
+% =================================================================================================================
+\section{Conclusion}
+Per-case reliability flags for learned ultrasound segmentation can be tested without overrating them if the
+tolerance, rule and minimums are fixed in advance, gates protect the test set, the frozen instrument is fingerprinted
+and the test is opened once. Whether a flag separates correct from failed measurements is a separate question that
+needs enough failures to be evaluable; rules S-1 to S-3 make that requirement explicit before the data are collected.
+
+% =================================================================================================================
+\section*{Data and Code Availability}
+The data are public on IEEE DataPort \cite{dataport} (CC BY) and are not redistributed. Code, preregistrations,
+results and the protocol rules (\nolinkurl{docs/REGLAS_PREREGISTRO.md}) are in the project repository \cite{repo}
+(MIT license); reproduction steps are in \nolinkurl{docs/REPRODUCCION.md}.
+
+\section*{Ethics Statement}
+Only previously published animal data were used; no new animal experiments were performed and no human data were
+used.
+
+\section*{Acknowledgment}
+The code and texts were developed with AI assistance (Claude, Anthropic). The work has not had external human
+scientific review. \TBC{other acknowledgments}
+
+\section*{Competing Interests}
+\TBC{competing interests statement}
+
+% =================================================================================================================
+\begin{thebibliography}{20}
+% Ordered by first citation, as IEEE style requires.
+
+\bibitem{wang2019a}
+G.~Wang, W.~Li, M.~Aertsen, J.~Deprest, S.~Ourselin, and T.~Vercauteren, ``Aleatoric uncertainty estimation with
+test-time augmentation for medical image segmentation with convolutional neural networks,''
+\emph{Neurocomputing}, vol.~335, pp.~34--45, Mar. 2019, doi: 10.1016/j.neucom.2019.01.103.
+
+\bibitem{wang2019b}
+G.~Wang, W.~Li, S.~Ourselin, and T.~Vercauteren, ``Automatic brain tumor segmentation based on cascaded
+convolutional neural networks with uncertainty estimation,'' \emph{Front. Comput. Neurosci.}, vol.~13, 2019,
+Art. no.~56, doi: 10.3389/fncom.2019.00056.
+
+\bibitem{robinson2019}
+R.~Robinson \emph{et al.}, ``Automated quality control in image segmentation: Application to the UK Biobank
+cardiovascular magnetic resonance imaging study,'' \emph{J. Cardiovasc. Magn. Reson.}, vol.~21, no.~1, 2019,
+Art. no.~18, doi: 10.1186/s12968-019-0523-x.
+
+\bibitem{mehrtash2020}
+A.~Mehrtash, W.~M. Wells, C.~M. Tempany, P.~Abolmaesumi, and T.~Kapur, ``Confidence calibration and predictive
+uncertainty estimation for deep medical image segmentation,'' \emph{IEEE Trans. Med. Imag.}, vol.~39, no.~12,
+pp.~3868--3878, Dec. 2020, doi: 10.1109/TMI.2020.3006437.
+
+\bibitem{jungo2019}
+A.~Jungo and M.~Reyes, ``Assessing reliability and challenges of uncertainty estimations for medical image
+segmentation,'' in \emph{Proc. Med. Image Comput. Comput. Assist. Interv. (MICCAI)}, 2019, pp.~48--56,
+doi: 10.1007/978-3-030-32245-8\_6.
+
+\bibitem{pandey2022}
+P.~U. Pandey, P.~Guy, and A.~J. Hodgson, ``Can uncertainty estimation predict segmentation performance in
+ultrasound bone imaging?'' \emph{Int. J. Comput. Assist. Radiol. Surg.}, vol.~17, no.~5, pp.~825--832, May 2022,
+doi: 10.1007/s11548-022-02597-0.
+
+\bibitem{cengiz2023}
+S.~Cengiz, I.~Almakky, and M.~Yaqub, ``FUSQA: Fetal ultrasound segmentation quality assessment,'' in \emph{Proc.
+Med. Imaging Deep Learn. (MIDL)}, ser. Proc. Mach. Learn. Res., vol.~227, 2024, pp.~1666--1679.
+
+\bibitem{varoquaux2022}
+G.~Varoquaux and V.~Cheplygina, ``Machine learning for medical imaging: Methodological failures and
+recommendations for the future,'' \emph{npj Digit. Med.}, vol.~5, no.~1, 2022, Art. no.~48,
+doi: 10.1038/s41746-022-00592-y.
+
+\bibitem{maierhein2024}
+L.~Maier-Hein \emph{et al.}, ``Metrics reloaded: Recommendations for image analysis validation,'' \emph{Nat.
+Methods}, vol.~21, no.~2, pp.~195--212, Feb. 2024, doi: 10.1038/s41592-023-02151-z.
+
+\bibitem{tejani2024}
+A.~S. Tejani \emph{et al.}, ``Checklist for Artificial Intelligence in Medical Imaging (CLAIM): 2024 update,''
+\emph{Radiol. Artif. Intell.}, vol.~6, no.~4, 2024, Art. no.~e240300, doi: 10.1148/ryai.240300.
+
+\bibitem{gallitto2025}
+G.~Gallitto \emph{et al.}, ``External validation of machine learning models: Registered models and adaptive sample
+splitting,'' \emph{GigaScience}, vol.~14, 2025, Art. no.~giaf036, doi: 10.1093/gigascience/giaf036.
+
+\bibitem{vanlente2025}
+M.~van Lente \emph{et al.}, ``Enhancing online adaptive radiotherapy with uncertainty based segmentation error and
+out-of-distribution detection,'' \emph{Front. Oncol.}, vol.~15, 2025, Art. no.~1637198, doi: 10.3389/fonc.2025.1637198.
+
+\bibitem{norajitra2026}
+T.~Norajitra \emph{et al.}, ``Ensemble-based uncertainty enables large-scale 3D segmentation quality control in
+population imaging,'' \emph{Med. Image Anal.}, vol.~116, 2026, Art. no.~104351, doi: 10.1016/j.media.2026.104351.
+
+\bibitem{li2024}
+Y.~Li \emph{et al.}, ``Deep learning models for separate segmentations of intracerebral and intraventricular
+hemorrhage on head CT and segmentation quality assessment,'' \emph{Med. Phys.}, vol.~51, no.~11, pp.~8317--8333,
+2024, doi: 10.1002/mp.17343.
+
+\bibitem{zenk2025}
+M.~Zenk \emph{et al.}, ``Comparative benchmarking of failure detection methods in medical image segmentation:
+Unveiling the role of confidence aggregation,'' \emph{Med. Image Anal.}, vol.~101, Apr. 2025, Art. no.~103392,
+doi: 10.1016/j.media.2024.103392.
+
+\bibitem{wundram2024}
+A.~M. Wundram, P.~Fischer, M.~M\"{u}hlebach, L.~M. Koch, and C.~F. Baumgartner, ``Conformal performance range
+prediction for segmentation output quality control,'' in \emph{Uncertainty for Safe Utilization of Machine Learning
+in Medical Imaging}, 2024, pp.~81--91, doi: 10.1007/978-3-031-73158-7\_8.
+
+\bibitem{qiu2021}
+Z.~Qiu \emph{et al.}, ``A deep learning approach for segmentation, classification, and visualization of 3-D
+high-frequency ultrasound images of mouse embryos,'' \emph{IEEE Trans. Ultrason., Ferroelectr., Freq. Control},
+vol.~68, no.~7, pp.~2460--2471, Jul. 2021, doi: 10.1109/TUFFC.2021.3068156.
+
+\bibitem{dataport}
+``Ultrasound mouse embryo segmentation and classification,'' IEEE DataPort. [Online]. Available:
+https://doi.org/10.21227/drmd-xq36
+
+\bibitem{xu2020}
+T.~Xu \emph{et al.}, ``Deep Mouse: An end-to-end auto-context refinement framework for brain ventricle \& body
+segmentation in embryonic mice ultrasound volumes,'' in \emph{Proc. IEEE 17th Int. Symp. Biomed. Imag. (ISBI)},
+2020, pp.~122--126, doi: 10.1109/ISBI45749.2020.9098387.
+
+\bibitem{repo}
+Geometr\'{\i}a de la Vida project repository, branch \texttt{geovida/v0.1-desde-cero}. [Online]. Available:
+\TBC{public repository URL, preferably with an archived release DOI}
+
+\end{thebibliography}
+
+% =================================================================================================================
+\begin{IEEEbiographynophoto}{\TBC{Author name}}
+\TBC{biography; the journal asks for a biography and photograph of each author, which may be supplied at the end}
+\end{IEEEbiographynophoto}
+
+\vfill
+\end{document}

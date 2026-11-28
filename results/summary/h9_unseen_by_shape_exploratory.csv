@@ -1,0 +1,13 @@
+stratum,shape,p_ok,n_green,false_green,coverage,false_green_baseline
+global|ideal,cup,0.9563,201,0.0,0.834,0.0
+global|ideal,dumbbell,0.9722,235,0.0,0.9592,0.0125
+global|realistic,cup,0.8651,145,0.0276,0.6468,0.1273
+global|realistic,dumbbell,0.873,202,0.1139,0.8136,0.0781
+otsu|ideal,cup,0.9921,208,0.0096,0.824,0.0
+otsu|ideal,dumbbell,0.9762,231,0.013,0.9268,0.0126
+otsu|realistic,cup,0.5397,105,0.0,0.7721,0.3333
+otsu|realistic,dumbbell,0.8095,174,0.069,0.7941,0.1731
+smoothed_otsu|ideal,cup,1.0,115,0.0,0.4563,0.0
+smoothed_otsu|ideal,dumbbell,0.9881,144,0.0208,0.5663,0.0
+smoothed_otsu|realistic,cup,0.996,102,0.0,0.4064,0.0
+smoothed_otsu|realistic,dumbbell,0.996,138,0.0072,0.5458,0.0

@@ -1,0 +1,434 @@
+{
+  "content_sha256": "8ab261ae16f01120dd3de4a45756797fb2989b1cbc014baba9d39d49f121a02a",
+  "envelope_rows": "filas de calibraci\u00f3n con luz verde (p >= 0.90) en cada medida",
+  "envelopes": {
+    "topology": {
+      "global|us_compound": null,
+      "global|us_raw": null,
+      "otsu|us_compound": null,
+      "otsu|us_raw": null,
+      "smoothed_otsu|us_compound": {
+        "edge_width": [
+          0.8647718706135622,
+          1.3534416114399814
+        ],
+        "snr_hat": [
+          6.558395919989535,
+          10.006330144807883
+        ]
+      },
+      "smoothed_otsu|us_raw": null
+    },
+    "volume": {
+      "global|us_compound": null,
+      "global|us_raw": null,
+      "otsu|us_compound": null,
+      "otsu|us_raw": null,
+      "smoothed_otsu|us_compound": {
+        "edge_width": [
+          1.0705971064203783,
+          1.4063685172337435
+        ],
+        "snr_hat": [
+          7.959549945520726,
+          10.228288125707996
+        ]
+      },
+      "smoothed_otsu|us_raw": {
+        "edge_width": [
+          1.152756509296408,
+          1.484729941573517
+        ],
+        "snr_hat": [
+          6.731580198185217,
+          8.362451200484161
+        ]
+      }
+    }
+  },
+  "features": [
+    "tau_dil",
+    "tau_ero",
+    "m_lo",
+    "m_hi",
+    "a1",
+    "a2"
+  ],
+  "green": 0.9,
+  "limits": [
+    "Calibrado con ecograf\u00eda 3D simulada (moteado completamente desarrollado, atenuaci\u00f3n en z, fondo no nulo); no validado con ecograf\u00edas reales ni con fantomas f\u00edsicos.",
+    "El simulador no incluye compresi\u00f3n logar\u00edtmica, sombras ac\u00fasticas ni reverberaciones.",
+    "Un rasgo que la imagen perdi\u00f3 por completo no deja rastro: no se detecta.",
+    "Fuera del dominio de calibraci\u00f3n no hay luz verde.",
+    "Solo investigaci\u00f3n y educaci\u00f3n; sin uso cl\u00ednico ni diagn\u00f3stico."
+  ],
+  "models": {
+    "global|us_compound": {
+      "baseline": {
+        "coef": [
+          -6.9774215847951275
+        ],
+        "features": [
+          "ln_d"
+        ],
+        "intercept": -8.55233762007937,
+        "n": 2341,
+        "ridge": 1.0
+      },
+      "main": {
+        "coef": [
+          2.164396274907248,
+          0.006712829922841932,
+          5.285707178101911,
+          5.818087840821518,
+          2.0780360641634967,
+          5.305422751157099
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi",
+          "a1",
+          "a2"
+        ],
+        "intercept": -6.206296788508894,
+        "n": 2341,
+        "ridge": 1.0
+      },
+      "no_scale": {
+        "coef": [
+          2.2125158955606232,
+          1.2592470017894386,
+          4.154102727691973,
+          5.915195575957282
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi"
+        ],
+        "intercept": -6.193553085872896,
+        "n": 2341,
+        "ridge": 1.0
+      }
+    },
+    "global|us_raw": {
+      "baseline": {
+        "coef": [
+          -7.03213297457885
+        ],
+        "features": [
+          "ln_d"
+        ],
+        "intercept": -12.294669755111633,
+        "n": 2399,
+        "ridge": 1.0
+      },
+      "main": {
+        "coef": [
+          2.724917516312679,
+          0.0,
+          -5.613849523203218,
+          21.44352396902817,
+          0.0,
+          0.0
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi",
+          "a1",
+          "a2"
+        ],
+        "intercept": -9.811505517240988,
+        "n": 2399,
+        "ridge": 1.0
+      },
+      "no_scale": {
+        "coef": [
+          2.72491751631268,
+          0.0,
+          -5.6138495232032275,
+          21.44352396902816
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi"
+        ],
+        "intercept": -9.81150551724099,
+        "n": 2399,
+        "ridge": 1.0
+      }
+    },
+    "otsu|us_compound": {
+      "baseline": {
+        "coef": [
+          -4.485219776075315e-24
+        ],
+        "features": [
+          "ln_d"
+        ],
+        "intercept": -25.93886308927748,
+        "n": 2400,
+        "ridge": 1.0
+      },
+      "main": {
+        "coef": [
+          2.6415544159967853e-23,
+          0.0,
+          -7.344228945924036e-22,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi",
+          "a1",
+          "a2"
+        ],
+        "intercept": -25.93886308927747,
+        "n": 2400,
+        "ridge": 1.0
+      },
+      "no_scale": {
+        "coef": [
+          2.6415544159967853e-23,
+          0.0,
+          -7.344228945924036e-22,
+          0.0
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi"
+        ],
+        "intercept": -25.93886308927747,
+        "n": 2400,
+        "ridge": 1.0
+      }
+    },
+    "otsu|us_raw": {
+      "baseline": {
+        "coef": [
+          -8.011167737446696e-25
+        ],
+        "features": [
+          "ln_d"
+        ],
+        "intercept": -25.93886308927748,
+        "n": 2400,
+        "ridge": 1.0
+      },
+      "main": {
+        "coef": [
+          5.7964444543543055e-22,
+          0.0,
+          3.071573447718441e-21,
+          1.0304716858273617e-21,
+          7.397665131656815e-22,
+          0.0
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi",
+          "a1",
+          "a2"
+        ],
+        "intercept": -25.93886308927747,
+        "n": 2400,
+        "ridge": 1.0
+      },
+      "no_scale": {
+        "coef": [
+          5.796462488992078e-22,
+          0.0,
+          3.0715734402008967e-21,
+          1.030476194486805e-21
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi"
+        ],
+        "intercept": -25.93886308927747,
+        "n": 2400,
+        "ridge": 1.0
+      }
+    },
+    "smoothed_otsu|us_compound": {
+      "baseline": {
+        "coef": [
+          3.4096355126541273
+        ],
+        "features": [
+          "ln_d"
+        ],
+        "intercept": -0.8771785840083245,
+        "n": 2400,
+        "ridge": 1.0
+      },
+      "main": {
+        "coef": [
+          0.8210131353962767,
+          3.322530673083709,
+          1.4082261057989278,
+          4.867039778312836,
+          2.924192681626112,
+          -3.7119839262979024
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi",
+          "a1",
+          "a2"
+        ],
+        "intercept": -5.895418394861434,
+        "n": 2400,
+        "ridge": 1.0
+      },
+      "no_scale": {
+        "coef": [
+          0.7340765224683301,
+          2.8698786760664556,
+          1.1804538530025621,
+          5.60971627982726
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi"
+        ],
+        "intercept": -5.401602478750426,
+        "n": 2400,
+        "ridge": 1.0
+      }
+    },
+    "smoothed_otsu|us_raw": {
+      "baseline": {
+        "coef": [
+          1.6832759012589598
+        ],
+        "features": [
+          "ln_d"
+        ],
+        "intercept": -3.459889427024338,
+        "n": 2400,
+        "ridge": 1.0
+      },
+      "main": {
+        "coef": [
+          0.04594899053508975,
+          4.201869067416947,
+          -34.1051729892778,
+          -0.18061989299770767,
+          3.5824289165388574,
+          -2.9930828977193067
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi",
+          "a1",
+          "a2"
+        ],
+        "intercept": -7.008068541342997,
+        "n": 2400,
+        "ridge": 1.0
+      },
+      "no_scale": {
+        "coef": [
+          0.35355467549533387,
+          4.354309340736969,
+          -20.793105656846407,
+          -0.4782969907072095
+        ],
+        "features": [
+          "tau_dil",
+          "tau_ero",
+          "m_lo",
+          "m_hi"
+        ],
+        "intercept": -7.0867632374430345,
+        "n": 2400,
+        "ridge": 1.0
+      }
+    }
+  },
+  "profiles": [
+    "us_compound",
+    "us_raw"
+  ],
+  "red": 0.5,
+  "ridge": 1.0,
+  "rows": 14400,
+  "selected": "T4",
+  "selection": [
+    {
+      "mean_logloss": 0.12326763286148815,
+      "n_features": 1,
+      "n_folds": 60,
+      "set": "T1"
+    },
+    {
+      "mean_logloss": 0.06368661335753947,
+      "n_features": 6,
+      "n_folds": 60,
+      "set": "T4"
+    },
+    {
+      "mean_logloss": 0.06398078422551708,
+      "n_features": 7,
+      "n_folds": 60,
+      "set": "T7"
+    }
+  ],
+  "source": "results/raw/h12_cal.csv.gz",
+  "volume_models": {
+    "global|us_compound": {
+      "intercept": -8.998995721150258,
+      "n": 2400,
+      "slope": -4.645861585482392
+    },
+    "global|us_raw": {
+      "intercept": -5.918187005506919,
+      "n": 2400,
+      "slope": -3.5335449093818574
+    },
+    "otsu|us_compound": {
+      "intercept": -1.6042962710653694,
+      "n": 2400,
+      "slope": 1.541347532939819
+    },
+    "otsu|us_raw": {
+      "intercept": -2.673756359527633,
+      "n": 2400,
+      "slope": 1.6364533459022141
+    },
+    "smoothed_otsu|us_compound": {
+      "intercept": -2.639778471026467,
+      "n": 2400,
+      "slope": 10.234416830114945
+    },
+    "smoothed_otsu|us_raw": {
+      "intercept": -1.2725567140658456,
+      "n": 2400,
+      "slope": 8.329808310391881
+    }
+  }
+}

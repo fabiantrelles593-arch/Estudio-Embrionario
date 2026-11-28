@@ -1,0 +1,18 @@
+{
+  "set": "cal",
+  "started_utc": "2026-11-12T02:11:09.335741+00:00",
+  "elapsed_s": 124.7,
+  "git_commit": "686557f78060516293b1c84186761be4e6b2790a",
+  "code_dirty": false,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5"
+  },
+  "reps": 100,
+  "rows": 9000,
+  "base_seed": 20261212,
+  "frozen_sha256": "60943f4855ebf9c10cafe5503db0fa9ff6285be53df7044b6968b8b3e4315b0a"
+}

@@ -1,0 +1,182 @@
+"""Regla de ampliación de P3 (§4 del preregistro, proyección fijada en la desviación D4)."""
+import importlib.util
+import math
+from pathlib import Path
+
+import pytest
+
+pytest.importorskip("nibabel")
+ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location("p3_analyze", ROOT / "scripts" / "p3_analyze.py")
+pa = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(pa)
+
+
+def test_projection_scales_with_sqrt_n():
+    assert pa.projected_half_width(0.0, 0.2, 20) == pytest.approx(0.1 * math.sqrt(20 / 60))
+    assert pa.projected_half_width(0.0, 0.2, 60) == pytest.approx(0.1)
+    assert math.isnan(pa.projected_half_width(math.nan, 0.2, 20))
+
+
+def test_expansion_decision():
+    assert pa.expansion_decision(0.0, 0.30, 20) == 60    # 0,15 → 0,087 a 60
+    assert pa.expansion_decision(0.0, 0.40, 20) == 120   # 0,20 → 0,115 a 60
+    assert pa.expansion_decision(math.nan, 0.4, 20) == 120
+
+
+def test_summarize_agreement_forms_and_d5_sensitivity():
+    import pandas as pd
+    rows = pd.DataFrame([
+        {"specimen": s, "structure": 1, "form": f, "dice": d, "hd95": 0.1, "assd": 0.05, "vol_diff_rel": 0.0}
+        for s, f, d in (("x", "a", 0.2), ("y", "a", 0.6), ("x", "b", 0.4), ("y", "b", 0.8))])
+    out = pa.summarize_agreement(rows, non_rigid={"x"}).set_index("form")
+    assert out.loc["a", "dice"] == pytest.approx(0.4) and out.loc["b", "dice"] == pytest.approx(0.6)
+    assert out.loc["b_rigid", "dice"] == pytest.approx(0.8) and out.loc["b_rigid", "n_specimens"] == 1
+
+
+def test_d1_verdicts_rule():
+    main = {"verdict_a": "apoyada", "verdict_b": "no_apoyada"}
+    exact = {"verdict_a": "no_concluyente", "verdict_b": "no_apoyada"}
+    assert pa.d1_verdicts(main, exact, {"agree": True}) == main
+    assert pa.d1_verdicts(main, exact, {"agree": False}) == {"verdict_a": "no_interpretable_D1",
+                                                             "verdict_b": "no_apoyada"}
+
+
+def test_pilot_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
+    """Modo ``pilot`` con mapas sintéticos: produce la decisión de ampliación y las tablas."""
+    import json
+
+    import numpy as np
+    import pandas as pd
+
+    memos = tmp_path / "memos"
+    memos.mkdir()
+    for i in range(4):
+        np.savez(memos / f"s{i}_memos.npz", labels=np.zeros(1), box=np.zeros((3, 2)))
+    pd.DataFrame({"unit": ["1", "2"], "group": ["delgada", "compacta"], "log_volume": [1.0, 2.0],
+                  "d_over_hgeo": [1.0, 3.0]}).to_csv(tmp_path / "g.csv", index=False)
+    rng = np.random.default_rng(4)
+
+    def fake_maps(sid, data_dir, memos_dir, rule="nearest", pad=0, memos_as_b=None):
+        a = np.zeros((32, 32, 32), np.int16)
+        g = np.indices(a.shape)
+        a[((g - 16) ** 2).sum(0) <= (7 + rng.normal(0, 1)) ** 2] = 2
+        a[4:7, 4:26, 4:26] = 1
+        return {"A": a, "B": a.astype(np.uint8)}, (0.027, 0.027, 0.027)
+
+    monkeypatch.setattr(pa, "_specimen_maps", fake_maps)
+    monkeypatch.setattr(pa.p3_data, "P3_STRUCTURES", (1, 2))
+    out = tmp_path / "pilot.json"
+    assert pa.main(["pilot", "--data", str(tmp_path), "--memos", str(memos), "--groups", str(tmp_path / "g.csv"),
+                    "--out", str(out), "--n-boot", "10"]) == 0
+    s = json.loads(out.read_text(encoding="utf-8"))
+    assert s["specimens"] == [f"s{i}" for i in range(4)] and s["n_confirm_decision"] in (60, 120)
+    assert out.with_suffix(".conditions.csv").exists() and out.with_suffix(".units.csv").exists()
+
+
+def test_confirm_runs_end_to_end_on_synthetic_maps(tmp_path, monkeypatch):
+    """Flujo completo de ``confirm`` con mapas sintéticos (sin MINC): produce el resumen y todas las tablas."""
+    import json
+
+    import numpy as np
+    import pandas as pd
+
+    rng = np.random.default_rng(2)
+    ids = [f"s{i}" for i in range(6)]
+    memos, data = tmp_path / "memos", tmp_path / "data"
+    memos.mkdir()
+    data.mkdir()
+    for s in ids:
+        np.savez(memos / f"{s}_memos.npz", labels=np.zeros(1), box=np.zeros((3, 2)))
+        (data / f"{s}_Segs.mnc").write_bytes(b"")
+    (memos / "memos_vs_atlas.json").write_text(json.dumps({s: {"translation_vox": [1, 0, 0]} for s in ids}))
+    (memos / "memos_rigidity.json").write_text(json.dumps({s: {"spread_vox": 9 if s == "s0" else 1} for s in ids}))
+    sel = tmp_path / "sel.json"
+    sel.write_text(json.dumps({"confirm": ids + ["falta"]}))
+    pd.DataFrame({"unit": ["1", "2"], "group": ["delgada", "compacta"], "log_volume": [1.0, 2.0],
+                  "d_over_hgeo": [1.0, 3.0]}).to_csv(tmp_path / "g.csv", index=False)
+
+    def fake_maps(sid, data_dir, memos_dir, rule="nearest", pad=0, memos_as_b=None):
+        a = np.zeros((40, 40, 40), np.int16)
+        r = 9 + rng.normal(0, 1)
+        g = np.indices(a.shape)
+        a[((g - 20) ** 2).sum(0) <= r * r] = 2
+        a[5:8, 5:30, 5:30] = 1
+        b = np.roll(a, (1, 0, 0), (0, 1, 2)).astype(np.uint8)  # A trasladado (1, 0, 0) coincide con B
+        if rule == "exact":
+            a[5] = np.where(a[5] == 1, 0, a[5])
+        return {"A": a, "B": b}, (0.027, 0.027, 0.027)
+
+    monkeypatch.setattr(pa, "_specimen_maps", fake_maps)
+    monkeypatch.setattr(pa.p3_data, "P3_STRUCTURES", (1, 2))
+    x4 = tmp_path / "x4"
+    x4.mkdir()
+    for s in ids[:4]:
+        np.savez(x4 / f"{s}_memos.npz", labels=np.zeros(1), box=np.zeros((3, 2)))
+    meta = tmp_path / "meta.csv"
+    pd.DataFrame({"Biosample": ids, "Sex": ["F", "M"] * 3}).to_csv(meta, index=False)
+    out = tmp_path / "res" / "confirm.json"
+    assert pa.main(["confirm", "--data", str(data), "--memos", str(memos), "--groups", str(tmp_path / "g.csv"),
+                    "--ids", str(sel), "--out", str(out), "--n-boot", "20", "--metadata", str(meta),
+                    "--memos-x4", str(x4)]) == 0
+    s = json.loads(out.read_text(encoding="utf-8"))
+    assert s["specimens"] == ids and s["missing"] == ["falta"] and s["non_rigid_D5"] == ["s0"]
+    assert s["exploratory_sex"] and s["exploratory_x4"]["n_specimens"] == 4
+    assert set(pd.read_csv(out.with_suffix(".sex.csv"))["variant"]) == {"sex_F", "sex_M"}
+    assert s["primary"]["verdict_a"] == "no_evaluable"  # menos de 8 unidades por grupo
+    for suffix in (".conditions.csv", ".agreement.csv", ".agreement_summary.csv", ".units.csv", ".tau.csv",
+                   ".mixed.csv", ".exploratory.csv", ".conditions_exact.csv"):
+        assert out.with_suffix(suffix).exists()
+    main, exact = (pd.read_csv(out.with_suffix(x)) for x in (".conditions.csv", ".conditions_exact.csv"))
+    assert set(exact["segmenter"]) == {"A", "B"} and len(exact) == len(main)
+    cols = ["specimen", "structure", "factor", "volume"]
+    pd.testing.assert_frame_equal(  # B no depende de la regla de D1: se reutiliza tal cual
+        exact[exact["segmenter"] == "B"][cols].reset_index(drop=True),
+        main[main["segmenter"] == "B"][cols].reset_index(drop=True))
+    assert not exact[exact["segmenter"] == "A"]["volume"].equals(main[main["segmenter"] == "A"]["volume"])
+    x4c = pd.read_csv(out.with_suffix(".conditions_x4.csv"))
+    assert set(x4c["segmenter"]) == {"A", "B"} and x4c["specimen"].nunique() == 4
+    agr = pd.read_csv(out.with_suffix(".agreement.csv"))
+    b = agr[(agr["form"] == "b") & (agr["structure"] == 2)]
+    assert b["dice"].min() == pytest.approx(1.0)  # la traslación de D3 alinea A con B
+
+    # --reuse-main: sigue desde las tablas ya escritas sin volver a medir la pasada principal; ×4 vacío no rompe
+    def no_nearest(sid, data_dir, memos_dir, rule="nearest", pad=0, memos_as_b=None):
+        assert rule == "exact", "la pasada principal no debe repetirse"
+        return fake_maps(sid, data_dir, memos_dir, rule, pad, memos_as_b)
+
+    monkeypatch.setattr(pa, "_specimen_maps", no_nearest)
+    empty = tmp_path / "x4_vacio"
+    empty.mkdir()
+    out2 = tmp_path / "res" / "confirm2.json"
+    for suffix in (".conditions.csv", ".agreement.csv"):
+        out2.with_suffix(suffix).write_bytes(out.with_suffix(suffix).read_bytes())
+    assert pa.main(["confirm", "--data", str(data), "--memos", str(memos), "--groups", str(tmp_path / "g.csv"),
+                    "--ids", str(sel), "--out", str(out2), "--n-boot", "20", "--memos-x4", str(empty),
+                    "--reuse-main"]) == 0
+    s2 = json.loads(out2.read_text(encoding="utf-8"))
+    assert s2["exploratory_x4"]["n_specimens"] == 0 and not out2.with_suffix(".conditions_x4.csv").exists()
+    assert s2["primary"]["verdict_a"] == s["primary"]["verdict_a"]
+    pd.testing.assert_frame_equal(pd.read_csv(out2.with_suffix(".tau.csv")), pd.read_csv(out.with_suffix(".tau.csv")))
+
+    # x4 (D6): solo el exploratorio; no repite ninguna pasada de A ni reescribe el resumen confirmatorio
+    def only_x4(sid, data_dir, memos_dir, rule="nearest", pad=0, memos_as_b=None):
+        assert memos_as_b is not None, "x4 solo debe medir B sobre ×4"
+        return fake_maps(sid, data_dir, memos_dir, rule, pad, memos_as_b)
+
+    monkeypatch.setattr(pa, "_specimen_maps", only_x4)
+    before = out.read_bytes()
+    assert pa.main(["x4", "--data", str(data), "--memos", str(memos), "--groups", str(tmp_path / "g.csv"),
+                    "--ids", str(sel), "--out", str(out), "--memos-x4", str(x4)]) == 0
+    assert out.read_bytes() == before
+    r = json.loads(out.with_suffix(".x4.json").read_text(encoding="utf-8"))
+    assert r["n_specimens"] == 4 and set(r["median_tau_by_group"]) == {"main", "x4"}
+    assert pd.read_csv(out.with_suffix(".conditions_x4.csv"))["specimen"].nunique() == 4
+
+
+def test_group_median_tau_averages_bilateral_units_first():
+    import pandas as pd
+    tau = pd.DataFrame({"structure": [1, 2, 3, 4], "tau": [0.2, 0.4, 0.9, 0.1]})
+    groups = pd.DataFrame({"unit": ["1+2", "3", "4"], "group": ["delgada", "compacta", "compacta"]})
+    out = pa.group_median_tau(tau, groups, units={1: "1+2", 2: "1+2"})
+    assert out == {"delgada": pytest.approx(0.3), "compacta": pytest.approx(0.5)}

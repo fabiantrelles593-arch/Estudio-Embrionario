@@ -1,0 +1,20 @@
+{
+  "set": "pilot",
+  "started_utc": "2026-11-13T01:01:56.211192+00:00",
+  "elapsed_s": 62.7,
+  "git_commit": "b067158481ebd87d2bdc31db388aa3161f1aeb0a",
+  "code_dirty": true,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5",
+    "opencv-python-headless": "5.0.0.93"
+  },
+  "rows": 2400,
+  "base_seed": 20261220,
+  "n_in_per_kind": 400,
+  "h14_frozen_sha256": "676c7c841b8a3d2b85e25cdfa8347fe5659df13179229308f2ed7f736d7aeb97",
+  "nota": "exploratorio; no confirma nada"
+}

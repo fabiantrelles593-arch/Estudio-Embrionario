@@ -1,0 +1,202 @@
+# Preregistro — P3: ¿cuánto de la variación de una estructura embrionaria es técnica y cuánto es del espécimen? (MusMorph IMPC E15.5; **aprobado por el autor; piloto descargado, desviaciones D1–D6; confirmatorio cerrado el 21 nov 2026: `docs/p3/RESULTADOS_P3.md`**)
+
+> **Estado:** aprobado por el autor el 14 nov 2026 (Fase 2). Falta, idealmente, la revisión de un asesor antes de descargar datos. El análisis de §5 está en `src/geovida/p3.py`, probado solo con fantomas.
+> Se escribe **antes de descargar ningún archivo de MusMorph**: no hay resultados. Solo investigación y educación; datos animales publicados, sin datos humanos.
+> Base: ADR-005, `docs/estado_del_arte/FICHAS_REFERENTES.md` y `docs/estado_del_arte/MATRIZ_CAPACIDADES.md`.
+> Etiquetas: [HV] verificado · [EI] evidencia indirecta · [HIP] hipótesis · [PROP] propuesta · [PV] pendiente de validación.
+
+## 1. Pregunta
+
+En embriones de ratón silvestres de un mismo estadio (E15.5), una medida de una estructura segmentada (por ejemplo, su volumen) varía entre especímenes. Parte de esa variación es biológica; otra parte depende de decisiones técnicas: la resolución y el método de segmentación.
+
+> Para cada estructura, ¿qué fracción de la variación del logaritmo del volumen se debe a la resolución (×1, ×2, ×4) y al segmentador (atlas propagado frente a MEMOS), y qué fracción se debe al espécimen? ¿Es mayor la fracción técnica en las estructuras pequeñas o delgadas que en las grandes y compactas? ¿Predice el certificado de geovida qué estructuras tienen una fracción técnica alta mejor que su simple tamaño?
+
+La tercera pregunta es la prueba de MORPHO-TRACE con datos reales: si el certificado no supera al tamaño, no aporta (§9.6 del prompt rector).
+
+## 2. Datos
+
+| Elemento | Definición | Estado |
+|---|---|---|
+| Fuente | MusMorph, subconjunto IMPC E15.5, FaceBase 10.25550/3-HXMC | Licencia CC BY 4.0 [HV] |
+| Población | Controles silvestres C57BL/6N, micro-TC con yodo, escáner Skyscan, cuerpo completo | 358 en los metadatos de MusMorph (mar 2024): 144 hembras, 165 machos, 49 sin sexo [HV] |
+| Unidad experimental | **El espécimen** | — |
+| Segmentador A | Segmentaciones de MusMorph: atlas propagado por registro no lineal al espacio inicializado (rígido) de cada espécimen | Propagación [HV, script `Processing/Label_Propagation.py`]; existencia de los 1344 E15.5 en FaceBase [HV]; remuestreadas con interpolación trilineal: ver la desviación D1 (§11) |
+| Segmentador B | MEMOS (UNETR, 50 estructuras del atlas KOMP2), ejecutado sobre el mismo volumen | Licencia BSD-2-Clause [HV]; se ejecuta sin 3D Slicer, en CPU, a la escala de su entrenamiento: ver la desviación D2 (§11) |
+| Estructuras | Etiquetas del atlas KOMP2 presentes en ambos segmentadores | KOMP2 tiene 50 etiquetas [HV, `KOMP2.ctbl`]; MusMorph declara 48 [HV]; cuáles faltan [PV] |
+| Manifiesto | Todos los archivos descargados se registran con `python -m geovida.manifest build` antes de analizarlos | Implementado [HV] |
+
+**Discrepancias registradas:** los metadatos listan 1344 especímenes E15.5 y el artículo 1426 [HV, ambos]; se usará la lista de los metadatos y se informará la diferencia.
+
+## 3. Comprobaciones previas que pueden detener el estudio (sin mirar resultados)
+
+1. **Existencia:** hay segmentación de MusMorph para al menos el 80 % de los especímenes elegidos. Si no, P3 no se evalúa con este diseño.
+2. **Espacio:** las segmentaciones están en el espacio rígido del espécimen, no en el del atlas. Se comprueba con el lector MINC (afín y espaciado) y con que el volumen total de cada etiqueta **varíe** entre especímenes (coeficiente de variación > 0 en al menos el 90 % de las etiquetas). Si todas fueran idénticas, estarían en el espacio del atlas y la variación biológica no sería medible: se detiene.
+3. **Fuga de datos:** MEMOS se entrenó con 91 escáneres silvestres de KOMP2 [HV]. Si se pueden identificar, se excluyen del muestreo. Si no, se declara como limitación: el acuerdo de MEMOS con el atlas puede estar sobreestimado en esos especímenes.
+4. **MEMOS ejecutable:** corre sobre al menos el 90 % de los volúmenes del piloto. Si no, el factor «segmentador» se sustituye por un segundo segmentador por umbral de geovida, y esto se registra como desviación.
+
+## 4. Muestreo (fijo)
+
+- **Elegibles:** los silvestres con sexo conocido (309), menos los identificados en el paso 3.3.
+- **Piloto:** 20 especímenes (10 hembras, 10 machos), elegidos al azar con la semilla **20261114**. Solo sirve para comprobar el flujo, los tiempos y la anchura de los intervalos. **No entra en el análisis confirmatorio.**
+- **Confirmatorio:** 60 especímenes (30 + 30), disjuntos del piloto, con la misma semilla.
+- **Regla de ampliación fijada de antemano:** si el piloto proyecta que con 60 especímenes la semianchura del IC 95 % de la diferencia de H-P3a superaría 0,10, el confirmatorio se amplía a 120 **antes** de descargar sus datos. No hay más ampliaciones.
+- **Volumen de descarga estimado:** 80–140 volúmenes de 15–135 MB cada uno, entre 1,2 y 19 GB [EI, muestra de 25 archivos vista en FaceBase].
+
+## 5. Diseño técnico (fijo)
+
+Para cada espécimen *i*, estructura *s* y condición técnica *c* = (resolución *k* ∈ {1, 2, 4}) × (segmentador ∈ {A, B}), es decir, 6 condiciones:
+
+1. **Resolución:** la máscara binaria nativa se degrada por factor *k* con el promedio de bloques de geovida (fracción de ocupación) y se umbraliza en 0,5; el vóxel pasa a *k* × 0,027 mm. Se aplica igual a ambos segmentadores. **Limitación declarada:** esto simula la pérdida de resolución de la delimitación, no una nueva adquisición ni una nueva segmentación.
+2. **Medidas:** con `geovida.measure.measure_mask` sobre cada máscara:
+   - primaria: logaritmo del volumen en mm³;
+   - secundarias: área superficial (`area_sdf`) y número de componentes conexas b0 (conectividad 26).
+3. **Fracción técnica de la estructura *s*:**
+   τ_s = media_i Var_c(y_isc) / [ media_i Var_c(y_isc) + Var_i(media_c y_isc) ].
+   Es decir, la varianza entre condiciones técnicas dentro de cada espécimen, frente a la varianza entre especímenes de su media. No requiere ajustar un modelo y no tiene problemas de convergencia.
+4. **Sensibilidad:** modelo mixto `y ~ C(k) * C(segmentador) + (1 | espécimen)` con `statsmodels` (MixedLM), por estructura. Si discrepa de τ en el orden de las estructuras (ρ de Spearman < 0,7), se informan ambos.
+5. **Intervalos:** remuestreo por espécimen, 2000 réplicas, semilla 20261115. En cada réplica se recalcula todo.
+6. **Grupos de estructuras fijados antes de ver datos de especímenes:** sobre el atlas de consenso a resolución nativa se calcula, para cada estructura, la profundidad media interior en unidades del vóxel geométrico (`d_mean / h_geo`, el predictor de `geovida.budget`). Las estructuras por debajo de la mediana forman el grupo **pequeño o delgado**; las demás, el grupo **grande o compacto**. Los pares izquierda/derecha se promedian en una sola estructura para las pruebas entre estructuras, para no contar dos veces el mismo órgano.
+7. **Certificado:** `geovida.budget.adequacy` sobre la máscara nativa del segmentador A de cada espécimen, con los modelos congelados de v0.4 (`segmenter="otsu"`, `profile="realistic"`). Se resume por estructura con la mediana de `p` entre especímenes. Esos modelos se calibraron con fantomas sintéticos: usarlos aquí es justamente la prueba de si transfieren. **No se recalibran.**
+8. **Acuerdo entre segmentadores a resolución nativa:** Dice, HD95, ASSD y diferencia relativa de volumen (`geovida.agreement.compare_masks` y `geovida.measure.surface_distance_stats`; si alguna de estas métricas no estuviera implementada se añade con pruebas antes de descargar [PV]), elegidas siguiendo Metrics Reloaded para una segmentación semántica de estructuras de tamaño variable [PROP].
+
+## 6. Hipótesis y criterios (fijos)
+
+- **H-P3a — Primaria [HIP]. La fracción técnica es mayor en las estructuras pequeñas o delgadas.**
+  Estadístico: Δ = mediana(τ, grupo pequeño) − mediana(τ, grupo grande).
+  *Apoyada* si Δ > 0 y el límite inferior del IC 95 % > 0. *Contraria* si el límite superior < 0. *No concluyente* en el resto. *No evaluable* si quedan menos de 8 estructuras por grupo.
+- **H-P3b — MORPHO-TRACE [HIP]. El certificado predice la fracción técnica mejor que el tamaño.**
+  Entre estructuras, se calculan dos correlaciones de Spearman:
+  - entre la mediana de `p` y τ (se espera negativa);
+  - parcial, controlando el logaritmo del volumen del atlas.
+
+  *Apoyada* si |ρ| ≥ 0,5 y el IC 95 % de la correlación parcial excluye 0 en la dirección esperada. *No apoyada* si la correlación parcial incluye 0: en ese caso el certificado no aporta nada sobre el tamaño, y MORPHO-TRACE se modifica o se descarta.
+- **H-P3c — Descriptiva (sin criterio).** Acuerdo entre atlas y MEMOS por estructura (Dice, HD95, ASSD, error de volumen). Se informa, no se interpreta como validación anatómica: **ninguno de los dos segmentadores es una verdad anatómica** (el atlas es una propagación por registro y MEMOS se entrenó con esa misma propagación).
+- **Exploratorio (sin criterio):** τ para área y b0; diferencias por sexo; τ calculado solo con el factor resolución o solo con el factor segmentador; MEMOS ejecutado otra vez sobre la imagen degradada ×2.
+
+## 7. Qué se hace según el resultado (decidido de antemano)
+
+| Resultado | Conclusión | Siguiente paso |
+|---|---|---|
+| H-P3a apoyada, H-P3b apoyada | La resolución y la segmentación pesan más en las estructuras finas, y el certificado lo anticipa mejor que el tamaño | Repetir en un segundo estadio o conjunto (validación externa) antes de cualquier afirmación general |
+| H-P3a apoyada, H-P3b no apoyada | El fenómeno existe, pero el certificado no añade nada al tamaño | Reformular MORPHO-TRACE: la descomposición de varianza es la contribución; el certificado actual no lo es |
+| H-P3a contraria o no concluyente | La fracción técnica no depende del tamaño o grosor como se esperaba | Informar el resultado negativo; revisar los supuestos de H1 y H3 sintéticas |
+| Comprobaciones previas fallidas | El diseño no es aplicable a estos datos | Volver a la Fase 2 con otro conjunto (Matula 2021, CC0) |
+
+## 8. Predicciones escritas de antemano
+
+| Predicción | Probabilidad |
+|---|---|
+| Las comprobaciones previas se superan | 60 % |
+| H-P3a apoyada | 70 % |
+| H-P3b apoyada | 35 % |
+| Dice atlas–MEMOS mediano ≥ 0,80 en las estructuras grandes | 75 % |
+
+## 9. Qué no se puede concluir
+
+- Nada sobre exactitud anatómica: no hay referencia manual por espécimen en este diseño.
+- Nada sobre otros estadios, cepas, modalidades o especies. Y nada humano ni clínico.
+- La degradación de resolución es simulada sobre máscaras: no equivale a reescanear.
+- Con 60 especímenes, τ describe a esta muestra de silvestres C57BL/6N de un solo escáner; no a la población de embriones de ratón.
+
+## 10. Pendiente antes de aprobar
+
+- Revisión de un asesor (decisión 9 de la auditoría). El autor aprobó el diseño el 14 nov 2026.
+- Cuenta de FaceBase creada por el autor (el asistente no crea cuentas).
+- Lista exacta de las 48 etiquetas de MusMorph E15.5 y su correspondencia con KOMP2.
+- ~~Saber si MEMOS puede ejecutarse en el equipo del autor (3D Slicer; CPU o GPU).~~ Sí, en CPU y sin 3D Slicer, unos 17 minutos por espécimen con 4 núcleos (desviación D2).
+- ~~Implementar y probar con fantomas, antes de descargar, el análisis de §5.~~ Hecho: `src/geovida/p3.py` y `tests/test_p3.py` (14 pruebas en verde en la CI).
+
+## 11. Desviaciones
+
+### D1 (15 nov 2026) — Las segmentaciones de MusMorph están interpoladas
+
+Registrada **antes de calcular τ, `p` o cualquier medida de las hipótesis**. Solo se miró el formato de las 20 segmentaciones del piloto (`results/p3/diagnostico_segs.json`, fuera de git).
+
+- **Hallazgo [HV].** Los `<ID>_Segs.mnc` son MINC2 en coma flotante, no mapas de etiquetas: en el piloto, entre el 28 % y el 32 % de los vóxeles con valor > 0 tienen un valor no entero. Es una mezcla de números de etiqueta en los bordes. Ejemplo: entre la etiqueta 10 y la 40, un vóxel puede valer 25, que es otra etiqueta.
+- **Causa [HV].** `Processing/Label_Propagation.py` de MusMorph remuestrea el atlas de etiquetas con `mincresample -like … -transform …` sin `-nearest_neighbour` ni `-labels`, así que usa la interpolación trilineal por defecto.
+- **Etiquetas válidas [HV].** Las etiquetas 1 a 48, más la 102 y la 103, tienen vóxeles exactos en los 20 especímenes (la 102, al menos 1072, y la 103, al menos 490). Los demás enteros > 48 aparecen en 1 o 2 vóxeles: son coincidencias de la interpolación y se descartan. Son 50 etiquetas, como en KOMP2. [HIP] La 102 y la 103 de MusMorph corresponden a la 49 y la 50 de KOMP2 (ventrículos izquierdo y derecho) [PV, se comprueba al cruzar con MEMOS].
+- **Rejilla [HV, 2 especímenes].** La imagen y la segmentación comparten la misma rejilla (723 × 567 × 486 vóxeles, 0,027 mm, ejes alineados), así que la correspondencia vóxel a vóxel es directa.
+- **Regla principal, fijada ahora (`geovida.p3_data.recover_labels`, `rule="nearest"`):**
+  - Un vóxel con valor entero de una etiqueta válida conserva esa etiqueta, y 0 es fondo.
+  - Un vóxel mezclado toma, entre el fondo y las etiquetas exactas de su vecindario de 26, la de valor más cercano. Con dos candidatos equivale a asignarlo a la que pesa ≥ 0,5 en la mezcla, el mismo umbral que §5.1.
+  - Si no tiene ningún vecino exacto, se busca a 2 vóxeles.
+  - Se cuentan los vóxeles con tres o más candidatos (asignación aproximada) y los que quedan sin candidato. En el piloto, de los vóxeles mezclados, el 68 % tiene un solo candidato a 1 vóxel, el 26 % dos, el 0,7 % tres o más y el 4,7 % ninguno (pasan a la búsqueda a 2 vóxeles).
+- **Por qué esta regla [HV, sonda sintética en `tests/test_p3_data.py`].** En esferas giradas y remuestreadas, coincide con el remuestreo por vecino más cercano en el 95–96 % de los vóxeles. Solo con los enteros exactos la coincidencia es del 74–77 %, y con el redondeo simple del 57–61 %, que además crea etiquetas inexistentes. En una placa de 2 vóxeles, `nearest` conserva el 98 % del volumen y `exact` pierde alrededor del 54 %.
+- **Sensibilidad (fijada ahora).** Todo §5 se repite con `rule="exact"` (los vóxeles mezclados pasan a fondo). Se informan ambas. Si el orden de las estructuras por τ discrepa (ρ de Spearman < 0,7), H-P3a y H-P3b solo se interpretan cuando las dos reglas dan el mismo veredicto.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo, ni las semillas. El segmentador A pasa a ser «atlas propagado + recuperación `nearest`».
+- **Límite declarado.** La regla reconstruye una aproximación del remuestreo por vecino más cercano que MusMorph no hizo; no recupera la segmentación «verdadera». Los vóxeles con tres o más candidatos se asignan de forma aproximada.
+
+### D2 (15 nov 2026) — MEMOS se ejecuta sin 3D Slicer, a la escala con la que se entrenó
+
+Registrada **antes de calcular τ, `p` o cualquier medida de las hipótesis**, y antes de comparar MEMOS con el atlas en ningún espécimen.
+
+- **Hallazgo [HV, Rolfe et al. 2023, doi:10.1242/bio.059698, Métodos].** MEMOS se entrenó con la versión de baja resolución de los escáneres de IMPC, de unos 250 × 250 × 400 vóxeles. El script de inferencia de SlicerMEMOS no remuestrea: pone el espaciado a 1 y aplica la red a la rejilla de entrada.
+- **Escala [HV].** En el volumen de ejemplo de SlicerMEMOS (`IMPC_sample_data.nrrd`), el cuerpo, umbralizado con Otsu, ocupa 1,49 millones de vóxeles. En `IMPC_E15.5_0040` de MusMorph ocupa 10,4 millones. La razón de volumen es 7,0, es decir, un factor lineal de 1,91. Los ejes coinciden en orden (S, A, R ↔ eje 0, 1, 2 del arreglo). Por tanto, MusMorph tiene unas dos veces la resolución con la que se entrenó MEMOS.
+- **Regla fijada ahora (`scripts/p3_memos.py`):**
+  - La imagen nativa se reduce por promedio de bloques de 2, a ≈ 0,054 mm.
+  - La intensidad se reescala como en SlicerMEMOS: mínimo y máximo a 0–255, y después `ScaleIntensityRange(-175, 250, 0, 1)`.
+  - La red es la misma: UNETR, 51 salidas, 128³, con los pesos publicados. Se aplica con ventana deslizante de 128³, solapamiento 0,8 y promedio constante.
+  - Solo se procesa la caja del cuerpo (Otsu, más 16 vóxeles de margen) y se acumula por franjas, para caber en 4 GB de RAM. Las pruebas comprueban que el resultado es idéntico al cálculo directo.
+  - Los logits medios se amplían a la rejilla nativa (0,027 mm) con interpolación trilineal, y **después** se toma el argmax. Así se obtiene una máscara nativa sin bordes en escalera. Si se ampliaran las etiquetas por vecino más cercano, la variación técnica de las estructuras finas se inflaría, a favor de H-P3a.
+- **Sin 3D Slicer.** El cálculo es el mismo que hace el módulo (configuración e hiperparámetros publicados en SlicerMEMOS, BSD-2-Clause), con código propio, MONAI 1.6 y PyTorch en CPU. Los pesos tienen licencia no declarada: se usan localmente y no se redistribuyen.
+- **Comprobación 3.3 [EI].** Ni el artículo, ni el repositorio de MEMOS, ni los metadatos de MusMorph identifican los 91 escáneres de entrenamiento. MusMorph renumera los especímenes sin conservar el identificador del portal IMPC. Por tanto, según §3.3, no se excluye a nadie y se declara la limitación: el acuerdo atlas–MEMOS puede estar sobreestimado en los especímenes que coincidan.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo. El segmentador B pasa a ser «MEMOS a ×2, logits ampliados de forma trilineal a la rejilla nativa».
+- **Límite declarado.** La máscara nativa de MEMOS se infiere a la mitad de resolución: su detalle fino es interpolado, no observado. Con el factor ×2 de §5.1, ambos segmentadores parten de máscaras nativas, pero la de MEMOS tiene menos información independiente a ×1. El exploratorio «MEMOS ejecutado otra vez sobre la imagen degradada ×2» pasa a ser a ×4 sobre la nativa.
+
+### D3 (15 nov 2026) — Las segmentaciones de MusMorph están trasladadas respecto a su imagen
+
+Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b**, y antes de comparar MEMOS con el atlas en los otros 19 especímenes del piloto. Solo se miró `IMPC_E15.5_0040`, que es del piloto y no entra en el confirmatorio.
+
+- **Hallazgo [HV, 1 espécimen].** Al superponer los contornos sobre la imagen, las vértebras y la médula del atlas de MusMorph quedan fuera del raquis, sobre la piel dorsal, mientras que las de MEMOS lo siguen. La mejor traslación entera del atlas es de (16, 6, −4) vóxeles, es decir, (0,43; 0,16; −0,11) mm.
+  - Con ella, el Dice de la unión de etiquetas pasa de 0,70 a 0,90.
+  - El Dice mediano por etiqueta pasa de 0,22 a 0,73.
+  - Las etiquetas 1 a 48 de MusMorph caen sobre la misma etiqueta de MEMOS (KOMP2) [HV]. Su correspondencia queda establecida en este espécimen.
+- **La hipótesis de D1 sobre la 102 y la 103 no se sostiene [HV, 1 espécimen].** Según `KOMP2.ctbl` de SlicerMEMOS, la 49 y la 50 son las cámaras de los ventrículos izquierdo y derecho, y la 18 y la 19 los ventrículos. En `0040`, la 102 y la 103 de MusMorph solapan sobre todo con el fondo y con la 18 y la 19 de MEMOS, y casi nada con la 49 y la 50. Su identidad queda [PV].
+- **Regla fijada ahora.**
+  - Estructuras de §5: solo las 48 etiquetas con el mismo número en ambos segmentadores (1–48). La 102 y la 103 de MusMorph, y la 49 y la 50 de MEMOS, se excluyen de τ y de H-P3a/H-P3b por no tener par establecido, y se informan aparte.
+  - H-P3c se informa de dos formas: (a) sin trasladar, y (b) tras trasladar el atlas con la traslación entera que maximiza el Dice de las uniones (`best_translation` en `scripts/p3_memos.py`: correlación cruzada por FFT a 1/2 y refinamiento de ±2 vóxeles, sin rotaciones). La principal es (b), porque (a) mezcla el desfase de los archivos con el desacuerdo entre segmentadores.
+  - Se informan los vectores de traslación por espécimen como hallazgo sobre los datos.
+- **Qué no afecta.** τ y el certificado solo usan la máscara y el vóxel (`geovida.measure.measure_mask`, `geovida.budget.adequacy`). El volumen, el área y b0 no cambian con una traslación entera, así que H-P3a y H-P3b no dependen del desfase.
+- **Límite declarado.** La traslación se estima con la propia máscara de MEMOS, así que (b) es el acuerdo tras el mejor alineamiento por traslación, optimista por construcción. No se corrigen posibles rotaciones. Como ya dice H-P3c, no es una validación.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
+
+### D4 (15 nov 2026) — Concreciones antes de analizar el piloto
+
+Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b en ningún espécimen**.
+
+- **Atlas de consenso para los grupos (§5.6) [HV].** `IMPC_E15.5_Body_Atlas_Segs.mnc`, del conjunto de FaceBase 6-2EPY de MusMorph («Project-wide metadata, atlases, and landmarks»). MD5 correcto; SHA-256 `e869ab5a…18bc`.
+  - Tiene la misma rejilla que los especímenes (723 × 567 × 486, 0,027 mm) y etiquetas enteras, sin ningún vóxel interpolado. Esto confirma la causa de D1: la mezcla aparece al propagar el atlas, no en el atlas.
+  - El conjunto no declara licencia [PV]. Se usa solo en local y no se redistribuye. En el repositorio solo entra la tabla de grupos derivada.
+- **Unidades de §5.6.** Las 48 estructuras forman 36 unidades: se promedian 12 pares bilaterales homólogos (`geovida.p3_data.BILATERAL_PAIRS`; la prueba comprueba que cada par une un «left» con un «right»). No se emparejan los ventrículos cardíacos (18/19) ni los lóbulos de pulmón o de hígado.
+- **Proyección de la regla de ampliación (§4).** Semianchura proyectada a 60 = semianchura del IC 95 % de Δ en el piloto × √(n del piloto / 60) (`scripts/p3_analyze.py`). Si no se puede calcular, el confirmatorio se amplía a 120.
+- **Seguimiento de D3 [HV, 4 especímenes].** Las mejores traslaciones son (16, 6, −4), (−1, 0, 0), (1, −4, 0) y (8, 17, −2) vóxeles: el desfase **varía por espécimen**. En `0429`, tras trasladar, el Dice de la unión solo llega a 0,72, así que queda un desajuste que la traslación no explica [PV]. Se informa en H-P3c y no afecta a τ.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
+
+### D5 (15 nov 2026) — En algún espécimen el desfase no es una traslación rígida
+
+Registrada **antes de calcular τ, `p` o cualquier medida de H-P3a o H-P3b**, y antes de aplicar la comprobación a los otros especímenes del piloto. Solo se miraron `0429` y, como control, `0218`.
+
+- **Hallazgo [HV, 2 especímenes].** Se buscó por separado la mejor traslación del atlas en cada tercio del eje más largo del cuerpo (`local_translations` en `scripts/p3_memos.py`), midiendo la fracción de vóxeles del atlas cuya etiqueta coincide con la de MEMOS.
+  - En `0429`, la traslación en el segundo eje cambia de forma lineal a lo largo del cuerpo: −29, −19 y −8 vóxeles. Eso equivale a un giro de unos 4°, no a una traslación. Con la traslación global coincide el 53 % de los vóxeles. Con la mejor traslación de cada tercio, entre el 62 % y el 69 %.
+  - En `0218`, las tres traslaciones difieren como mucho en 1 vóxel de la global, y coincide el 83 % de los vóxeles.
+- **Causa [HIP].** Un registro del atlas al espécimen con un error de rotación, o una diferencia de orientación entre la imagen y la segmentación publicadas. Con estos datos no se puede decidir cuál de las dos máscaras está mal colocada respecto a la anatomía [PV].
+- **Regla fijada ahora.**
+  - Para cada espécimen se calcula la **dispersión**: la mayor diferencia, por eje, entre las traslaciones de los tres tercios (`p3_memos.py rigidity`).
+  - Un espécimen con dispersión **> 4 vóxeles** (0,108 mm, el doble del refinamiento de ±2 de D3) se marca como «desajuste no rígido».
+  - H-P3c se informa con todos los especímenes (principal, como en D3) y, como sensibilidad, sin los marcados. Se informa cuántos hay.
+  - Se aplica igual en el confirmatorio.
+- **Qué no afecta.** τ y el certificado: el volumen, el área y b0 de cada máscara no dependen de dónde esté colocada. H-P3a y H-P3b no cambian.
+- **Límite declarado.** Tres tercios solo detectan un giro o una deformación a gran escala. Una deformación local no se ve, y el umbral de 4 vóxeles es una convención, no un valor validado.
+- **Qué no cambia.** Ni la pregunta, ni las hipótesis, ni los criterios, ni el muestreo.
+
+### D6 (21 nov 2026) — El exploratorio MEMOS a ×4 no se calculó (registrada después de medir)
+
+- **Qué pasó [HV].** El exploratorio de D2 falló en los 60 especímenes del confirmatorio por un fallo del código: la
+  entrada no se rellenaba hasta la ventana de 128 vóxeles, como hace MONAI. Corregido y probado contra MONAI
+  (`scripts/p3_memos.py`, `tests/test_p3_memos.py`).
+- **Consecuencia.** El resumen confirmatorio se escribió sin ese exploratorio (`p3_analyze.py confirm --reuse-main`).
+  Se repetirá con memoria libre y se informará como anexo de `docs/p3/RESULTADOS_P3.md`.
+- **Qué no afecta.** τ, H-P3a, H-P3b, H-P3c ni sus criterios: el exploratorio no tiene criterio.
+- **Laguna del criterio de H-P3b, declarada después de medir.** El §6 no define el caso |ρ| < 0,5 con el IC de la
+  correlación parcial excluyendo 0; el código congelado lo clasifica como «no apoyada». No se cambia nada: ver
+  `docs/p3/RESULTADOS_P3.md` §3.1.

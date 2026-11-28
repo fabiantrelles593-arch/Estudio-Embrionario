@@ -1,0 +1,24 @@
+{
+  "phase": "cal",
+  "started_utc": "2026-11-09T21:30:33.476871+00:00",
+  "elapsed_s": 737.2,
+  "git_commit": "db7e37c754a2e5d6b45e92c43ee99a74b7367e65",
+  "code_dirty": false,
+  "reps": 30,
+  "conditions": 12600,
+  "rows": 37800,
+  "base_seed": 20261116,
+  "segmenters": [
+    "global",
+    "otsu",
+    "smoothed_otsu"
+  ],
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5",
+    "statsmodels": "0.15.0"
+  }
+}

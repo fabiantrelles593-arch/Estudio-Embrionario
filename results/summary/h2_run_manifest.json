@@ -1,0 +1,15 @@
+{
+  "started_utc": "2026-11-09T13:32:27.833579+00:00",
+  "elapsed_s": 58.7,
+  "git_commit": "bb356ebb3dc3829463b8b2a03c26584281d69e26",
+  "cells": 810,
+  "reps": 500,
+  "boot": 200,
+  "base_seed": 20261109,
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "pandas": "3.0.5"
+  }
+}

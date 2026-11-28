@@ -1,0 +1,71 @@
+{
+  "global/ideal": {
+    "t_over_h_by_stage": [
+      2.0,
+      2.363,
+      2.791,
+      3.297,
+      3.895,
+      4.602,
+      5.437
+    ],
+    "volume_bias_by_stage": [
+      -0.1246,
+      -0.0968,
+      -0.0689,
+      -0.0432,
+      -0.0191,
+      -0.0133,
+      -0.011
+    ],
+    "apparent_growth_rate": 0.521249912386811,
+    "true_growth_rate": 0.5,
+    "relative_distortion": 0.04249982477362191
+  },
+  "otsu/realistic": {
+    "t_over_h_by_stage": [
+      2.0,
+      2.363,
+      2.791,
+      3.297,
+      3.895,
+      4.602,
+      5.437
+    ],
+    "volume_bias_by_stage": [
+      59.7972,
+      45.4482,
+      31.0993,
+      16.7315,
+      2.3494,
+      0.051,
+      0.0351
+    ],
+    "apparent_growth_rate": -0.2877322111033517,
+    "true_growth_rate": 0.5,
+    "relative_distortion": -1.5754644222067034
+  },
+  "smoothed_otsu/realistic": {
+    "t_over_h_by_stage": [
+      2.0,
+      2.363,
+      2.791,
+      3.297,
+      3.895,
+      4.602,
+      5.437
+    ],
+    "volume_bias_by_stage": [
+      3.0585,
+      2.214,
+      1.3696,
+      0.8294,
+      0.5212,
+      0.3688,
+      0.2458
+    ],
+    "apparent_growth_rate": 0.2966563646599099,
+    "true_growth_rate": 0.5,
+    "relative_distortion": -0.4066872706801802
+  }
+}

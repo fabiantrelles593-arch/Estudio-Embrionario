@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Calibre Geovida</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Calibre Geovida: instrumento de medida, no una página de marketing.
+   Disposición: banda superior con el aviso; mesa de trabajo (imagen a la izquierda, pasos a la derecha); después tres fichas de lectura.
+   La imagen siempre se ve sobre fondo oscuro, como en una pantalla de ecógrafo, en cualquiera de los dos temas. */
+:root {
+  --bg: #edf1f2;
+  --surface: #f8fafa;
+  --surface-2: #e3e9eb;
+  --ink: #12242b;
+  --ink-2: #435860;
+  --muted: #5e7279;
+  --line: #c8d4d8;
+  --accent: #0b6b76;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(11, 107, 118, 0.14);
+  --stage: #0a0f12;
+  --mark-scale: #f2b84b;
+  --mark-crl: #4fd1de;
+  --warn: #8a5300;
+  --warn-bg: #fbefd3;
+  --bad: #a8261e;
+  --bad-bg: #fbe3e0;
+  --off: #55666c;
+  --off-bg: #dfe6e8;
+  --focus: #0b6b76;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fs-0: 0.8125rem;
+  --fs-1: 0.9375rem;
+  --fs-2: 1.0625rem;
+  --fs-3: 1.375rem;
+  --fs-4: 2rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1417;
+    --surface: #141e22;
+    --surface-2: #1b2a30;
+    --ink: #e4eef0;
+    --ink-2: #a9bdc3;
+    --muted: #8aa0a6;
+    --line: #28404a;
+    --accent: #4fc3cf;
+    --accent-ink: #06161a;
+    --accent-soft: rgba(79, 195, 207, 0.16);
+    --warn: #f0b44c;
+    --warn-bg: #3a2d10;
+    --bad: #ff8d84;
+    --bad-bg: #3b1a18;
+    --off: #9fb2b8;
+    --off-bg: #1f2e34;
+    --focus: #4fc3cf;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1417;
+  --surface: #141e22;
+  --surface-2: #1b2a30;
+  --ink: #e4eef0;
+  --ink-2: #a9bdc3;
+  --muted: #8aa0a6;
+  --line: #28404a;
+  --accent: #4fc3cf;
+  --accent-ink: #06161a;
+  --accent-soft: rgba(79, 195, 207, 0.16);
+  --warn: #f0b44c;
+  --warn-bg: #3a2d10;
+  --bad: #ff8d84;
+  --bad-bg: #3b1a18;
+  --off: #9fb2b8;
+  --off-bg: #1f2e34;
+  --focus: #4fc3cf;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-1);
+  line-height: 1.5;
+  padding-block: 0 40px;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: var(--fs-3); font-weight: 600; }
+h2 { font-size: var(--fs-2); font-weight: 600; }
+h3 { font-size: var(--fs-1); font-weight: 600; margin-bottom: 6px; }
+p { margin: 0; }
+code { font-family: var(--font-num); font-size: 0.92em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; padding: 0; }
+
+.wrap {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Banda superior */
+.top { background: var(--surface); border-bottom: 1px solid var(--line); padding-block: 18px 14px; }
+.top-in { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px 28px; align-items: start; }
+.brand { display: flex; gap: 14px; align-items: flex-start; min-width: 0; }
+.mark { width: 38px; height: 38px; flex: none; color: var(--accent); margin-top: 2px; }
+.sub { color: var(--ink-2); font-size: var(--fs-0); margin-top: 4px; max-width: 58ch; }
+.notice {
+  font-size: var(--fs-0);
+  color: var(--ink-2);
+  border-left: 3px solid var(--warn);
+  background: var(--warn-bg);
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  min-width: 0;
+}
+.notice strong { color: var(--ink); }
+
+/* Mesa de trabajo */
+main { display: flex; flex-direction: column; gap: 20px; padding-block: 20px 0; }
+.workbench { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr); gap: 20px; align-items: start; }
+.stage-col { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  font: inherit; font-size: var(--fs-0); font-weight: 500;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 36px; padding: 6px 14px;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-icon { min-width: 36px; padding: 6px 8px; font-size: var(--fs-2); line-height: 1; }
+.zoom { display: inline-flex; gap: 4px; margin-left: auto; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label {
+  font-size: var(--fs-0); font-weight: 500; padding: 7px 14px; cursor: pointer; color: var(--ink-2);
+  border-right: 1px solid var(--line); min-height: 36px; display: inline-flex; align-items: center;
+}
+.seg label:last-of-type { border-right: 0; }
+.seg input:checked + label { background: var(--accent-soft); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
+.seg input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: -2px; }
+
+.stage-wrap { position: relative; border-radius: 10px; overflow: hidden; background: var(--stage); border: 1px solid var(--line); }
+#stage { display: block; width: 100%; height: min(68vh, 560px); min-height: 280px; touch-action: none; cursor: crosshair; background: var(--stage); }
+#stage.pan { cursor: grab; }
+#stage.panning { cursor: grabbing; }
+#stage:focus-visible { outline: 2px solid var(--mark-crl); outline-offset: -2px; }
+#loupe { position: absolute; top: 10px; left: 10px; width: 120px; height: 120px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.75); box-shadow: 0 2px 12px rgba(0,0,0,0.5); pointer-events: none; background: #000; }
+.stage-badge { position: absolute; left: 10px; bottom: 10px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; background: rgba(10,15,18,0.82); color: #f2b84b; border: 1px solid rgba(242,184,75,0.6); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
+.stage-hint { position: absolute; right: 10px; bottom: 10px; max-width: 60%; font-size: 0.75rem; color: #c9d6da; background: rgba(10,15,18,0.78); padding: 4px 8px; border-radius: 4px; pointer-events: none; text-align: right; }
+.stage-hint:empty { display: none; }
+.stage-status { font-family: var(--font-num); font-size: var(--fs-0); color: var(--muted); min-height: 1.4em; }
+
+/* Pasos */
+.panel { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px 16px; }
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: paso; }
+.step { counter-increment: paso; padding: 14px 0 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.step:first-child { border-top: 0; }
+.step h2 { display: flex; align-items: center; gap: 8px; }
+.step h2::before {
+  content: counter(paso); font-family: var(--font-num); font-size: var(--fs-0); font-weight: 500;
+  width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent); color: var(--accent-ink);
+}
+.step p { color: var(--ink-2); font-size: var(--fs-0); }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: var(--fs-0); color: var(--ink); font-weight: 500; }
+.input-unit { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); overflow: hidden; }
+.input-unit:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.input-unit input { flex: 1; min-width: 0; font: inherit; font-family: var(--font-num); font-size: var(--fs-1); color: var(--ink); background: transparent; border: 0; padding: 8px 10px; outline: 0; }
+.input-unit span { font-family: var(--font-num); font-size: var(--fs-0); color: var(--muted); padding: 0 12px; }
+.hint { font-size: 0.75rem !important; color: var(--muted) !important; }
+.readout { font-family: var(--font-num); font-size: var(--fs-0) !important; color: var(--ink) !important; background: var(--surface-2); padding: 6px 10px; border-radius: 6px; min-height: 2em; }
+
+/* Fichas */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.lead { color: var(--ink-2); max-width: 78ch; }
+.verdict { font-size: var(--fs-2); font-weight: 500; max-width: 74ch; }
+
+.lamps { display: inline-flex; gap: 6px; }
+.lamp { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-0); font-weight: 600; padding: 5px 11px 5px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: transparent; }
+.lamp i { width: 11px; height: 11px; border-radius: 50%; border: 2px solid currentColor; display: inline-block; }
+.lamp.on { color: var(--ink); }
+.lamp.on-red { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.lamp.on-red i { background: var(--bad); border-color: var(--bad); }
+.lamp.on-yellow { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+.lamp.on-yellow i { background: var(--warn); border-color: var(--warn); }
+.lamp.on-off { background: var(--off-bg); border-color: var(--off); color: var(--off); }
+.lamp.on-off i { background: var(--off); border-color: var(--off); }
+.lamp.locked { border-style: dashed; }
+.lamp.locked i { border-style: dashed; background: transparent; }
+
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 0; }
+.metric { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.metric dt { font-size: var(--fs-0); color: var(--muted); }
+.metric dd { margin: 2px 0 0; font-family: var(--font-num); font-size: var(--fs-3); font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.metric dd small { font-size: var(--fs-0); color: var(--ink-2); font-weight: 400; display: block; letter-spacing: 0; }
+.metric.is-off dd { color: var(--muted); }
+
+.reasons { margin: 0; padding-left: 1.2em; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; max-width: 82ch; }
+.reasons li::marker { color: var(--muted); }
+.reasons .issue { color: var(--ink); }
+.fingerprint { font-size: var(--fs-0); color: var(--ink-2); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; max-width: 90ch; }
+.fingerprint b { color: var(--ink); font-weight: 600; }
+.fingerprint .nums { font-family: var(--font-num); color: var(--ink); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.copy-status { font-size: var(--fs-0); color: var(--muted); }
+details summary { cursor: pointer; font-size: var(--fs-0); font-weight: 500; color: var(--accent); }
+details[open] summary { margin-bottom: 8px; }
+textarea { width: 100%; font-family: var(--font-num); font-size: 0.8125rem; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; resize: vertical; }
+
+/* Gráfico y tabla */
+.chart-wrap { width: 100%; min-width: 0; }
+.chart-wrap svg { display: block; width: 100%; height: auto; }
+.chart-wrap text { font-family: var(--font-num); font-size: 11px; fill: var(--muted); }
+.chart-wrap .lbl { fill: var(--ink); font-family: var(--font-ui); font-size: 12px; font-weight: 500; }
+.chart-wrap .lbl-soft { fill: var(--ink-2); font-family: var(--font-ui); font-size: 12px; }
+.chart-wrap .grid { stroke: var(--line); stroke-width: 1; }
+.chart-wrap .axis { stroke: var(--muted); stroke-width: 1; }
+.chart-wrap .band { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; }
+.chart-wrap .mean { fill: none; stroke: var(--ink-2); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart-wrap .dot { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
+.chart-wrap .whisk { stroke: var(--ink); stroke-width: 1.5; }
+.legend { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: var(--fs-0); color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { display: inline-block; flex: none; }
+.sw-band { width: 16px; height: 10px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 2px; }
+.sw-mean { width: 18px; height: 0; border-top: 2px dashed var(--ink-2); }
+.sw-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); }
+.chart-empty { padding: 18px; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-2); background: var(--bg); }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: var(--fs-0); }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 500; }
+td.num, th.num { text-align: right; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.notes { margin: 0; padding-left: 1.2em; color: var(--ink-2); font-size: var(--fs-0); display: flex; flex-direction: column; gap: 4px; max-width: 82ch; }
+
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 28px; }
+.cols ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; color: var(--ink-2); font-size: var(--fs-0); }
+.foot-note { font-size: var(--fs-0); color: var(--muted); }
+.foot { padding-top: 18px; font-size: var(--fs-0); color: var(--muted); }
+
+@media (max-width: 860px) {
+  .top-in { grid-template-columns: minmax(0, 1fr); }
+  .workbench { grid-template-columns: minmax(0, 1fr); }
+  .cols { grid-template-columns: minmax(0, 1fr); }
+  .zoom { margin-left: 0; }
+  #stage { height: min(56vh, 460px); }
+  .stage-hint { max-width: 90%; left: 10px; text-align: left; bottom: 40px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .lamp, .input-unit { transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M9 26 L31 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M9 21 v10 M31 9 v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1>Calibre Geovida</h1>
+        <p class="sub">Mide la longitud cráneo-rabadilla de una ecografía, mira cuánto error trae esa medida y entérate de cuándo la herramienta se niega a opinar.</p>
+      </div>
+    </div>
+    <p class="notice" role="note"><strong>Solo investigación y educación.</strong> Esta página no es un dispositivo médico y no sustituye la medición ni la opinión de quien hizo la ecografía. Sin validar con imágenes reales. La imagen se lee y se mide en tu navegador y no se envía a ningún sitio.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="workbench" aria-label="Medición">
+    <div class="stage-col">
+      <div class="toolbar" role="toolbar" aria-label="Imagen y herramientas">
+        <label class="btn btn-primary" for="file">Abrir imagen</label>
+        <input id="file" type="file" accept="image/*" class="visually-hidden">
+        <button id="btn-example" class="btn" type="button">Ejemplo sintético</button>
+        <div class="seg" role="radiogroup" aria-label="Qué estás marcando">
+          <input type="radio" name="mode" id="mode-scale" value="scale" checked><label for="mode-scale">Escala</label>
+          <input type="radio" name="mode" id="mode-crl" value="crl"><label for="mode-crl">Longitud</label>
+          <input type="radio" name="mode" id="mode-pan" value="pan"><label for="mode-pan">Mover</label>
+        </div>
+        <div class="zoom" role="group" aria-label="Zoom">
+          <button id="zoom-out" class="btn btn-icon" type="button" aria-label="Alejar">−</button>
+          <button id="zoom-fit" class="btn btn-icon" type="button" aria-label="Ajustar a la ventana">⤢</button>
+          <button id="zoom-in" class="btn btn-icon" type="button" aria-label="Acercar">+</button>
+        </div>
+      </div>
+
+      <div class="stage-wrap" id="stage-wrap">
+        <canvas id="stage" tabindex="0" aria-label="Imagen de trabajo. Haz clic para colocar los puntos; con una marca seleccionada, las flechas la mueven un cuarto de píxel (Mayús: un píxel)."></canvas>
+        <canvas id="loupe" width="120" height="120" aria-hidden="true" hidden></canvas>
+        <span id="stage-badge" class="stage-badge" hidden></span>
+        <p id="stage-hint" class="stage-hint"></p>
+      </div>
+      <p id="stage-status" class="stage-status" aria-live="polite"></p>
+    </div>
+
+    <aside class="panel" aria-label="Pasos">
+      <ol class="steps">
+        <li class="step">
+          <h2>Escala</h2>
+          <p>Con <strong>Escala</strong> elegida, marca dos marcas de la regla de la imagen y escribe la distancia real entre ellas.</p>
+          <div class="field">
+            <label for="cal-mm">Distancia real entre las dos marcas</label>
+            <div class="input-unit"><input id="cal-mm" type="number" inputmode="decimal" min="0.1" step="0.1" value="10"><span>mm</span></div>
+          </div>
+          <p id="cal-readout" class="readout" aria-live="polite"></p>
+        </li>
+        <li class="step">
+          <h2>Longitud</h2>
+          <p>Con <strong>Longitud</strong> elegida, marca la cabeza y la rabadilla en la imagen, sobre el eje mayor del cuerpo.</p>
+          <p id="crl-readout" class="readout" aria-live="polite"></p>
+        </li>
+        <li class="step">
+          <h2>Supuestos</h2>
+          <p>Son tuyos: la página no los mide. Cambian el certificado.</p>
+          <div class="field">
+            <label for="sigma">Incertidumbre al marcar cada punto</label>
+            <div class="input-unit"><input id="sigma" type="number" inputmode="decimal" min="0" max="20" step="0.25" value="2"><span>px</span></div>
+          </div>
+          <div class="field">
+            <label for="bias">Sesgo sistemático que sospechas en la longitud</label>
+            <div class="input-unit"><input id="bias" type="number" inputmode="decimal" min="-30" max="30" step="0.5" value="0"><span>%</span></div>
+          </div>
+          <div class="field">
+            <label for="tol">Error de edad tolerado, causado por la medida</label>
+            <div class="input-unit"><input id="tol" type="number" inputmode="decimal" min="0.25" max="14" step="0.25" value="1"><span>días</span></div>
+          </div>
+          <div class="field">
+            <label for="ga-known">Edad conocida por otra vía (opcional)</label>
+            <div class="input-unit"><input id="ga-known" type="number" inputmode="decimal" min="58" max="105" step="1" placeholder="p. ej. 74"><span>días</span></div>
+            <p class="hint">Solo cambia la franja de tamaño. Entre 58 y 105 días.</p>
+          </div>
+        </li>
+      </ol>
+    </aside>
+  </section>
+
+  <section class="card" id="result" aria-labelledby="h-result" aria-live="polite">
+    <div class="card-head">
+      <h2 id="h-result">Certificado de la medida</h2>
+      <div class="lamps" id="lamps" role="img" aria-label="Semáforo"></div>
+    </div>
+    <p id="verdict" class="verdict"></p>
+    <dl class="metrics" id="metrics"></dl>
+    <ul class="reasons" id="reasons"></ul>
+    <div class="fingerprint" id="fingerprint"></div>
+    <div class="actions">
+      <button id="btn-copy" class="btn" type="button">Copiar informe de texto</button>
+      <span id="copy-status" class="copy-status" role="status"></span>
+    </div>
+    <details class="report-box" id="report-box">
+      <summary>Ver el informe de texto</summary>
+      <textarea id="report" readonly rows="14" aria-label="Informe de texto"></textarea>
+    </details>
+  </section>
+
+  <section class="card" id="envelope" aria-labelledby="h-env">
+    <h2 id="h-env">Tamaño de referencia en las semanas siguientes</h2>
+    <p class="lead">Es la franja de la población de referencia (INTERGROWTH-21st) condicionada a esta medida, con el error de la longitud y la incertidumbre de la edad incluidos. <strong>No predice cómo crecerá ni cómo será ningún bebé</strong>: una medida no dice nada sobre el aspecto ni la salud.</p>
+    <div class="chart-wrap" id="chart"></div>
+    <details class="table-view">
+      <summary>Ver como tabla</summary>
+      <div class="table-scroll" id="env-table"></div>
+    </details>
+    <ul class="notes" id="env-notes"></ul>
+  </section>
+
+  <section class="card" id="how" aria-labelledby="h-how">
+    <h2 id="h-how">Qué hay detrás y qué no se puede decir</h2>
+    <div class="cols">
+      <div>
+        <h3>Cómo se calcula</h3>
+        <ul>
+          <li><strong>Longitud:</strong> píxeles entre los extremos por los milímetros por píxel de la regla. Cada punto lleva la incertidumbre que declaras; las dos longitudes en píxeles (objeto y regla) suman sus errores de forma independiente.</li>
+          <li><strong>Edad:</strong> ecuación de INTERGROWTH-21st (Papageorghiou y cols., 2014), válida de 15 a 95 mm. Fuera de ese rango la página se niega.</li>
+          <li><strong>Semáforo:</strong> probabilidad de que el error de edad causado solo por la medida no pase de la tolerancia. Rojo por debajo de 0.50; verde desde 0.90, pero la página <strong>no emite verde</strong> sobre imágenes sin validar.</li>
+          <li><strong>Huella de la imagen:</strong> los dos índices de la guardia de cadena del proyecto (H16), calculados en la región de la longitud, comparados con lo que se vio en simulación.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Lo que no se puede decir</h3>
+        <ul>
+          <li>Que la edad sea correcta: la variación biológica pesa mucho más que la medida (mira «la medida pone»).</li>
+          <li>Que tu incertidumbre al marcar sea la declarada: no está medida con lectores humanos.</li>
+          <li>Que funcione con cualquier equipo, impresión o foto: el proyecto solo validó en simulación y con una imagen real sin referencia.</li>
+          <li>Nada sobre el aspecto, los rasgos o la salud de nadie.</li>
+          <li>Si la regla no marca la distancia que escribiste, todo se escala mal y la página no puede saberlo.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot-note">Las fórmulas de esta página se comprueban con pruebas automáticas contra el código Python del proyecto (<code>tests/test_prototype_core.py</code>). La interfaz no se ha probado con usuarios.</p>
+  </section>
+</main>
+<footer class="wrap foot">
+  <p>Calibre Geovida · prototipo v0.11 del proyecto Geometría de la Vida. Solo investigación y educación.</p>
+</footer>
+<script>
+/* CORE:BEGIN */
+/* Núcleo matemático de Calibre Geovida. Sin DOM, sin red, sin almacenamiento: se prueba con Node contra el código Python.
+   Fórmulas de edad: INTERGROWTH-21st (Papageorghiou et al. 2014, Ultrasound Obstet Gynecol), igual que geovida.dating y geovida.trajectory.
+   Solo investigación y educación. */
+const Core = (() => {
+  'use strict';
+
+  const RANGE_MM = [15, 95];            // rango de la fórmula de edad por CRL
+  const GA_RANGE = [58, 105];           // rango (días) de la ecuación de tamaño de referencia
+  const GREEN = 0.90, RED = 0.50;
+  const HORIZONS = [7, 14, 21, 28];
+  const MIN_SIDE = 32, WINDOW = 7, MIN_FLAT_PX = 200, MIN_MEAN = 0.02, MIN_SD = 1e-4;   // iguales a geovida.chainguard
+
+  // Cajas de soporte congeladas de H16 (results/summary/h16_chain_frozen.json, modelo de CRL): lo que la guardia vio en simulación.
+  const SUPPORT_BODY = {
+    chain: { lnCv: [-2.020073397278121, -0.9553965256666371], skew: [0.3164463343596403, 1.3634433173550824] },
+    clean: { lnCv: [0.03264821899984906, 0.9043419798682549], skew: [2.060048442669502, 2.8210492525818642] },
+  };
+
+  // --- funciones especiales ---------------------------------------------------------------------------------------
+  function erfcCF(x) {                                 // fracción continua, x >= 2.5
+    let f = x;
+    for (let k = 60; k >= 1; k--) f = x + (k / 2) / f;
+    return Math.exp(-x * x) / (Math.sqrt(Math.PI) * f);
+  }
+  function erf(x) {
+    if (Number.isNaN(x)) return NaN;
+    const ax = Math.abs(x);
+    let r;
+    if (ax < 2.5) {                                    // serie de Taylor
+      let term = ax, sum = ax;
+      const x2 = ax * ax;
+      for (let n = 1; n < 200; n++) {
+        term *= -x2 / n;
+        const add = term / (2 * n + 1);
+        sum += add;
+        if (Math.abs(add) < 1e-17 * Math.abs(sum)) break;
+      }
+      r = 2 / Math.sqrt(Math.PI) * sum;
+    } else {
+      r = 1 - erfcCF(ax);
+    }
+    return x < 0 ? -r : r;
+  }
+  const phi = (x) => 0.5 * (1 + erf(x / Math.SQRT2));
+
+  // --- datación por CRL (geovida.dating) --------------------------------------------------------------------------
+  function checkCrl(c) {
+    if (!(c > 0) || Number.isNaN(c)) throw new Error('la longitud cráneo-rabadilla debe ser un número > 0 (mm)');
+    return c;
+  }
+  const inFormulaRange = (c) => c >= RANGE_MM[0] && c <= RANGE_MM[1];
+  const gaDays = (c) => { checkCrl(c); return 40.9041 + 3.21585 * Math.sqrt(c) + 0.348956 * c; };
+  const sdGaDays = (c) => { checkCrl(c); return 2.39102 + 0.0193474 * c; };
+  const dgaDcrl = (c) => { checkCrl(c); return 3.21585 / (2 * Math.sqrt(c)) + 0.348956; };
+  function weeksDays(days) {
+    const total = Math.round(days);
+    return [Math.floor(total / 7), total - 7 * Math.floor(total / 7)];
+  }
+  function probWithin(bias, sd, tol) {                 // P(|e| <= tol), e ~ N(bias, sd^2)
+    if (sd <= 0) return Math.abs(bias) <= tol ? 1 : 0;
+    return phi((tol - bias) / sd) - phi((-tol - bias) / sd);
+  }
+  function certifyDating(crl, biasMm, sdMm, tol = 1) {
+    const ga = gaDays(crl), slope = dgaDcrl(crl), sdForm = sdGaDays(crl);
+    const bDays = slope * biasMm, sDays = Math.abs(slope) * sdMm;
+    const p = probWithin(bDays, sDays, tol);
+    const inRange = inFormulaRange(crl);
+    let lightRaw = p >= GREEN ? 'verde' : (p < RED ? 'rojo' : 'amarillo');
+    if (!inRange && lightRaw === 'verde') lightRaw = 'amarillo';
+    const share = (sDays ** 2) / (sDays ** 2 + sdForm ** 2);
+    const greenBlocked = lightRaw === 'verde';
+    // Tope del proyecto: sobre una imagen sin validar no se emite verde (geovida.real2d).
+    const light = greenBlocked ? 'amarillo' : lightRaw;
+    return {
+      crlMm: crl, gaDays: ga, gaWeeksDays: weeksDays(ga), sdFormulaDays: sdForm, sdMeasurementDays: sDays,
+      biasMeasurementDays: bDays, sdTotalDays: Math.sqrt(sdForm ** 2 + sDays ** 2), measurementShare: share,
+      toleranceDays: tol, pWithinTolerance: p, inRange, lightRaw, light, greenBlocked, refused: !inRange,
+    };
+  }
+
+  // --- presupuesto de incertidumbre del calibre manual -------------------------------------------------------------
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  /* Longitud = (píxeles entre los extremos) × (mm por píxel de la escala). Cada punto marcado tiene una incertidumbre de
+     puntería de sigmaPx píxeles a lo largo de la línea. Las dos longitudes en píxeles (objeto y escala) llevan errores
+     independientes: var_rel = 2σ²/L² + 2σ²/R². El sesgo relativo declarado no mueve la lectura: solo entra al certificado. */
+  function measure({ cal, calMm, crl, sigmaPx, biasRel }) {
+    const issues = [], warnings = [];
+    const empty = { mmPerPx: null, lengthMm: null, lengthPx: null, refPx: null, relSd: null, sdMm: null, biasMm: null, issues, warnings };
+    if (!cal || !cal[0] || !cal[1]) issues.push('Marca los dos puntos de la escala.');
+    if (!(calMm > 0)) issues.push('La distancia real entre los dos puntos de la escala debe ser mayor que 0 mm.');
+    if (!crl || !crl[0] || !crl[1]) issues.push('Marca los dos extremos de la longitud cráneo-rabadilla.');
+    if (issues.length) return empty;
+    const refPx = dist(cal[0], cal[1]), lPx = dist(crl[0], crl[1]);
+    if (!(refPx > 0)) issues.push('Los dos puntos de la escala coinciden.');
+    if (!(lPx > 0)) issues.push('Los dos extremos de la longitud coinciden.');
+    if (issues.length) return empty;
+    const sigma = Math.max(0, Number(sigmaPx) || 0);
+    const s = calMm / refPx;
+    const lengthMm = lPx * s;
+    const relSd = Math.sqrt(2 * sigma ** 2 / lPx ** 2 + 2 * sigma ** 2 / refPx ** 2);
+    if (lPx < 40) warnings.push(`El objeto mide solo ${lPx.toFixed(0)} píxeles: la incertidumbre relativa de la puntería es grande.`);
+    if (refPx < 60) warnings.push(`La referencia de escala mide solo ${refPx.toFixed(0)} píxeles: separa más los dos puntos de la regla.`);
+    if (s > 0.5) warnings.push(`Cada píxel mide ${s.toFixed(2)} mm: la imagen es demasiado gruesa para medir con precisión.`);
+    return { mmPerPx: s, lengthMm, lengthPx: lPx, refPx, relSd, sdMm: lengthMm * relSd, biasMm: (Number(biasRel) || 0) * lengthMm, issues, warnings };
+  }
+
+  // --- tamaño de referencia (geovida.trajectory) ---------------------------------------------------------------
+  function checkGa(ga) {
+    if (Number.isNaN(ga) || !(ga >= GA_RANGE[0] && ga <= GA_RANGE[1])) {
+      throw new Error(`la edad ${ga} d está fuera del rango publicado de la ecuación (${GA_RANGE[0]}–${GA_RANGE[1]} días)`);
+    }
+    return ga;
+  }
+  const clipGa = (g) => Math.min(Math.max(g, GA_RANGE[0]), GA_RANGE[1]);
+  const meanAt = (g) => -50.6562 + 0.815118 * g + 0.00535302 * g * g;
+  const sdAt = (g) => -2.21626 + 0.0984894 * g;
+  const crlMeanMm = (ga) => meanAt(checkGa(ga));
+  const crlSdMm = (ga) => sdAt(checkGa(ga));
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return () => {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function makeNormal(rng) {
+    let spare = null;
+    return () => {
+      if (spare !== null) { const v = spare; spare = null; return v; }
+      let u = 0;
+      while (u === 0) u = rng();
+      const v = rng(), r = Math.sqrt(-2 * Math.log(u));
+      spare = r * Math.sin(2 * Math.PI * v);
+      return r * Math.cos(2 * Math.PI * v);
+    };
+  }
+  function quantileSorted(s, q) {                      // interpolación lineal, como numpy
+    const pos = (s.length - 1) * q, i = Math.floor(pos), f = pos - i;
+    return i + 1 < s.length ? s[i] * (1 - f) + s[i + 1] * f : s[i];
+  }
+  function quantiles(arr, coverage) {
+    const s = Float64Array.from(arr).sort();
+    const a = (1 - coverage) / 2;
+    return { lo: quantileSorted(s, a), median: quantileSorted(s, 0.5), hi: quantileSorted(s, 1 - a) };
+  }
+
+  /* Franja de referencia a varios días de la medida, con el error de la CRL y la incertidumbre de la edad propagados por Monte Carlo.
+     No predice el crecimiento ni el aspecto de ningún feto. Dos escenarios extremos: 'persistence' (conserva su puntuación z) y
+     'regression' (la pierde por completo). La correlación real entre visitas no se conoce. */
+  function projection(crl, opts = {}) {
+    const { crlRelSd = 0, crlRelBias = 0, gaKnownDays = null, horizons = HORIZONS, nDraws = 20000, seed = 20261218, coverage = 0.90 } = opts;
+    if (!(crl > 0) || Number.isNaN(crl)) throw new Error('la longitud debe ser un número > 0 (mm)');
+    if (crlRelSd < 0 || !(coverage >= 0 && coverage < 1) || nDraws < 100) throw new Error('parámetros fuera de rango');
+    const rng = mulberry32(seed), z = makeNormal(rng);
+    const n = Math.floor(nDraws);
+    const meas = new Float64Array(n), gaTrue = new Float64Array(n);
+    for (let i = 0; i < n; i++) meas[i] = crl / Math.max(1 + crlRelBias + crlRelSd * z(), 0.05);
+    let source;
+    if (gaKnownDays === null || gaKnownDays === undefined) {
+      if (!inFormulaRange(crl)) {
+        throw new Error(`la CRL ${crl} mm está fuera del rango de la fórmula de edad (${RANGE_MM[0]}–${RANGE_MM[1]} mm); da la edad con gaKnownDays`);
+      }
+      for (let i = 0; i < n; i++) gaTrue[i] = gaDays(meas[i]) + sdGaDays(meas[i]) * z();
+      source = 'estimada con esta misma CRL';
+    } else {
+      gaTrue.fill(checkGa(gaKnownDays));
+      source = 'dada por otra vía';
+    }
+    const z0 = new Float64Array(n), eps = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      const g = clipGa(gaTrue[i]);
+      z0[i] = (meas[i] - meanAt(g)) / sdAt(g);
+    }
+    for (let i = 0; i < n; i++) eps[i] = z();
+    const gaMed = quantiles(gaTrue, coverage).median;
+    const qNow = quantiles(gaTrue, coverage);
+    const gaNow = { source, medianDays: gaMed, weeksDays: weeksDays(gaMed), loDays: qNow.lo, hiDays: qNow.hi };
+    const rows = [];
+    const bufP = new Float64Array(n), bufR = new Float64Array(n);
+    for (const h0 of horizons) {
+      const h = Number(h0), gaCentral = gaMed + h;
+      const inRange = gaCentral >= GA_RANGE[0] && gaCentral <= GA_RANGE[1];
+      const row = { daysAhead: h, gaDays: gaCentral, gaWeeksDays: weeksDays(gaCentral), inSourceRange: inRange,
+                    populationMeanMm: null, populationSdMm: null, persistence: null, regression: null, envelope: null };
+      if (inRange) {
+        for (let i = 0; i < n; i++) {
+          const g = clipGa(gaTrue[i] + h), m = meanAt(g), s = sdAt(g);
+          bufP[i] = m + z0[i] * s;
+          bufR[i] = m + eps[i] * s;
+        }
+        const pers = quantiles(bufP, coverage), regr = quantiles(bufR, coverage);
+        row.populationMeanMm = meanAt(gaCentral);
+        row.populationSdMm = sdAt(gaCentral);
+        row.persistence = pers;
+        row.regression = regr;
+        row.envelope = { lo: Math.min(pers.lo, regr.lo), hi: Math.max(pers.hi, regr.hi) };
+      }
+      rows.push(row);
+    }
+    return { crlMmMeasured: crl, crlRelSd, crlRelBias, coverage, nDraws: n, seed, gaNow, rows };
+  }
+
+  // --- huella de la imagen (geovida.chainguard.image_indices) ---------------------------------------------------
+  function percentile(values, q) {                     // q en [0, 100], interpolación lineal como numpy
+    const s = Float64Array.from(values).sort();
+    return quantileSorted(s, q / 100);
+  }
+  function kernelUniform(size) { return new Float64Array(size).fill(1 / size); }
+  function kernelGauss(sigma, truncate = 4.0) {        // igual que scipy.ndimage.gaussian_filter1d, orden 0
+    const lw = Math.floor(truncate * sigma + 0.5);
+    const k = new Float64Array(2 * lw + 1);
+    let sum = 0;
+    for (let i = -lw; i <= lw; i++) { const v = Math.exp(-0.5 / (sigma * sigma) * i * i); k[i + lw] = v; sum += v; }
+    for (let i = 0; i < k.length; i++) k[i] /= sum;
+    return k;
+  }
+  function convSeparable(src, w, h, kernel) {          // modo 'reflect' de scipy: (d c b a | a b c d | d c b a)
+    const r = (kernel.length - 1) >> 1;
+    const tmp = new Float64Array(w * h), out = new Float64Array(w * h);
+    const refl = (i, n) => (i < 0 ? -i - 1 : (i >= n ? 2 * n - i - 1 : i));
+    for (let y = 0; y < h; y++) {
+      const row = y * w;
+      for (let x = 0; x < w; x++) {
+        let acc = 0;
+        for (let k = -r; k <= r; k++) acc += kernel[k + r] * src[row + refl(x + k, w)];
+        tmp[row + x] = acc;
+      }
+    }
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let acc = 0;
+        for (let k = -r; k <= r; k++) acc += kernel[k + r] * tmp[refl(y + k, h) * w + x];
+        out[y * w + x] = acc;
+      }
+    }
+    return out;
+  }
+  function medianOf(arr) {
+    const s = Float64Array.from(arr).sort(), n = s.length;
+    return n % 2 ? s[(n - 1) / 2] : 0.5 * (s[n / 2 - 1] + s[n / 2]);
+  }
+  /* ln_cv: logaritmo de la variación local mediana en zonas sin bordes (baja cuando una compresión tonal aplana el grano).
+     skew: asimetría de las intensidades. Solo usa la imagen. null si no hay base para medirlos. */
+  function imageIndices(flat, w, h) {
+    const NONE = { lnCv: null, skew: null };
+    if (!(w >= MIN_SIDE && h >= MIN_SIDE) || flat.length !== w * h) return NONE;
+    const a = Float64Array.from(flat);
+    for (let i = 0; i < a.length; i++) if (!Number.isFinite(a[i])) return NONE;
+    const scale = percentile(a, 99.5);
+    if (!(scale > 0)) return NONE;
+    const n = a.length, x = new Float64Array(n);
+    let mean = 0;
+    for (let i = 0; i < n; i++) { x[i] = a[i] / scale; mean += x[i]; }
+    mean /= n;
+    let v2 = 0, v3 = 0;
+    for (let i = 0; i < n; i++) { const d = x[i] - mean; v2 += d * d; v3 += d * d * d; }
+    const sdImg = Math.sqrt(v2 / n);
+    const skew = sdImg > 1e-12 ? (v3 / n) / (sdImg ** 3) : null;
+    const xx = new Float64Array(n);
+    for (let i = 0; i < n; i++) xx[i] = x[i] * x[i];
+    const ku = kernelUniform(WINDOW);
+    const m = convSeparable(x, w, h, ku), m2 = convSeparable(xx, w, h, ku);
+    const sd = new Float64Array(n);
+    for (let i = 0; i < n; i++) sd[i] = Math.sqrt(Math.max(m2[i] - m[i] * m[i], 0));
+    const gs = convSeparable(x, w, h, kernelGauss(1.5));
+    const g = new Float64Array(n);
+    for (let yy = 0; yy < h; yy++) {
+      for (let xxp = 0; xxp < w; xxp++) {
+        const i = yy * w + xxp;
+        const gy = yy === 0 ? gs[i + w] - gs[i] : (yy === h - 1 ? gs[i] - gs[i - w] : (gs[i + w] - gs[i - w]) / 2);
+        const gx = xxp === 0 ? gs[i + 1] - gs[i] : (xxp === w - 1 ? gs[i] - gs[i - 1] : (gs[i + 1] - gs[i - 1]) / 2);
+        g[i] = Math.hypot(gx, gy);
+      }
+    }
+    const thr = percentile(g, 50);
+    const cvs = [];
+    for (let i = 0; i < n; i++) if (g[i] < thr && m[i] > MIN_MEAN && sd[i] > MIN_SD) cvs.push(sd[i] / m[i]);
+    if (cvs.length < MIN_FLAT_PX) return { lnCv: null, skew };
+    const cv = medianOf(cvs);
+    return { lnCv: cv > 0 ? Math.log(cv) : null, skew };
+  }
+  const supportBody = () => SUPPORT_BODY;
+  /* 'clean' (imagen cruda simulada), 'chain' (cadena pantalla-impresión-foto simulada) o null si cae fuera de todas las cajas. */
+  function locateRegime(idx) {
+    if (!idx || idx.lnCv === null || idx.skew === null || !Number.isFinite(idx.lnCv) || !Number.isFinite(idx.skew)) return null;
+    const eps = 1e-12;
+    for (const name of ['chain', 'clean']) {
+      const b = SUPPORT_BODY[name];
+      if (idx.lnCv >= b.lnCv[0] - eps && idx.lnCv <= b.lnCv[1] + eps && idx.skew >= b.skew[0] - eps && idx.skew <= b.skew[1] + eps) return name;
+    }
+    return null;
+  }
+
+  return {
+    RANGE_MM, GA_RANGE, GREEN, RED, HORIZONS, MIN_SIDE,
+    erf, phi, inFormulaRange, gaDays, sdGaDays, dgaDcrl, weeksDays, probWithin, certifyDating,
+    measure, crlMeanMm, crlSdMm, projection, imageIndices, supportBody, locateRegime, mulberry32,
+  };
+})();
+/* CORE:END */
+
+/* Interfaz de Calibre Geovida: marcar puntos sobre una imagen, mostrar el certificado y la franja de referencia.
+   Todo ocurre en el navegador: la imagen se dibuja en un lienzo, nunca se envía ni se guarda. Solo investigación y educación. */
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const fmt = (x, d = 1) => (x === null || x === undefined || !Number.isFinite(x) ? '—' : x.toFixed(d));
+  const num = (id, fallback) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : fallback; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pct = (p) => (p >= 0.995 && p < 1 ? '> 99' : (p > 0 && p < 0.005 ? '< 1' : fmt(100 * p, 0)));
+  const wd = (days) => { const [w, d] = Core.weeksDays(days); return `${w}+${d}`; };
+
+  const MAX_SIDE = 3000;
+  const S = {
+    img: null,                 // { canvas, w, h, gray }
+    example: false,
+    note: '',
+    view: { k: 1, ox: 0, oy: 0 },
+    cal: [null, null],         // puntos de la escala, en píxeles de la imagen
+    crl: [null, null],         // extremos de la longitud
+    sel: null,                 // { set, i }: la marca seleccionada
+    drag: null,
+    hover: null,
+    last: null,                // último cálculo
+  };
+
+  const stage = $('stage'), ctx = stage.getContext('2d');
+  const loupe = $('loupe'), lctx = loupe.getContext('2d');
+  let dpr = 1, cw = 0, ch = 0;
+
+  // --- imagen de ejemplo, dibujada aquí (no es ninguna ecografía real) -----------------------------------------
+  function makeExample() {
+    const W = 720, H = 540, PXMM = 7.5;
+    const rng = Core.mulberry32(20261222);
+    const noiseW = W >> 1, noiseH = H >> 1;
+    const nc = document.createElement('canvas'); nc.width = noiseW; nc.height = noiseH;
+    const nctx = nc.getContext('2d'), nimg = nctx.createImageData(noiseW, noiseH);
+    for (let i = 0; i < noiseW * noiseH; i++) {
+      const u = Math.max(rng(), 1e-9), r = Math.sqrt(-2 * Math.log(u)) * 0.55;       // Rayleigh: moteado
+      const v = Math.min(255, r * 128);
+      nimg.data[4 * i] = nimg.data[4 * i + 1] = nimg.data[4 * i + 2] = v; nimg.data[4 * i + 3] = 255;
+    }
+    nctx.putImageData(nimg, 0, 0);
+    const up = document.createElement('canvas'); up.width = W; up.height = H;
+    const uctx = up.getContext('2d'); uctx.imageSmoothingEnabled = true; uctx.drawImage(nc, 0, 0, W, H);
+    const speckle = uctx.getImageData(0, 0, W, H).data;
+
+    const ax = 360, ay = -60, R = 700, half = 48 * Math.PI / 180;
+    const th = -14 * Math.PI / 180, cth = Math.cos(th), sth = Math.sin(th);
+    const P0 = [250, 330], lenPx = 42 * PXMM;
+    const out = document.createElement('canvas'); out.width = W; out.height = H;
+    const octx = out.getContext('2d'), oimg = octx.createImageData(W, H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const dx = x - ax, dy = y - ay, rad = Math.hypot(dx, dy), ang = Math.atan2(dx, dy);
+        let v = 0;
+        if (rad < R && Math.abs(ang) < half) {
+          const depth = rad / R;
+          let t = 0.30 * Math.exp(-1.4 * depth) + 0.05;                                  // tejido con atenuación
+          // saco gestacional: elipse oscura con borde brillante
+          const sx = x - 400, sy = y - 295;
+          const u = (sx * cth + sy * sth) / 250, w = (-sx * sth + sy * cth) / 120;
+          const e = u * u + w * w;
+          if (e < 1) t = 0.035; else if (e < 1.12) t = 0.62;
+          // embrión: cápsula brillante a lo largo del eje de medida
+          const qx = x - P0[0], qy = y - P0[1];
+          const along = qx * cth + qy * sth, across = -qx * sth + qy * cth;
+          const cl = Math.max(0, Math.min(lenPx, along));
+          const dd = Math.hypot(along - cl, across);
+          if (dd < 24) t = Math.max(t, 0.70 - 0.012 * dd + 0.08 * Math.sin(along / 11));
+          v = t * (0.45 + 0.75 * speckle[4 * (y * W + x)] / 255 * 2);
+        }
+        const g = Math.max(0, Math.min(255, Math.pow(Math.min(v, 1), 0.8) * 255));
+        const i = 4 * (y * W + x);
+        oimg.data[i] = oimg.data[i + 1] = oimg.data[i + 2] = g; oimg.data[i + 3] = 255;
+      }
+    }
+    octx.putImageData(oimg, 0, 0);
+    // regla en el borde derecho: marcas cada 5 mm, más largas cada 10 mm
+    octx.strokeStyle = 'rgba(235,235,235,0.9)'; octx.lineWidth = 1.5;
+    const rx = W - 40;
+    octx.beginPath(); octx.moveTo(rx, 50); octx.lineTo(rx, 420); octx.stroke();
+    for (let k = 0; k <= 9; k++) {
+      const y = 60 + k * 5 * PXMM, long = k % 2 === 0;
+      octx.beginPath(); octx.moveTo(rx, y); octx.lineTo(rx - (long ? 14 : 8), y); octx.stroke();
+    }
+    octx.font = '600 15px sans-serif'; octx.fillStyle = 'rgba(242,184,75,0.85)';
+    octx.fillText('EJEMPLO SINTÉTICO', 16, 28);
+    return { canvas: out, w: W, h: H, gray: null,
+             cal: [[rx, 60], [rx, 360]], calMm: 40,
+             crl: [[P0[0] + 2.1, P0[1] + 1.2], [P0[0] + lenPx * cth + 1.9, P0[1] + lenPx * sth + 1.8]] };
+  }
+
+  // --- carga de imagen -------------------------------------------------------------------------------------------
+  function installImage(canvas, example, note) {
+    S.img = { canvas, w: canvas.width, h: canvas.height, gray: null };
+    S.example = example; S.note = note || '';
+    S.cal = [null, null]; S.crl = [null, null]; S.sel = null;
+    fitView();
+  }
+  function useExample() {
+    const ex = makeExample();
+    installImage(ex.canvas, true, '');
+    S.cal = ex.cal.map((p) => p.slice()); S.crl = ex.crl.map((p) => p.slice());
+    $('cal-mm').value = ex.calMm;
+    setMode('crl');
+    update();
+  }
+  async function loadFile(file) {
+    if (!file) return;
+    try {
+      let src, w, h;
+      if (window.createImageBitmap) { src = await createImageBitmap(file); w = src.width; h = src.height; }
+      else {
+        src = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(file); });
+        w = src.naturalWidth; h = src.naturalHeight;
+      }
+      const k = Math.min(1, MAX_SIDE / Math.max(w, h));
+      const c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+      const cx = c.getContext('2d', { willReadFrequently: true }); cx.drawImage(src, 0, 0, c.width, c.height);
+      if (src.close) src.close();
+      installImage(c, false, k < 1 ? `La imagen se redujo de ${w}×${h} a ${c.width}×${c.height} px para trabajar.` : '');
+      $('cal-mm').value = 10;
+      setMode('scale');
+      update();
+    } catch (e) {
+      S.note = 'No se pudo leer ese archivo como imagen. Prueba con PNG o JPEG.';
+      update();
+    }
+  }
+  function grayOf(img) {                                 // luminancia en [0, 255], solo para la huella; se calcula una vez
+    if (img.gray) return img.gray;
+    const d = img.canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, img.w, img.h).data;
+    const g = new Float64Array(img.w * img.h);
+    for (let i = 0; i < g.length; i++) g[i] = 0.2126 * d[4 * i] + 0.7152 * d[4 * i + 1] + 0.0722 * d[4 * i + 2];
+    img.gray = g; return g;
+  }
+
+  // --- vista (zoom y desplazamiento) -----------------------------------------------------------------------------
+  function resizeStage() {
+    const r = stage.getBoundingClientRect();
+    dpr = Math.max(1, window.devicePixelRatio || 1);
+    cw = Math.max(1, Math.round(r.width)); ch = Math.max(1, Math.round(r.height));
+    stage.width = Math.round(cw * dpr); stage.height = Math.round(ch * dpr);
+  }
+  function fitView() {
+    if (!S.img) return;
+    const k = Math.min(cw / S.img.w, ch / S.img.h) * 0.97;
+    S.view = { k, ox: (cw - S.img.w * k) / 2, oy: (ch - S.img.h * k) / 2 };
+  }
+  const toScreen = (p) => [p[0] * S.view.k + S.view.ox, p[1] * S.view.k + S.view.oy];
+  const toImage = (sx, sy) => [(sx - S.view.ox) / S.view.k, (sy - S.view.oy) / S.view.k];
+  function zoomAt(f, sx, sy) {
+    if (!S.img) return;
+    const k0 = S.view.k, k1 = Math.min(Math.max(k0 * f, 0.1), 48);
+    const p = toImage(sx, sy);
+    S.view.k = k1; S.view.ox = sx - p[0] * k1; S.view.oy = sy - p[1] * k1;
+    draw();
+  }
+
+  // --- dibujo ----------------------------------------------------------------------------------------------------
+  function handle(p, color, label, selected) {
+    const [x, y] = toScreen(p);
+    ctx.save();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = color; ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(x, y, 8, 0, 2 * Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 14, y); ctx.lineTo(x - 4, y); ctx.moveTo(x + 4, y); ctx.lineTo(x + 14, y);
+    ctx.moveTo(x, y - 14); ctx.lineTo(x, y - 4); ctx.moveTo(x, y + 4); ctx.lineTo(x, y + 14); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y, 1.2, 0, 2 * Math.PI); ctx.fill();
+    if (selected) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, 11.5, 0, 2 * Math.PI); ctx.stroke(); }
+    ctx.font = '600 11px "IBM Plex Sans", system-ui, sans-serif';
+    const lw = ctx.measureText(label).width, lx = x + 13 + lw > cw - 4 ? x - 13 - lw : x + 13;
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(label, lx, y - 11);
+    ctx.fillStyle = color; ctx.fillText(label, lx, y - 11);
+    ctx.restore();
+  }
+  function segment(a, b, color, text) {
+    const A = toScreen(a), B = toScreen(b);
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.25; ctx.setLineDash([6, 4]);
+    ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke(); ctx.setLineDash([]);
+    if (text) {
+      const mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2;
+      ctx.font = '600 12px "IBM Plex Mono", ui-monospace, monospace';
+      const tw = ctx.measureText(text).width, tx = mx + 8 + tw > cw - 4 ? mx - 8 - tw : mx + 8;
+      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.strokeText(text, tx, my - 8);
+      ctx.fillStyle = color; ctx.fillText(text, tx, my - 8);
+    }
+    ctx.restore();
+  }
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#0a0f12'; ctx.fillRect(0, 0, cw, ch);
+    if (!S.img) {
+      ctx.fillStyle = '#9fb2b8'; ctx.font = '500 15px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('Abre una imagen o carga el ejemplo sintético', cw / 2, ch / 2); ctx.textAlign = 'left';
+      return;
+    }
+    ctx.imageSmoothingEnabled = S.view.k < 3;
+    ctx.drawImage(S.img.canvas, S.view.ox, S.view.oy, S.img.w * S.view.k, S.img.h * S.view.k);
+    const r = S.last && S.last.meas;
+    if (S.cal[0] && S.cal[1]) segment(S.cal[0], S.cal[1], '#f2b84b', r && r.refPx ? `${fmt(num('cal-mm', 0), 1)} mm` : '');
+    if (S.crl[0] && S.crl[1]) segment(S.crl[0], S.crl[1], '#4fd1de', r && r.lengthMm ? `${fmt(r.lengthMm, 1)} mm` : '');
+    const names = { cal: ['Regla 1', 'Regla 2'], crl: ['Cráneo', 'Rabadilla'] };
+    for (const set of ['cal', 'crl']) {
+      for (let i = 0; i < 2; i++) {
+        const p = S[set][i];
+        if (p) handle(p, set === 'cal' ? '#f2b84b' : '#4fd1de', names[set][i], S.sel && S.sel.set === set && S.sel.i === i);
+      }
+    }
+  }
+  function drawLoupe(sx, sy) {
+    if (!S.img) return;
+    const p = toImage(sx, sy), size = 120, mag = 8, half = size / mag / 2;
+    lctx.imageSmoothingEnabled = false;
+    lctx.fillStyle = '#000'; lctx.fillRect(0, 0, size, size);
+    lctx.drawImage(S.img.canvas, p[0] - half, p[1] - half, half * 2, half * 2, 0, 0, size, size);
+    lctx.strokeStyle = 'rgba(79,209,222,0.95)'; lctx.lineWidth = 1;
+    lctx.beginPath(); lctx.moveTo(size / 2, 0); lctx.lineTo(size / 2, size / 2 - 6); lctx.moveTo(size / 2, size / 2 + 6); lctx.lineTo(size / 2, size);
+    lctx.moveTo(0, size / 2); lctx.lineTo(size / 2 - 6, size / 2); lctx.moveTo(size / 2 + 6, size / 2); lctx.lineTo(size, size / 2); lctx.stroke();
+    loupe.style.left = sx < 150 && sy < 150 ? 'auto' : '10px';
+    loupe.style.right = sx < 150 && sy < 150 ? '10px' : 'auto';
+    loupe.hidden = false;
+  }
+
+  // --- interacción con los puntos ---------------------------------------------------------------------------------
+  let mode = 'scale';
+  function setMode(m) {
+    mode = m;
+    const el = $('mode-' + m); if (el) el.checked = true;
+    stage.classList.toggle('pan', m === 'pan');
+    hint();
+  }
+  function hint() {
+    const el = $('stage-hint');
+    if (!S.img) { el.textContent = ''; return; }
+    if (mode === 'pan') el.textContent = 'Arrastra para mover; rueda del ratón o botones para el zoom.';
+    else if (mode === 'scale') el.textContent = S.cal[0] && S.cal[1] ? 'Arrastra una marca ámbar para ajustarla.' : 'Marca dos marcas de la regla.';
+    else el.textContent = S.crl[0] && S.crl[1] ? 'Arrastra una marca azul para ajustarla.' : 'Marca la cabeza y la rabadilla.';
+  }
+  function hit(sx, sy) {
+    const R = (S.drag && S.drag.touch) ? 26 : 16;
+    let best = null, bd = R;
+    for (const set of ['cal', 'crl']) for (let i = 0; i < 2; i++) {
+      const p = S[set][i]; if (!p) continue;
+      const q = toScreen(p), d = Math.hypot(q[0] - sx, q[1] - sy);
+      if (d < bd) { bd = d; best = { set, i }; }
+    }
+    return best;
+  }
+  const clampPt = (p) => [Math.min(Math.max(p[0], 0), S.img.w), Math.min(Math.max(p[1], 0), S.img.h)];
+  function pos(e) { const r = stage.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+
+  stage.addEventListener('pointerdown', (e) => {
+    if (!S.img) return;
+    stage.focus({ preventScroll: true });
+    const [sx, sy] = pos(e);
+    const touch = e.pointerType === 'touch';
+    stage.setPointerCapture(e.pointerId);
+    S.drag = { touch, start: [sx, sy], ox: S.view.ox, oy: S.view.oy, target: null, pan: false };
+    const h = mode === 'pan' ? null : hit(sx, sy);
+    if (mode === 'pan') { S.drag.pan = true; stage.classList.add('panning'); return; }
+    if (h) { S.drag.target = h; S.sel = h; }
+    else {
+      const set = mode === 'scale' ? 'cal' : 'crl';
+      let i = S[set].findIndex((p) => !p);
+      if (i < 0) {                                       // las dos puestas: mueve la más cercana
+        const p = toImage(sx, sy);
+        const d0 = Math.hypot(S[set][0][0] - p[0], S[set][0][1] - p[1]), d1 = Math.hypot(S[set][1][0] - p[0], S[set][1][1] - p[1]);
+        i = d0 <= d1 ? 0 : 1;
+      }
+      S[set][i] = clampPt(toImage(sx, sy));
+      S.drag.target = { set, i }; S.sel = { set, i };
+    }
+    drawLoupe(sx, sy); update(true);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!S.img) return;
+    const [sx, sy] = pos(e);
+    if (S.drag && S.drag.pan) { S.view.ox = S.drag.ox + sx - S.drag.start[0]; S.view.oy = S.drag.oy + sy - S.drag.start[1]; draw(); return; }
+    if (S.drag && S.drag.target) {
+      const t = S.drag.target; S[t.set][t.i] = clampPt(toImage(sx, sy));
+      drawLoupe(sx, sy); update(true);
+    } else if (e.pointerType !== 'touch' && mode !== 'pan') { drawLoupe(sx, sy); }
+    const p = toImage(sx, sy);
+    $('stage-status').textContent = `x ${fmt(p[0], 1)} px · y ${fmt(p[1], 1)} px · zoom ${(S.view.k * 100).toFixed(0)} %`;
+  });
+  const endDrag = () => { S.drag = null; stage.classList.remove('panning'); loupe.hidden = true; update(); };
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('pointerleave', () => { if (!S.drag) loupe.hidden = true; });
+  stage.addEventListener('wheel', (e) => { if (!S.img) return; e.preventDefault(); const [sx, sy] = pos(e); zoomAt(e.deltaY < 0 ? 1.15 : 1 / 1.15, sx, sy); }, { passive: false });
+  stage.addEventListener('keydown', (e) => {
+    if (!S.img) return;
+    if (e.key === '+' || e.key === '=') { zoomAt(1.25, cw / 2, ch / 2); e.preventDefault(); return; }
+    if (e.key === '-') { zoomAt(1 / 1.25, cw / 2, ch / 2); e.preventDefault(); return; }
+    if (!S.sel) return;
+    const step = e.shiftKey ? 1 : 0.25, p = S[S.sel.set][S.sel.i];
+    if (!p) return;
+    if (e.key === 'Delete' || e.key === 'Backspace') { S[S.sel.set][S.sel.i] = null; S.sel = null; e.preventDefault(); update(); return; }
+    const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+    if (!d) return;
+    e.preventDefault(); S[S.sel.set][S.sel.i] = clampPt([p[0] + d[0], p[1] + d[1]]); update();
+  });
+  stage.addEventListener('dragover', (e) => e.preventDefault());
+  stage.addEventListener('drop', (e) => { e.preventDefault(); const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
+
+  // --- cálculo -------------------------------------------------------------------------------------------------------
+  function regionOf(p1, p2) {                            // caja alrededor de la longitud, con 25 % de margen y al menos 48 px por lado
+    const L = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]), pad = Math.max(0.25 * L, 12);
+    let x0 = Math.min(p1[0], p2[0]) - pad, x1 = Math.max(p1[0], p2[0]) + pad;
+    let y0 = Math.min(p1[1], p2[1]) - pad, y1 = Math.max(p1[1], p2[1]) + pad;
+    const grow = (a, b, lim) => { if (b - a < 48) { const c = (a + b) / 2; a = c - 24; b = c + 24; } return [Math.max(0, Math.floor(a)), Math.min(lim, Math.ceil(b))]; };
+    [x0, x1] = grow(x0, x1, S.img.w); [y0, y1] = grow(y0, y1, S.img.h);
+    return { x0, y0, w: x1 - x0, h: y1 - y0 };
+  }
+  function fingerprint(p1, p2) {
+    const r = regionOf(p1, p2);
+    if (r.w < Core.MIN_SIDE || r.h < Core.MIN_SIDE) return { r, idx: { lnCv: null, skew: null }, regime: null };
+    const g = grayOf(S.img), out = new Float64Array(r.w * r.h);
+    for (let y = 0; y < r.h; y++) for (let x = 0; x < r.w; x++) out[y * r.w + x] = g[(r.y0 + y) * S.img.w + (r.x0 + x)];
+    const idx = Core.imageIndices(out, r.w, r.h);
+    return { r, idx, regime: Core.locateRegime(idx) };
+  }
+  let projTimer = null;
+  function compute(live) {
+    const sigma = Math.max(0, num('sigma', 2)), biasRel = num('bias', 0) / 100, tol = Math.max(0.25, num('tol', 1));
+    const gaKnownRaw = $('ga-known').value.trim(), gaKnown = gaKnownRaw === '' ? null : parseFloat(gaKnownRaw);
+    const meas = S.img ? Core.measure({ cal: S.cal, calMm: num('cal-mm', 0), crl: S.crl, sigmaPx: sigma, biasRel }) : null;
+    const res = { meas, sigma, biasRel, tol, gaKnown, cert: null, proj: null, projError: null, fp: null };
+    if (meas && meas.lengthMm !== null) {
+      res.cert = Core.certifyDating(meas.lengthMm, meas.biasMm, meas.sdMm, tol);
+      if (!live) res.fp = fingerprint(S.crl[0], S.crl[1]);
+    }
+    return res;
+  }
+  function computeProjection(res) {
+    if (!res.meas || res.meas.lengthMm === null) return;
+    try {
+      const relSd = Math.min(res.meas.relSd, 0.3);
+      res.proj = Core.projection(res.meas.lengthMm, {
+        crlRelSd: relSd, crlRelBias: res.biasRel,
+        gaKnownDays: res.gaKnown !== null && Number.isFinite(res.gaKnown) ? res.gaKnown : null, nDraws: 20000,
+      });
+      res.projError = null;
+    } catch (e) { res.proj = null; res.projError = e.message; }
+  }
+
+  // --- presentación --------------------------------------------------------------------------------------------------
+  function lamps(state) {
+    // state: 'rojo' | 'amarillo' | 'off'
+    const mk = (cls, label, on, onCls, locked) =>
+      `<span class="lamp ${cls}${on ? ' on ' + onCls : ''}${locked ? ' locked' : ''}"><i></i>${label}</span>`;
+    $('lamps').innerHTML = mk('', 'Rojo', state === 'rojo', 'on-red') + mk('', 'Amarillo', state === 'amarillo', 'on-yellow') +
+      mk('', 'Verde bloqueado', false, '', true) + (state === 'off' ? mk('', 'Se niega', true, 'on-off') : '');
+    $('lamps').setAttribute('aria-label', state === 'off' ? 'Semáforo: se niega a certificar' : `Semáforo: ${state}`);
+  }
+  function renderResult(res) {
+    const m = res.meas, c = res.cert;
+    const metrics = [], reasons = [];
+    $('btn-copy').disabled = !c;
+    if (!S.img) {
+      lamps('off');
+      $('verdict').textContent = 'Abre una imagen o carga el ejemplo sintético para empezar.';
+      $('metrics').innerHTML = ''; $('reasons').innerHTML = ''; $('fingerprint').innerHTML = ''; $('report').value = '';
+      return;
+    }
+    if (S.note) reasons.push(`<li>${esc(S.note)}</li>`);
+    if (!c) {
+      lamps('off');
+      $('verdict').textContent = 'Todavía no hay medida: faltan datos.';
+      const issues = (m && m.issues) || [];
+      for (const t of issues) reasons.push(`<li class="issue">${esc(t)}</li>`);
+      $('metrics').innerHTML = ''; $('reasons').innerHTML = reasons.join(''); $('fingerprint').innerHTML = ''; $('report').value = '';
+      return;
+    }
+    const p = c.pWithinTolerance, tolTxt = `${fmt(res.tol, res.tol % 1 ? 2 : 0)} ${res.tol === 1 ? 'día' : 'días'}`;
+    metrics.push(`<div class="metric"><dt>Longitud cráneo-rabadilla</dt><dd>${fmt(m.lengthMm, 1)} mm<small>± ${fmt(m.sdMm, 2)} mm (1 sd) por la puntería</small></dd></div>`);
+    if (c.refused) {
+      lamps('off');
+      $('verdict').textContent = `Se niega a dar una edad: ${fmt(m.lengthMm, 1)} mm está fuera del rango de la fórmula (15 a 95 mm).`;
+      metrics.push(`<div class="metric is-off"><dt>Edad por esta longitud</dt><dd>sin edad<small>La fórmula no está publicada fuera de 15–95 mm.</small></dd></div>`);
+      reasons.push('<li>Sin un certificado de datación no hay semáforo: la página prefiere callar antes que extrapolar.</li>');
+    } else {
+      lamps(c.light);
+      if (c.light === 'rojo') $('verdict').textContent = `Rojo: con esta puntería, la probabilidad de que la medida, por sí sola, mueva la edad ${tolTxt} o menos es ${pct(p)} %.`;
+      else if (c.greenBlocked) $('verdict').textContent = `Amarillo: la medida aportaría poco error (${pct(p)} % de probabilidad de quedar dentro de ${tolTxt}), pero esta página no emite verde sobre una imagen sin validar.`;
+      else $('verdict').textContent = `Amarillo: la probabilidad de que el error de edad causado solo por la medida quede dentro de ${tolTxt} es ${pct(p)} %.`;
+      metrics.push(`<div class="metric"><dt>Edad por CRL (INTERGROWTH-21st)</dt><dd>${wd(c.gaDays)}<small>${fmt(c.gaDays, 1)} días · semanas+días</small></dd></div>`);
+      metrics.push(`<div class="metric"><dt>Dispersión de la edad</dt><dd>± ${fmt(c.sdTotalDays, 1)} d<small>fórmula ± ${fmt(c.sdFormulaDays, 1)} d · medida ± ${fmt(c.sdMeasurementDays, 1)} d</small></dd></div>`);
+      metrics.push(`<div class="metric"><dt>P(error por la medida ≤ ${esc(tolTxt)})</dt><dd>${pct(p)} %<small>la medida pone el ${fmt(100 * c.measurementShare, 0)} % de la varianza del error de edad</small></dd></div>`);
+      reasons.push(`<li>La edad sale de una ecuación poblacional con su propia dispersión biológica (± ${fmt(c.sdFormulaDays, 1)} d): una medida casi perfecta no hace correcta la edad de un feto concreto.</li>`);
+    }
+    reasons.push(`<li>Escala: ${fmt(m.mmPerPx, 4)} mm por píxel (referencia de ${fmt(m.refPx, 0)} px). La página supone que la regla marca la distancia que escribiste.</li>`);
+    if (res.sigma === 0) reasons.push('<li>Con incertidumbre de puntería 0 el error de medida desaparece del cálculo; ningún lector humano marca sin error.</li>');
+    for (const t of m.warnings) reasons.push(`<li class="issue">${esc(t)}</li>`);
+    $('metrics').innerHTML = metrics.join('');
+    $('reasons').innerHTML = reasons.join('');
+
+    const fp = res.fp;
+    if (fp) {
+      const { idx, regime } = fp;
+      const nums = idx.lnCv === null ? 'no se pudo calcular (región pequeña o sin zonas planas)' :
+        `<span class="nums">ln_cv = ${fmt(idx.lnCv, 2)} · asimetría = ${fmt(idx.skew, 2)}</span>`;
+      const where = regime === 'clean' ? 'imagen cruda simulada (sin cadena)' : regime === 'chain' ? 'foto de una impresión simulada (con cadena)' :
+        'ninguna de las imágenes simuladas con las que se probó el certificado automático';
+      const note = regime === null
+        ? 'Esta imagen cae <b>fuera de lo conocido</b>: ningún certificado automático del proyecto (H16) la cubre. No invalida tu medida manual, pero impide apoyarla en esos certificados.'
+        : 'Esto solo dice a qué se parece la imagen en simulación; no valida el calibre manual ni el equipo.';
+      $('fingerprint').innerHTML = `<b>Huella de la imagen</b> (región alrededor de la longitud, ${fp.r.w}×${fp.r.h} px): ${nums}. Se parece a: <b>${where}</b>. ${note}`;
+    } else {
+      $('fingerprint').innerHTML = '<b>Huella de la imagen</b>: se calcula al soltar la marca.';
+    }
+    $('report').value = reportText(res);
+  }
+
+  function niceStep(span, target) {
+    const raw = span / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+    return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * mag;
+  }
+  function renderEnvelope(res) {
+    const chart = $('chart'), notes = [];
+    const p = res.proj;
+    if (!p) {
+      chart.innerHTML = `<p class="chart-empty">${esc(res.projError || 'Sin medida todavía: marca la escala y la longitud para ver la franja.')}</p>`;
+      $('env-table').innerHTML = ''; $('env-notes').innerHTML = ''; return;
+    }
+    const m = res.meas, z90 = 1.645, cov = Math.round(100 * p.coverage);
+    const rows = p.rows.filter((r) => r.inSourceRange);
+    const x0 = { x: 0, lo: m.lengthMm - z90 * m.sdMm, hi: m.lengthMm + z90 * m.sdMm };
+    const pts = [x0, ...rows.map((r) => ({ x: r.daysAhead, lo: r.envelope.lo, hi: r.envelope.hi }))];
+    const meanPts = rows.map((r) => ({ x: r.daysAhead, y: r.populationMeanMm }));
+    try { meanPts.unshift({ x: 0, y: Core.crlMeanMm(p.gaNow.medianDays) }); } catch (e) { /* edad fuera del rango de la ecuación */ }
+    let ymin = Math.min(...pts.map((q) => q.lo), ...meanPts.map((q) => q.y)), ymax = Math.max(...pts.map((q) => q.hi), ...meanPts.map((q) => q.y));
+    const pad = 0.08 * (ymax - ymin || 1); ymin -= pad; ymax += pad;
+    const step = niceStep(ymax - ymin, 5);
+    ymin = Math.floor(ymin / step) * step; ymax = Math.ceil(ymax / step) * step;
+    const cwid = Math.max(300, Math.min(880, Math.round(chart.clientWidth || 680))), wide = cwid >= 560;
+    const W = cwid, H = wide ? 320 : 270, L = 44, R = wide ? 160 : 14, T = 22, B = 40;
+    const X = (d) => L + (d / 28) * (W - L - R), Y = (v) => T + (1 - (v - ymin) / (ymax - ymin)) * (H - T - B);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Franja de tamaño de referencia de 0 a 28 días después de la medida; la tabla de abajo trae los mismos valores">`;
+    for (let v = ymin; v <= ymax + 1e-9; v += step) s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${fmt(v, step < 1 ? 1 : 0)}</text>`;
+    s += `<line class="axis" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`;
+    for (const d of [0, 7, 14, 21, 28]) s += `<text x="${X(d)}" y="${H - B + 18}" text-anchor="${d === 0 ? 'start' : d === 28 ? 'end' : 'middle'}">${d === 0 ? 'medida' : '+' + d + ' d'}</text>`;
+    s += `<text x="${L - 8}" y="${T - 8}" text-anchor="end">mm</text>`;
+    const top = pts.map((q) => `${X(q.x)},${Y(q.hi)}`), bot = pts.slice().reverse().map((q) => `${X(q.x)},${Y(q.lo)}`);
+    s += `<polygon class="band" points="${top.concat(bot).join(' ')}"/>`;
+    if (meanPts.length > 1) s += `<polyline class="mean" points="${meanPts.map((q) => `${X(q.x)},${Y(q.y)}`).join(' ')}"/>`;
+    s += `<line class="whisk" x1="${X(0)}" x2="${X(0)}" y1="${Y(x0.lo)}" y2="${Y(x0.hi)}"/><circle class="dot" cx="${X(0)}" cy="${Y(m.lengthMm)}" r="5"/>`;
+    s += `<text class="lbl" x="${X(0) + 10}" y="${Y(m.lengthMm) + 20}">tu medida: ${fmt(m.lengthMm, 1)} mm</text>`;
+    if (wide) {
+      const last = pts[pts.length - 1], mid = (last.lo + last.hi) / 2;
+      s += `<text class="lbl" x="${X(last.x) + 10}" y="${Y(mid) + 4}">Franja de referencia</text><text class="lbl-soft" x="${X(last.x) + 10}" y="${Y(mid) + 19}">${cov} % de la población</text>`;
+    }
+    s += '</svg>';
+    s += `<ul class="legend" aria-hidden="true"><li><i class="sw-band"></i>Franja de referencia (${cov} % de la población, con el error de tu medida)</li><li><i class="sw-mean"></i>Media poblacional</li><li><i class="sw-dot"></i>Tu medida y su intervalo del 90 %</li></ul>`;
+    chart.innerHTML = s;
+
+    let t = '<table><thead><tr><th class="num">Días después</th><th>Edad</th><th class="num">Media poblacional (mm)</th><th class="num">Persistencia (mm)</th><th class="num">Regresión (mm)</th><th class="num">Envolvente (mm)</th></tr></thead><tbody>';
+    for (const r of p.rows) {
+      if (!r.inSourceRange) { t += `<tr><td class="num">${r.daysAhead}</td><td>${wd(r.gaDays)}</td><td colspan="4">fuera del rango de la fuente (58–105 días): no se calcula</td></tr>`; continue; }
+      const q = (o) => `${fmt(o.lo, 1)}–${fmt(o.hi, 1)}`;
+      t += `<tr><td class="num">${r.daysAhead}</td><td>${wd(r.gaDays)}</td><td class="num">${fmt(r.populationMeanMm, 1)}</td><td class="num">${q(r.persistence)}</td><td class="num">${q(r.regression)}</td><td class="num">${q(r.envelope)}</td></tr>`;
+    }
+    $('env-table').innerHTML = t + '</tbody></table>';
+    notes.push(`Edad ahora (${p.gaNow.source}): ${fmt(p.gaNow.medianDays, 0)} días (${wd(p.gaNow.medianDays)}); intervalo ${cov} %: ${fmt(p.gaNow.loDays, 0)}–${fmt(p.gaNow.hiDays, 0)} días.`);
+    notes.push('<b>Persistencia</b>: el feto conserva su posición respecto de la referencia. <b>Regresión</b>: la pierde por completo. La realidad no es ninguno de los dos extremos y la correlación entre visitas no se conoce (sin validar; la prueba H17 pide datos seriados).');
+    if (p.gaNow.source.startsWith('estimada')) notes.push('Como la edad se estimó con esta misma longitud, el tamaño no puede decir si el feto es grande o pequeño para su edad: por construcción cae en el centro de la referencia.');
+    if (rows.length < p.rows.length) notes.push('La ecuación de referencia solo está publicada hasta 105 días: las semanas siguientes que pasan de ahí no se dibujan.');
+    $('env-notes').innerHTML = notes.map((x) => `<li>${x}</li>`).join('');
+  }
+
+  function reportText(res) {
+    const m = res.meas, c = res.cert, p = res.proj, fp = res.fp;
+    const L = ['Calibre Geovida — informe (solo investigación y educación; no es un dispositivo médico)', ''];
+    L.push(`Longitud cráneo-rabadilla: ${fmt(m.lengthMm, 2)} mm ± ${fmt(m.sdMm, 2)} mm (1 sd)`);
+    L.push(`Escala: ${fmt(m.mmPerPx, 4)} mm/px (referencia de ${fmt(m.refPx, 0)} px = ${fmt(num('cal-mm', 0), 2)} mm). Objeto: ${fmt(m.lengthPx, 1)} px.`);
+    L.push(`Supuestos declarados: incertidumbre por punto ${fmt(res.sigma, 2)} px; sesgo ${fmt(100 * res.biasRel, 1)} %; tolerancia ${fmt(res.tol, 2)} d.`);
+    if (c.refused) L.push('Edad: se niega (fuera del rango 15–95 mm de la fórmula).');
+    else {
+      L.push(`Edad por CRL (INTERGROWTH-21st): ${fmt(c.gaDays, 1)} d (${wd(c.gaDays)}); dispersión total ± ${fmt(c.sdTotalDays, 1)} d (fórmula ± ${fmt(c.sdFormulaDays, 1)}, medida ± ${fmt(c.sdMeasurementDays, 1)}).`);
+      L.push(`P(error por la medida ≤ ${fmt(res.tol, 2)} d) = ${pct(c.pWithinTolerance)} %. Semáforo: ${c.light}${c.greenBlocked ? ' (verde bloqueado: imagen sin validar)' : ''}.`);
+    }
+    if (fp) L.push(`Huella de la imagen: ln_cv ${fmt(fp.idx.lnCv, 2)}, asimetría ${fmt(fp.idx.skew, 2)}; ${fp.regime ? 'se parece a ' + fp.regime + ' (simulación)' : 'fuera de lo conocido por la guardia H16'}.`);
+    if (p) {
+      L.push('', `Tamaño de referencia (intervalo ${Math.round(100 * p.coverage)} %), edad ${p.gaNow.source}:`);
+      for (const r of p.rows) L.push(r.inSourceRange ? `  +${r.daysAhead} d (${wd(r.gaDays)}): envolvente ${fmt(r.envelope.lo, 1)}–${fmt(r.envelope.hi, 1)} mm; media poblacional ${fmt(r.populationMeanMm, 1)} mm` : `  +${r.daysAhead} d: fuera del rango de la fuente (58–105 d)`);
+    }
+    L.push('', 'No predice el crecimiento ni el aspecto de ningún feto. Sin validar con imágenes reales. No contiene la imagen ni datos identificables.');
+    return L.join('\n');
+  }
+
+  function update(live) {
+    const res = compute(!!live);
+    S.last = res;
+    const m = res.meas;
+    $('cal-readout').textContent = m && m.refPx ? `referencia ${fmt(m.refPx, 1)} px → ${fmt(m.mmPerPx, 4)} mm/px` :
+      (S.cal[0] && S.cal[1] ? 'esperando la distancia real' : `${S.cal.filter(Boolean).length} de 2 marcas`);
+    $('crl-readout').textContent = m && m.lengthMm !== null ? `${fmt(m.lengthPx, 1)} px → ${fmt(m.lengthMm, 2)} mm` : `${S.crl.filter(Boolean).length} de 2 marcas`;
+    const b = $('stage-badge'); b.hidden = !S.example; b.textContent = S.example ? 'Ejemplo sintético, no es una ecografía real' : '';
+    hint(); draw();
+    if (live) {                                          // mientras se arrastra solo se recalcula lo barato
+      renderResult(res);
+      clearTimeout(projTimer); projTimer = setTimeout(() => { computeProjection(res); renderEnvelope(res); }, 120);
+      return;
+    }
+    computeProjection(res); renderResult(res); renderEnvelope(res);
+  }
+
+  // --- eventos de la página ------------------------------------------------------------------------------------------
+  $('file').addEventListener('change', (e) => { loadFile(e.target.files[0]); e.target.value = ''; });
+  $('btn-example').addEventListener('click', useExample);
+  for (const m of ['scale', 'crl', 'pan']) $('mode-' + m).addEventListener('change', () => setMode(m));
+  $('zoom-in').addEventListener('click', () => zoomAt(1.25, cw / 2, ch / 2));
+  $('zoom-out').addEventListener('click', () => zoomAt(1 / 1.25, cw / 2, ch / 2));
+  $('zoom-fit').addEventListener('click', () => { fitView(); draw(); });
+  for (const id of ['cal-mm', 'sigma', 'bias', 'tol', 'ga-known']) $(id).addEventListener('input', () => update());
+  $('btn-copy').addEventListener('click', async () => {
+    const text = $('report').value, st = $('copy-status');
+    try { await navigator.clipboard.writeText(text); st.textContent = 'Copiado.'; }
+    catch (e) { $('report-box').open = true; $('report').focus(); $('report').select(); st.textContent = 'Selecciona y copia el texto de abajo.'; }
+    setTimeout(() => { st.textContent = ''; }, 4000);
+  });
+  let chartW = 0;
+  const rerenderChart = () => { const w = $('chart').clientWidth; if (S.last && S.last.proj && Math.abs(w - chartW) > 8) { chartW = w; renderEnvelope(S.last); } };
+  window.addEventListener('resize', () => { resizeStage(); fitView(); draw(); rerenderChart(); });
+  if (window.ResizeObserver) new ResizeObserver(() => { const r = stage.getBoundingClientRect(); if (Math.round(r.width) !== cw || Math.round(r.height) !== ch) { resizeStage(); if (S.img && !S.drag) fitView(); draw(); } }).observe(stage);
+
+  resizeStage();
+  useExample();
+})();
+</script>
+</body>
+</html>

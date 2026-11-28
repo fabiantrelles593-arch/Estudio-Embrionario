@@ -1,0 +1,10 @@
+direction,segmenter,declared,n,in_domain,ok
+us_vs_v04_guard,global,realistic,4800,0.1158,True
+us_vs_v04_guard,otsu,realistic,4800,0.0458,True
+us_vs_v04_guard,smoothed_otsu,realistic,4800,0.0031,True
+realistic_vs_us_guard,global,us_compound,3150,0.0,True
+realistic_vs_us_guard,global,us_raw,3150,0.0,True
+realistic_vs_us_guard,otsu,us_compound,3150,0.0,True
+realistic_vs_us_guard,otsu,us_raw,3150,0.0,True
+realistic_vs_us_guard,smoothed_otsu,us_compound,3150,0.0022,True
+realistic_vs_us_guard,smoothed_otsu,us_raw,3150,0.0019,True

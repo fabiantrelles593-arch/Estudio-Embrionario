@@ -1,0 +1,29 @@
+{
+  "phase": "test",
+  "started_utc": "2026-11-10T01:52:14.421505+00:00",
+  "elapsed_s": 1007.0,
+  "git_commit": "db97a87fa929fd7d3113b01dae5540b504d78e62",
+  "code_dirty": true,
+  "reps": 40,
+  "conditions": 16800,
+  "rows": 50400,
+  "base_seed": 20261114,
+  "segmenters": [
+    "global",
+    "otsu",
+    "smoothed_otsu"
+  ],
+  "python": "3.13.18",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "scikit-image": "0.26.0",
+    "pandas": "3.0.5",
+    "statsmodels": "0.15.0"
+  },
+  "note": "Datos REGENERADOS el 2026-11-09 con la misma semilla y el mismo codigo de medicion: los crudos de la corrida original (h6_run_manifest_original.json, commit 2043cf2) se perdieron al reciclarse el contenedor antes de analizarlos. El proceso arranco con el arbol limpio en 9165b0b (src identico a 2043cf2); git_commit y code_dirty de este archivo se tomaron AL TERMINAR, cuando el repositorio ya tenia trabajo nuevo de H7/H8/v0.4 que no interviene en este barrido. Desde ahora los scripts registran el estado de git al empezar.",
+  "code_at_start": {
+    "git_commit": "9165b0b",
+    "code_dirty": false
+  }
+}
